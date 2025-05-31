@@ -14,11 +14,13 @@
 
 // The play button
 "Play" = "شروع بازی";
+"Details" = "Details";
 
 // Version categories
 "Installed" = "نصب شد";
 "Snapshot" = "اسنپ‌شات";
 "Releases" = "ورژن ها";
+"Unstable" = "Unstable";
 "Old-beta" = "بتای-قدیمی";
 "Old-alpha" = "آلفای-قدیمی";
 
@@ -28,8 +30,12 @@
 "Move" = "انتقال";
 "Remove" = "حذف";
 "Resize" = "تغییر اندازه";
+// Visibility
+"Always" = "Always";
+"In game" = "In game";
+"In menu" = "In menu";
 
-"custom_controls.button_edit.forward_lock" = "قفل حرکت به جلو";
+"custom_controls.button_edit.forward_lock" = "Forward lock";
 "custom_controls.button_edit.name" = "نام";
 "custom_controls.button_edit.size" = "اندازه";
 "custom_controls.button_edit.mapping" = "نقشه‌برداری";
@@ -38,9 +44,11 @@
 "custom_controls.button_edit.mouse_pass" = "عبور از ماوس";
 "custom_controls.button_edit.swipeable" = "قابل سوایپ";
 "custom_controls.button_edit.bg_color" = "رنگ پس‌زمینه";
+"custom_controls.button_edit.stroke_width" = "ضخامت حاشیه (%)";
 "custom_controls.button_edit.stroke_color" = "رنگ حاشیه";
 "custom_controls.button_edit.corner_radius" = "شعاع گوشه (%)";
 "custom_controls.button_edit.opacity" = "کدورت (%)";
+"custom_controls.button_edit.visibility" = "Visibility";
 
 "custom_controls.button_menu.add_subbutton" = "افزودن زیر-دکمه";
 "custom_controls.control_menu.discard_changes" = "لغو تغییرات";
@@ -54,16 +62,24 @@
 "custom_controls.control_menu.safe_area" = "ناحیه امن";
 "custom_controls.control_menu.add_button" = "اضافه کردن دکمه";
 "custom_controls.control_menu.add_drawer" = "اضافه کردن کشو";
-"custom_controls.control_menu.add_joystick" = "اضافه کردن جویستیک";
+"custom_controls.control_menu.add_joystick" = "Add joystick";
 "custom_controls.error.incompatible" = "این نسخه کنترل (کد %d) در این نسخه‌ی لانچر اجرا نشده است.";
 "custom_controls.hint" = "برای گزینه‌های بیشتر، هر نقطه از صفحه را طولانی فشار دهید";
 
-"init.migrateDir" = "دایرکتوری داده Pojavlauncher در حال حاضر %@ است. تمام داده های موجود شما به مکان جدید منتقل شده اند.";
+"init.migrateDir" = "دایرکتوری داده Amethyst در حال حاضر %@ است. تمام داده های موجود شما به مکان جدید منتقل شده اند.";
+
+"java.error.missing_main_class" = "%@ is missing main class attribute. If this is a mod, put it into the “mods” folder of your selected instance.";
+"java.error.missing_runtime" = "%@ requires Java %d or later to run. Please install it first and specify it in Manage Runtimes.";
+
+"launcher.mcl.downloading_file" = "Downloading %@";
+"launcher.mcl.error_download" = "Failed to download %@: %@";
 
 "launcher.menu.custom_controls" = "کنترل‌های شخصی";
+"launcher.menu.execute_jar" = "Execute .jar";
 
 "launcher.wait_jit.title" = "در انتظار JIT";
-"launcher.wait_jit.message" = "Pojavlauncher متکی به تدوین در زمان مناسب برای جاوا برای کار در حداکثر عملکرد است.";
+"launcher.wait_jit.message" = "Amethyst متکی به تدوین در زمان مناسب برای جاوا برای کار در حداکثر عملکرد است.";
+"launcher.wait_jit_trollstore.message" = "If you still see this message, please enable URL Scheme in TrollStore.";
 
 "login.error.username.outOfRange" = "نام کاربری باید حداقل 3 کاراکتر و حداکثر 16 کاراکتر باشد";
 
@@ -71,18 +87,31 @@
 
 "login.jit.checking" = "در حال بررسی JIT";
 "login.jit.enabled" = "JIT فعال شد";
+"login.jit.fail" = "JIT could not be enabled.";
+"login.jit.fail.title" = "JIT could not be enabled on your device.";
+"login.jit.fail.description" = "No integrations could be used to automatically enable JIT on your device, and it must now be enabled manually. Errors have been logged to latestlog.txt.";
+"login.jit.fail.description_unsupported" = "An unsupported installation method has been detected. Please reinstall using one of supported methods.";
 
 // Login buttons
 "login.menu.sendlogs" = "log خود را ارسال کنید";
 "login.option.add" = "اضافه کردن حساب کاربری";
 "login.option.select" = "انتخاب اکانت";
+"login.option.demo" = "Demo account";
 "login.option.microsoft" = "حساب مایکروسافت";
 "login.option.local" = "حساب محلی";
+
+"login.warn.title.legacy_device" = "The next release of Amethyst will not be compatible with this device.";
+"login.warn.message.legacy_device" = "To run the next major release, a device capable of running iOS 14 is required.";
+"login.warn.title.legacy_ios" = "The next release of Amethyst will require a system update.";
+"login.warn.message.legacy_ios" = "To run the next major release, this device needs to be running iOS 14 or later.";
+"login.warn.title.limited_ram" = "This device has a limited amount of memory available.";
+"login.warn.message.limited_ram" = "We recommend leaving auto RAM enabled to prevent instability and performance issues.";
 
 "login.warn.title.demomode" = "حساب شما نسخه ی دمو است";
 "login.warn.message.demomode" = "به عنوان جایگزینی برای حالت آفلاین و محلی، حالت دمو به شما این امکان را می دهد که وارد حساب مایکروسافتی شوید که مالک بازی نیست و نسخه آزمایشی Java Edition را که در نسخه های 1.3.1 و جدیدتر معرفی شده است، بازی کنید. نسخه‌های قدیمی‌تر شامل بازی کامل هستند، زیرا لانچر رسمی این محدودیت‌ها را اعمال نمی‌کند. برای کسب اطلاعات بیشتر در مورد این انتقال از حالت آفلاین به وب سایت ما مراجعه کنید.";
 
 "login.warn.title.localmode" = "حالت آفلاین اکنون حالت محلی است.";
+"login.warn.message.localmode" = "You can continue to play installed versions, but you can no longer download Minecraft without a paid account. No support will be provided for issues with local accounts, or other means of acquiring Minecraft.";
 
 "login.msa.error.xsts.noxboxacc" = "یک نمایه Xbox برای این حساب مایکروسافت ثبت نشده است. لطفاً مطمئن شوید که یک نمایه Xbox ساخته اید.\nکد خطا: 2148916233";
 "login.msa.error.xsts.noxbox" = "Xbox Live در حال حاضر در کشور شما در دسترس نیست.\nکد خطا: 2148916235";
@@ -97,11 +126,15 @@
 "login.msa.progress.checkMCProfile" = "(5/5) بررسی پروفایل حساب ماینکرفت";
 
 "News" = "اخبار";
+"Profiles" = "Profiles";
 "Settings" = "تنظیمات";
 
 "preference.section.general" = "تنظیمات عمومی";
+"preference.section.video" = "Video and Audio Settings";
+"preference.section.footer.video" = "Auto renderer allows Amethyst to choose the best option based on Minecraft version. Decreasing resolution reduces GPU workload for better performance.";
 "preference.section.control" = "شخصی سازی کنترلر";
 "preference.section.debug" = "تنظیمات اشکال زدایی رابط کاربری";
+"preference.section.footer.debug" = "جدای از اشکال زدایی، این تنظیمات ممکن است برای کنترل های سفارشی مفید باشند. ممکن است لازم باشد نرم‌افزار را مجدداً راه‌اندازی کنید تا تغییرات اعمال شوند.";
 //"preference.section.footer.control" = "";
 "preference.section.java" = "ترفند های جاوا";
 //"preference.section.footer.java" = "";
@@ -119,10 +152,12 @@
 "preference.title.debug_logging" = "گزارش اشکال زدایی";
 "preference.detail.debug_logging" = "تنظیمات و اقدامات داخلی را در latestlog.txt ثبت می کند. این به توسعه‌دهندگان کمک می‌کند تا مشکلات را آسان‌تر پیدا کنند، اما Minecraft ممکن است کندتر اجرا شود زیرا گزارش‌ها اغلب روی آن نوشته می‌شوند.";
 "preference.title.appicon" = "تنظیم نماد برنامه";
-"preference.detail.appicon" = "به شما امکان می دهد بین نمادهای مختلف صفحه اصلی برای PojavLauncher یکی را انتخاب کنید.";
-"preference.title.appicon-default" = "نور آشنا PojavLauncher";
-"preference.title.appicon-dark" = "تاریکی PojavLauncher آشنا";
+"preference.detail.appicon" = "به شما امکان می دهد بین نمادهای مختلف صفحه اصلی برای Amethyst یکی را انتخاب کنید.";
+"preference.title.appicon-default" = "نور آشنا Amethyst";
+"preference.title.appicon-dark" = "تاریکی Amethyst آشنا";
+"preference.title.appicon-development" = "Penciled Development";
 "preference.title.hidden_sidebar" = "نوار کناری منوی اصلی را به طور پیش فرض مخفی کنید";
+"preference.detail.hidden_sidebar" = "Allows you to hide the sidebar on the main menu by default and when rotating.";
 
 "preference.title.reset_warnings" = "بازنشانی همه هشدارها";
 "preference.title.done.reset_warnings" = "همه هشدار ها بازتنظیم شدند.";
@@ -131,17 +166,50 @@
 "preference.title.confirm.reset_settings" = "با این کار همه تنظیمات برگزیده سفارشی شما از جمله وضوح، اندازه دکمه و آرگومان های جاوا حذف می شود.";
 "preference.title.done.reset_settings" = "تمام تنظیمات پیش فرض بازیابی شده است.";
 
+"preference.title.erase_demo_data" = "Erase Demo game data";
+"preference.title.confirm.erase_demo_data" = "This will erase all Demo game versions and data used for Demo accounts.";
+"preference.title.done.erase_demo_data" = "All of the Demo game data has been erased.";
+
 "preference.title.renderer" = "رندر کننده";
 
+"preference.title.renderer.release.auto" = "Auto";
+"preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.zink" = "Zink";
+
 "preference.title.renderer.debug.auto" = "خودکار: gl4es یا ANGLE";
+"preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - OpenGL 3.2 را صادر می کند (نمایه هسته، محدود)";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - OpenGL 4.1 را صادر می کند";
 
+"preference.detail.renderer" = "Change the OpenGL render engine to use. Zink is temporarily disabled on iOS 16 and later to diagnose issues.";
+
 "preference.title.resolution" = "وضوح (%)";
 "preference.detail.resolution" = "به شما امکان می دهد وضوح بازی را کاهش دهید.";
+"preference.title.max_framerate" = "Maximum framerate";
+"preference.detail.max_framerate" = "Allows you to limit the game framerate to 60FPS on ProMotion displays.";
+
+"preference.title.performance_hud" = "Show Performance HUD";
+"preference.detail.performance_hud" = "When available, show the performance monitoring overlay.";
 
 "preference.title.fullscreen_airplay" = "AirPlay تمام صفحه";
 "preference.detail.fullscreen_airplay" = "به جای انعکاس همه چیز روی صفحه نمایش، به نمایش پنجره بازی تمام صفحه روی صفحه نمایش خارجی اجازه می دهد.";
+"preference.title.silence_other_audio" = "Pause audio when game opens";
+"preference.detail.silence_other_audio" = "Enable to allow Amethyst to pause audio from other apps, such as Music, when launching the game.";
+"preference.title.silence_with_switch" = "Disable audio with silent switch";
+"preference.detail.silence_with_switch" = "Enable to disable audio when Silent Mode is on. Headphones and external speakers are not affected.";
+"preference.title.allow_microphone" = "Allow microphone input";
+"preference.detail.allow_microphone" = "Enable this only if you are using voice chat mod. Silent switch option will be ignored, and audio quality from other apps will be affected.";
+"preference.title.default_gamepad_ctrl" = "Controller configuration";
+"preference.title.hardware_hide" = "Hide controls when hardware is connected";
+"preference.detail.hardware_hide" = "Enable the behaviour of automatically disabling the on-screen control overlay when a mouse or game controller is connected.";
+"preference.title.recording_hide" = "Hide controls from screen recording";
+"preference.detail.recording_hide" = "Hides controls from screenshot and screen recording while they remain visible on the screen.";
+"preference.title.gesture_mouse" = "Mouse gestures";
+"preference.detail.gesture_mouse" = "Enables gestures, such as tap to place block, hold to break block, scrolling with 2 fingers";
+"preference.title.gesture_hotbar" = "Hotbar gestures";
+"preference.detail.gesture_hotbar" = "Enables gestures, such as touch the hotbar slot, swap items between hand, throw items";
+"preference.title.disable_haptics" = "Disable on-screen haptics";
 "preference.title.press_duration" = "مدت زمان فشار طولانی (ms)";
 "preference.detail.press_duration" = "مدت زمان فشار برای از بین بردن بلوک ها و انداختن آیتم ها را فعال کنید.";
 "preference.title.button_scale" = "مقیاس دکمه روی صفحه (%)";
@@ -156,19 +224,36 @@
 "preference.detail.slideable_hotbar" = "هاتبار را مانند چرخ ماوس قابل لغزش کنید";
 
 "preference.title.gyroscope_enable" = "فعال کردن کنترل های ژیروسکوپ";
+"preference.detail.gyroscope_enable" = "Enabling this will allow you to turn in game by turning your device";
+"preference.title.gyroscope_invert_x_axis" = "Invert gyroscope left and right";
+"preference.detail.gyroscope_invert_x_axis" = "Inverts the X-axis of the gyroscope";
 "preference.title.gyroscope_sensitivity" = "حساسیت کنترلر های ژیروسکوپ";
 "preference.detail.gyroscope_sensitivity" = "حساسیت کنترل های ژیروسکوپ را تنظیم کنید";
 
+"preference.title.manage_runtime" = "Manage runtimes";
+"preference.title.confirm.delete_runtime" = "%@ will be deleted";
+"preference.manage_runtime.header.default" = "Preferred Java version";
+"preference.manage_runtime.default.1165" = "1.16.5 and older";
+"preference.manage_runtime.default.117" = "1.17 and newer";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 and older may run with a newer Java version, however compatibility with mods is not guaranteed. External runtimes can be placed in the “java_runtimes” folder. Changing Java version for “Execute .jar” only takes effect if the installer does not expect a newer Java version.";
+"preference.manage_runtime.footer.java8" = "This is the default version for Minecraft 1.16.5 and older.";
+"preference.manage_runtime.footer.java17" = "This is the default version for Minecraft 1.17 and newer.";
+"preference.manage_runtime.header.invalid" = "Invalid runtimes";
+
 "preference.title.java_args" = "آرگومان‌های جاوا در هنگام اجرا";
+"preference.detail.java_args" = "Pass arguments to Java when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
 "preference.placeholder.java_args" = "آرگومان ها را مشخص کنید...";
-"preference.title.env_variables" = "متغیرهای محیطی";
+"preference.title.env_variables" = "Environment variables";
+"preference.detail.env_variables" = "Set custom environment variables when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
+"preference.placeholder.env_variables" = "Specify variables...";
 "preference.title.auto_ram" = "رم اتوماتیک";
 "preference.detail.auto_ram" = "تنظیم‌کننده اتوماتیک رم را فعال می‌کند";
 "preference.warn.auto_ram" = "غیرفعال کردن این گزینه در دستگاه‌های غیر جیلبریک می‌تواند در صورت تغییر، بی‌ثباتی ایجاد کند. با توجه ادامه بدهید.";
 "preference.title.allocated_memory" = "میزان رم اختصاص یافته(MB)";
 "preference.detail.allocated_memory" = "میزان مموری اختصاص یافته به ماینکرفت را کنترل می‌کند";
 "preference.warn.allocated_memory" = "با توجه به محدودیت های موجود در خود سیستم عامل، این گزینه ممکن است باعث ناپایداری در مقادیر این و بالاتر شود. با توجه ادامه بدهید.";
-"preference.title.custom_env" = "متغیرهای محیطی";
+"preference.title.custom_env" = "Environment variables";
+"preference.detail.custom_env" = "This option is under construction. Create and edit custom_env.txt in the meantime.";
 
 "preference.title.debug_skip_wait_jit" = "از گفتگوی \"در انتظار JIT\" رد شوید";
 "preference.detail.debug_skip_wait_jit" = "این به شما اجازه نمی‌دهد بدون JIT راه‌اندازی کنید، در عوض از بررسی دیباگر صرفنظر می‌شود، زیرا بررسی در برخی از جیلبریک‌ها با شکست مواجه می‌شود.";
@@ -180,5 +265,64 @@
 "preference.detail.debug_hide_home_indicator" = "این کار قفل نشانگر خانه را غیرفعال می کند. برای مخفی کردن و قفل کردن نشانگر خانه به طور همزمان باید از Guided Access استفاده کنید.";
 
 "preference.profile.title.name" = "نام";
-"preference.profile.title.version" = "نسخه";
+"preference.profile.title.loader_type" = "Loader type";
+"preference.profile.title.loader_vendor" = "Loader vendor";
+"preference.profile.title.loader_version" = "Loader version";
+"preference.profile.title.version" = "Version";
+"preference.profile.title.version_type" = "Version type";
+"preference.profile.title.default_touch_control" = "Touch controls";
+"preference.profile.title.default_gamepad_control" = "Gamepad controls";
+
+"profile.error.name_exists" = "A profile with that name already exists. Please use another name.";
+"profile.section.instance" = "Game Instance settings";
+"profile.section.profiles" = "Profiles in this instance";
+"profile.title.create" = "Create new profile";
+"profile.title.separate_preference" = "Isolate settings";
+"profile.detail.separate_preference" = "Enable this option to isolate any changes made in settings. Doing a Reset will restore to global settings instead of default settings.";
+"profile.title.install_fabric_quilt" = "Install Fabric/Quilt";
+
+"controller_configurator.title.current" = "Gamepad configuration file";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "Left bumper";
+"controller_configurator.xbox.title.bumper_right" = "Right bumper";
+"controller_configurator.xbox.title.trigger_left" = "Left trigger";
+"controller_configurator.xbox.title.trigger_right" = "Right trigger";
+"controller_configurator.xbox.title.named_back" = "Guide";
+"controller_configurator.xbox.title.named_start" = "Menu";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "Up";
+"controller_configurator.xbox.title.dpad_down" = "Down";
+"controller_configurator.xbox.title.dpad_left" = "Left";
+"controller_configurator.xbox.title.dpad_right" = "Right";
+"controller_configurator.xbox.title.thumb_left" = "Left thumbstick click";
+"controller_configurator.xbox.title.thumb_right" = "Right thumbstick click";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
 "controller_configurator.playstation.title.named_back" = "انتخاب";
+"controller_configurator.playstation.title.named_start" = "Start";
+"controller_configurator.playstation.title.named_a" = "Cross";
+"controller_configurator.playstation.title.named_b" = "Circle";
+"controller_configurator.playstation.title.named_x" = "Square";
+"controller_configurator.playstation.title.named_y" = "Triangle";
+"controller_configurator.playstation.title.dpad_up" = "Up";
+"controller_configurator.playstation.title.dpad_down" = "Down";
+"controller_configurator.playstation.title.dpad_left" = "Left";
+"controller_configurator.playstation.title.dpad_right" = "Right";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "Current configuration file";
+"controller_configurator.section.game_mappings" = "Game mappings";
+"controller_configurator.section.footer.game_mappings" = "Bindings when the mouse is locked in game.";
+"controller_configurator.section.menu_mappings" = "Menu mappings";
+"controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
+"controller_configurator.section.controller_style" = "Controller type";
+"controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
