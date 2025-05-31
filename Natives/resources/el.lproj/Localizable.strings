@@ -4,316 +4,325 @@
 */
 
 "game.menu.force_close" = "Αναγκαστικό κλείσιμο εφαρμογής";
-"game.menu.confirm.force_close" = "Είστε βέβαιοι ότι θέλετε να αναγκάσετε το κλείσιμο;";
+"game.menu.confirm.force_close" = "Are you sure you want to force close?";
 "game.menu.log_output" = "Αρχείο Καταγραφής";
 "game.menu.custom_controls" = "Προσαρμοσμένα controls";
 
-"game.note.airplay" = "Το Minecraft εμφανίζεται στην οθόνη καθρέφτη AirPlay";
+"game.note.airplay" = "Minecraft is being displayed in AirPlay mirrored display";
 
-"game.title.exit_code" = "Το παιχνίδι τερματίστηκε με κωδικό %d";
+"game.title.exit_code" = "Game exited with code %d";
 
 // The play button
 "Play" = "Παίξε";
-"Details" = "Λεπτομέρειες";
+"Details" = "Details";
 
 // Version categories
-"Installed" = "Εγκατεστημένο";
+"Installed" = "Installed";
 "Snapshot" = "Στιγμιότυπο";
-"Releases" = "Εκδόσεις";
-"Unstable" = "Ασταθής";
+"Releases" = "Releases";
+"Unstable" = "Unstable";
 "Old-beta" = "Παλιά-Beta";
 "Old-alpha" = "Παλιά-alpha";
 
 // Custom controls
-"Copy" = "Αντιγραφή";
+"Copy" = "Copy";
 "Edit" = "Επεξεργασία";
-"Move" = "Κίνηση";
+"Move" = "Move";
 "Remove" = "Αφαίρεσε";
-"Resize" = "Αλλαγή μεγέθους";
+"Resize" = "Resize";
 // Visibility
-"Always" = "Πάντα";
-"In game" = "Εντός Παιχνιδιού";
-"In menu" = "Στο μενού";
+"Always" = "Always";
+"In game" = "In game";
+"In menu" = "In menu";
 
-"custom_controls.button_edit.forward_lock" = "Κλείδωμα ευθείας κινήσεως";
+"custom_controls.button_edit.forward_lock" = "Forward lock";
 "custom_controls.button_edit.name" = "Όνομα";
 "custom_controls.button_edit.size" = "Μέγεθος";
 "custom_controls.button_edit.mapping" = "Χαρτογράφηση";
 "custom_controls.button_edit.orientation" = "Προσανατολισμός";
 "custom_controls.button_edit.toggleable" = "Εναλλασσόμενο";
-"custom_controls.button_edit.mouse_pass" = "Πέρασμα ποντικιού";
+"custom_controls.button_edit.mouse_pass" = "Mouse pass";
 "custom_controls.button_edit.swipeable" = "Ευέλικτο";
 "custom_controls.button_edit.bg_color" = "Χρώμα φόντου";
-"custom_controls.button_edit.stroke_width" = "Πλάτος περιγράμματος";
+"custom_controls.button_edit.stroke_width" = "Stroke width (dp)";
 "custom_controls.button_edit.stroke_color" = "Χρώμα περιγράμματος";
-"custom_controls.button_edit.corner_radius" = "Ακτίνα γωνίας (%)";
-"custom_controls.button_edit.opacity" = "Αδιαφάνεια (%)";
-"custom_controls.button_edit.visibility" = "Ορατότητα";
+"custom_controls.button_edit.corner_radius" = "Corner radius (%)";
+"custom_controls.button_edit.opacity" = "Opacity (%)";
+"custom_controls.button_edit.visibility" = "Visibility";
 
-"custom_controls.button_menu.add_subbutton" = "Προσθήκη υπο-κουμπιού";
-"custom_controls.control_menu.discard_changes" = "Απόρριψη αλλαγών";
+"custom_controls.button_menu.add_subbutton" = "Προσθήκη κουμπιού";
+"custom_controls.control_menu.discard_changes" = "Discard changes";
 "custom_controls.control_menu.exit" = "Έξοδος";
-"custom_controls.control_menu.exit.warn" = "Πρόκειται να βγείτε χωρίς να αποθηκεύσετε αλλαγές.";
+"custom_controls.control_menu.exit.warn" = "You are about to exit without saving changes.";
 "custom_controls.control_menu.save" = "Αποθήκευση";
-"custom_controls.control_menu.save.error.json" = "Σφάλμα JSON";
-"custom_controls.control_menu.save.error.write" = "Σφάλμα αποθήκευσης αρχείου";
+"custom_controls.control_menu.save.error.json" = "JSON error";
+"custom_controls.control_menu.save.error.write" = "Error saving file";
 "custom_controls.control_menu.load" = "Φόρτωση";
-"custom_controls.control_menu.make_default" = "Ορισμός ως προεπιλογή";
-"custom_controls.control_menu.safe_area" = "Ασφαλής περιοχή";
+"custom_controls.control_menu.make_default" = "Make default";
+"custom_controls.control_menu.safe_area" = "Safe area";
 "custom_controls.control_menu.add_button" = "Προσθήκη κουμπιού";
-"custom_controls.control_menu.add_drawer" = "Προσθήκη συρταριού";
-"custom_controls.control_menu.add_joystick" = "Προσθήκη χειριστηρίου (joystick)";
-"custom_controls.error.incompatible" = "Αυτή η έκδοση ελέγχου (κωδικός %d) δεν έχει υλοποιηθεί σε αυτήν την έκδοση εκκινητή.";
-"custom_controls.hint" = "Πατήστε παρατεταμένα οπουδήποτε στην οθόνη για περισσότερες επιλογές";
+"custom_controls.control_menu.add_drawer" = "Add drawer";
+"custom_controls.control_menu.add_joystick" = "Add joystick";
+"custom_controls.error.incompatible" = "This control version (code %d) is not implemented in this launcher build.";
+"custom_controls.hint" = "Long-press anywhere on screen for more options";
 
-"init.migrateDir" = "Ο κατάλογος δεδομένων του PojavLauncher είναι τώρα %@. Όλα τα υπάρχοντα δεδομένα σας έχουν μεταφερθεί στη νέα θέση.";
+"init.migrateDir" = "The Amethyst data directory is now %@. All of your existing data has been moved to the new location.";
 
-"java.error.missing_main_class" = "Το %@ λείπει το κύριο χαρακτηριστικό κλάσης. Αν αυτό είναι ένα mod, βάλτε το στο φάκελο “mods” της επιλεγμένης παρουσίας σας.";
-"java.error.missing_runtime" = "Το %@ απαιτεί Java %d ή νεότερη έκδοση. Παρακαλώ εγκαταστήστε το πρώτα και καθορίστε το στη Διαχείριση Εκτέλεσης.";
+"java.error.missing_main_class" = "%@ is missing main class attribute. If this is a mod, put it into the “mods” folder of your selected instance.";
+"java.error.missing_runtime" = "%@ requires Java %d or later to run. Please install it first and specify it in Manage Runtimes.";
 
-"launcher.mcl.downloading_file" = "Γίνεται λήψη %@";
-"launcher.mcl.error_download" = "Αποτυχία λήψης %@: %@";
+"launcher.mcl.downloading_file" = "Downloading %@";
+"launcher.mcl.error_download" = "Failed to download %@: %@";
 
 "launcher.menu.custom_controls" = "Προσαρμοσμένα controls";
-"launcher.menu.execute_jar" = "Εκτέλεση .jar";
+"launcher.menu.execute_jar" = "Execute .jar";
 
-"launcher.wait_jit.title" = "Αναμονή για JIT";
-"launcher.wait_jit.message" = "Το PojavLauncher βασίζεται στη συλλογή Just-in-time για να δουλέψει η Java στη μέγιστη απόδοση.";
-"launcher.wait_jit_trollstore.message" = "Αν εξακολουθείτε να βλέπετε αυτό το μήνυμα, παρακαλούμε ενεργοποιήστε το σύστημα URL στο TrollStore.";
+"launcher.wait_jit.title" = "Waiting for JIT";
+"launcher.wait_jit.message" = "Amethyst relies on Just-in-time compilation for Java to work at maximum performance.";
+"launcher.wait_jit_trollstore.message" = "If you still see this message, please enable URL Scheme in TrollStore.";
 
-"login.error.username.outOfRange" = "Το όνομα χρήστη πρέπει να είναι τουλάχιστον 3 χαρακτήρες και το πολύ 16 χαρακτήρες";
+"login.error.username.outOfRange" = "Username must be at least 3 characters and a maximum of 16 characters";
 
-"login.alert.field.username" = "Όνομα χρήστη";
+"login.alert.field.username" = "Username";
 
-"login.jit.checking" = "Έλεγχος για JIT";
-"login.jit.enabled" = "Το JIT ενεργοποιήθηκε";
-"login.jit.fail" = "Το JIT δεν μπόρεσε να ενεργοποιηθεί.";
-"login.jit.fail.title" = "Δεν ήταν δυνατή η ενεργοποίηση του JIT στη συσκευή σας.";
-"login.jit.fail.description" = "Καμία ενσωμάτωση δεν θα μπορούσε να χρησιμοποιηθεί για την αυτόματη ενεργοποίηση της JIT στη συσκευή σας, και τώρα πρέπει να ενεργοποιηθεί χειροκίνητα. Σφάλματα έχουν καταγραφεί στο latestlog.txt.";
-"login.jit.fail.description_unsupported" = "Έχει εντοπιστεί μια μη υποστηριζόμενη μέθοδος εγκατάστασης. Παρακαλώ επανεγκαταστήστε χρησιμοποιώντας μία από τις υποστηριζόμενες μεθόδους.";
+"login.jit.checking" = "Checking for JIT";
+"login.jit.enabled" = "JIT has been enabled";
+"login.jit.fail" = "JIT could not be enabled.";
+"login.jit.fail.title" = "JIT could not be enabled on your device.";
+"login.jit.fail.description" = "No integrations could be used to automatically enable JIT on your device, and it must now be enabled manually. Errors have been logged to latestlog.txt.";
+"login.jit.fail.description_unsupported" = "An unsupported installation method has been detected. Please reinstall using one of supported methods.";
 
 // Login buttons
-"login.menu.sendlogs" = "Αποστολή αρχείων καταγραφής";
-"login.option.add" = "Προσθήκη λογαριασμού";
+"login.menu.sendlogs" = "Send your logs";
+"login.option.add" = "Add account";
 "login.option.select" = "Επιλέξτε λογαριασμό";
-"login.option.demo" = "Λογαριασμός επίδειξης";
-"login.option.microsoft" = "Λογαριασμός Microsoft";
-"login.option.local" = "Τοπικός λογαριασμός";
+"login.option.demo" = "Demo account";
+"login.option.microsoft" = "Microsoft account";
+"login.option.local" = "Local account";
 
-"login.warn.title.legacy_device" = "Η επόμενη έκδοση του PojavLauncher δεν θα είναι συμβατή με αυτήν τη συσκευή.";
-"login.warn.message.legacy_device" = "Για να εκτελέσετε την επόμενη μεγάλη έκδοση, απαιτείται μια συσκευή ικανή να τρέχει iOS 14.";
-"login.warn.title.legacy_ios" = "Η επόμενη έκδοση του PojavLauncher θα απαιτήσει ενημέρωση του συστήματος.";
-"login.warn.message.legacy_ios" = "Για να εκτελέσετε την επόμενη μεγάλη έκδοση, απαιτείται μια συσκευή ικανή να τρέχει iOS 14.";
-"login.warn.title.limited_ram" = "Αυτή η συσκευή έχει περιορισμένη διαθέσιμη μνήμη.";
-"login.warn.message.limited_ram" = "Σας συνιστούμε να αφήσετε την αυτόματη δέσμευση μνήμης ενεργοποιημένη για να αποτραπούν αστάθεια και ζητήματα επιδόσεων.";
+"login.warn.title.legacy_device" = "The next release of Amethyst will not be compatible with this device.";
+"login.warn.message.legacy_device" = "To run the next major release, a device capable of running iOS 14 is required.";
+"login.warn.title.legacy_ios" = "The next release of Amethyst will require a system update.";
+"login.warn.message.legacy_ios" = "To run the next major release, this device needs to be running iOS 14 or later.";
+"login.warn.title.limited_ram" = "This device has a limited amount of memory available.";
+"login.warn.message.limited_ram" = "We recommend leaving auto RAM enabled to prevent instability and performance issues.";
 
-"login.warn.title.demomode" = "Ο λογαριασμός σας είναι Demo";
-"login.warn.message.demomode" = "Ως αντικατάσταση σε offline και τοπική λειτουργία, η δοκιμαστική λειτουργία θα σας επιτρέψει να συνδεθείτε σε έναν λογαριασμό Microsoft που δεν κατέχει το παιχνίδι και να παίξετε τη δοκιμαστική έκδοση Java, που εισήχθη στην 1.3.1 και νεότερα. Οι παλαιότερες εκδόσεις περιέχουν το πλήρες παιχνίδι, καθώς ο επίσημος εκκινητής δεν θέτει αυτούς τους περιορισμούς. Δείτε την ιστοσελίδα μας για να μάθετε περισσότερα σχετικά με αυτή τη μετάβαση από offline λειτουργία.";
+"login.warn.title.demomode" = "Your account is Demo";
+"login.warn.message.demomode" = "As a replacement to offline and local mode, demo mode will allow you to sign into a Microsoft account that does not own the game and play the Java Edition trial, introduced in 1.3.1 and newer versions. Older versions contain the full game, as the official launcher does not place these restrictions. See our website to learn more about this transition from offline mode.";
 
-"login.warn.title.localmode" = "Η λειτουργία χωρίς σύνδεση είναι τώρα σε Τοπική λειτουργία.";
-"login.warn.message.localmode" = "Μπορείς να συνεχίσεις να παίζεις εγκατεστημένες εκδόσεις, αλλά δεν μπορείς πλέον να κατεβάσεις το Minecraft χωρίς πληρωμένο λογαριασμό. Δεν θα παρέχεται υποστήριξη για ζητήματα με τοπικούς λογαριασμούς, ή άλλα μέσα για την απόκτηση του Minecraft.";
+"login.warn.title.localmode" = "Offline mode is now Local mode.";
+"login.warn.message.localmode" = "You can continue to play installed versions, but you can no longer download Minecraft without a paid account. No support will be provided for issues with local accounts, or other means of acquiring Minecraft.";
 
-"login.msa.error.xsts.noxboxacc" = "Ένα προφίλ Xbox δεν έχει καταχωρηθεί για αυτόν το λογαριασμό Microsoft. Βεβαιωθείτε ότι έχετε κάνει ένα προφίλ Xbox.\nΚωδικός σφάλματος: 2148916233";
-"login.msa.error.xsts.noxbox" = "Το Xbox Live δεν είναι διαθέσιμο στη χώρα σας.\nΚωδικός σφάλματος: 2148916235";
-"login.msa.error.xsts.krverify" = "Ο λογαριασμός σας πρέπει να επαληθευτεί από τους γονείς σας προτού μπορέσετε να συνεχίσετε.\nΚωδικός σφάλματος: 2148916236 ή 2148916237.";
-"login.msa.error.xsts.underage" = "Ο λογαριασμός σας πρέπει να συνδεθεί με γονικό λογαριασμό για να μπορέσετε να συνεχίσετε.\nΚωδικός σφάλματος: 2148916238";
+"login.msa.error.xsts.noxboxacc" = "An Xbox profile is not registered for this Microsoft account. Please make sure that you have made an Xbox profile.\nError code: 2148916233";
+"login.msa.error.xsts.noxbox" = "Xbox Live is currently unavailable in your country.\nError code: 2148916235";
+"login.msa.error.xsts.krverify" = "Your account needs to be verified by your parents before you can continue.\nError code: 2148916236 or 2148916237.";
+"login.msa.error.xsts.underage" = "Your account needs to be linked to a parent account before you can continue.\nError code: 2148916238";
 
-"login.msa.progress.acquireAccessToken" = "(1/5) Απόκτηση του διακριτικού πρόσβασης";
-"login.msa.progress.acquireXBLToken" = "(2/5) Απόκτηση του διακριτικού Xbox Live";
-"login.msa.progress.acquireXSTS" = "Απόκτηση XSTS";
-"login.msa.progress.acquireXboxProfile" = "(3/5) Απόκτηση του προφίλ Xbox";
-"login.msa.progress.acquireMCToken" = "(4/5) Απόκτηση του διακριτικού του Minecraft";
-"login.msa.progress.checkMCProfile" = "(5/5) Έλεγχος του προφίλ Minecraft";
+"login.msa.progress.acquireAccessToken" = "(1/5) Acquiring the Access token";
+"login.msa.progress.acquireXBLToken" = "(2/5) Acquiring the Xbox Live token";
+"login.msa.progress.acquireXSTS" = "Acquiring XSTS";
+"login.msa.progress.acquireXboxProfile" = "(3/5) Acquiring the Xbox profile";
+"login.msa.progress.acquireMCToken" = "(4/5) Acquiring the Minecraft token";
+"login.msa.progress.checkMCProfile" = "(5/5) Checking the Minecraft profile";
 
 "News" = "Νέα";
-"Profiles" = "Προφίλ";
+"Profiles" = "Profiles";
 "Settings" = "Ρυθμίσεις";
 
-"preference.section.general" = "Γενικές ρυθμίσεις";
-"preference.section.video" = "Ρυθμίσεις βίντεο και ήχου";
-"preference.section.footer.video" = "Η αυτόματη αποτύπωση επιτρέπει στο PojavLauncher να επιλέξει την καλύτερη επιλογή με βάση την έκδοση του Minecraft. Η μείωση της ανάλυσης μειώνει το φόρτο εργασίας GPU για καλύτερη απόδοση.";
-"preference.section.control" = "Προσαρμογή ελέγχου";
-"preference.section.debug" = "Ρυθμίσεις εντοπισμού σφαλμάτων UI";
-"preference.section.footer.debug" = "Ίσως χρειαστεί να επανεκκινήσετε τον εκκινητή για να τεθούν σε ισχύ οι αλλαγές.";
+"preference.section.general" = "General Settings";
+"preference.section.video" = "Video and Audio Settings";
+"preference.section.footer.video" = "Auto renderer allows Amethyst to choose the best option based on Minecraft version. Decreasing resolution reduces GPU workload for better performance.";
+"preference.section.control" = "Control customization";
+"preference.section.debug" = "UI Debugging settings";
+"preference.section.footer.debug" = "You may need to restart the launcher for changes to take effect.";
 //"preference.section.footer.control" = "";
 "preference.section.java" = "Java Tweaks";
 //"preference.section.footer.java" = "";
 
-"preference.title.confirm" = "Είστε σίγουρος/η;";
+"preference.title.confirm" = "Are you sure?";
 
 "preference.title.game_directory" = "Κατάλογος παιχνιδιού";
-"preference.title.confirm.delete_game_directory" = "Η παρουσία %@ θα διαγραφεί για πάντα και δεν μπορεί να αποκατασταθεί.";
-"preference.multidir.add_directory" = "προσθήκη καταλόγου παιχνιδιού";
+"preference.title.confirm.delete_game_directory" = "The instance %@ will be deleted forever and cannot be restored.";
+"preference.multidir.add_directory" = "add game directory";
 
-"preference.title.check_sha" = "Έλεγχος αρχείων μετά τη λήψη";
-"preference.detail.check_sha" = "Αυτή η επιλογή αναγκάζει τον εκκινητή να ελέγξει το hash του αρχείου αν είναι διαθέσιμο. Αποτρέπει τις κατεστραμμένες λήψεις.";
-"preference.title.cosmetica" = "Κάπες Cosmetica";
-"preference.detail.cosmetica" = "Ενεργοποιεί κάπες από τη Cosmetica (προηγουμένως Arc). Για περισσότερες πληροφορίες, παρακαλώ επισκεφθείτε την ιστοσελίδα https://cosmetica.cc. Απαιτείται το OptiFine";
-"preference.title.debug_logging" = "Καταγραφή εντοπισμού σφαλμάτων";
-"preference.detail.debug_logging" = "Καταγραφή εσωτερικών ρυθμίσεων και ενεργειών στο latestlog.txt. Αυτό βοηθά τους προγραμματιστές να βρουν προβλήματα ευκολότερα, αλλά το Minecraft μπορεί να τρέξει πιο αργά, καθώς τα αρχεία καταγραφής θα γράφονται πιο συχνά.";
-"preference.title.appicon" = "Ορισμός εικονιδίου εφαρμογής";
-"preference.detail.appicon" = "Σας επιτρέπει να επιλέξετε μεταξύ διαφορετικών εικονιδίων αρχικής οθόνης για το PojavLauncher.";
-"preference.title.appicon-default" = "Γνωστό PojavLauncher ανοιχτόχρωμο";
-"preference.title.appicon-dark" = "Γνωστό PojavLauncher σκουρόχρωμο";
-"preference.title.appicon-development" = "Περιφραγμένη Ανάπτυξη";
-"preference.title.hidden_sidebar" = "Απόκρυψη πλαϊνής γραμμής μενού από προεπιλογή";
-"preference.detail.hidden_sidebar" = "Σας επιτρέπει να αποκρύψετε την πλαϊνή μπάρα στο κύριο μενού από προεπιλογή και κατά την περιστροφή.";
+"preference.title.check_sha" = "Check files after downloading";
+"preference.detail.check_sha" = "This option forces launcher to check the file hash if it's available. Prevents broken downloads.";
+"preference.title.cosmetica" = "Cosmetica Capes";
+"preference.detail.cosmetica" = "Enable capes from Cosmetica (previously Arc). For more information please visit https://cosmetica.cc. Requires OptiFine";
+"preference.title.debug_logging" = "Debug logging";
+"preference.detail.debug_logging" = "Logs internal settings and actions to latestlog.txt. This helps the developers find issues easier, but Minecraft may run slower as the logs will be written to more often.";
+"preference.title.appicon" = "Set app icon";
+"preference.detail.appicon" = "Allows you to choose between different Home Screen icons for Amethyst.";
+"preference.title.appicon-default" = "Familiar Amethyst light";
+"preference.title.appicon-dark" = "Familiar Amethyst dark";
+"preference.title.appicon-development" = "Penciled Development";
+"preference.title.hidden_sidebar" = "Hide main menu sidebar by default";
+"preference.detail.hidden_sidebar" = "Allows you to hide the sidebar on the main menu by default and when rotating.";
 
-"preference.title.reset_warnings" = "Επαναφορά όλων των προειδοποιήσεων";
-"preference.title.done.reset_warnings" = "Όλες οι προειδοποιήσεις έχουν επανέλθει.";
+"preference.title.reset_warnings" = "Reset all warnings";
+"preference.title.done.reset_warnings" = "All warnings have been reset.";
 
-"preference.title.reset_settings" = "Επαναφορά όλων των ρυθμίσεων";
-"preference.title.confirm.reset_settings" = "Αυτό θα καταργήσει όλες τις προσαρμοσμένες προτιμήσεις σας, συμπεριλαμβανομένης της ανάλυσης, του μεγέθους του κουμπιού και των παραμέτρων Java.";
-"preference.title.done.reset_settings" = "Όλες οι προεπιλεγμένες ρυθμίσεις έχουν αποκατασταθεί.";
+"preference.title.reset_settings" = "Reset all settings";
+"preference.title.confirm.reset_settings" = "This will remove all of your custom preferences, including resolution, button size, and Java arguments.";
+"preference.title.done.reset_settings" = "All of the default settings have been restored.";
 
-"preference.title.erase_demo_data" = "Διαγραφή δεδομένων παιχνιδιού επίδειξης";
-"preference.title.confirm.erase_demo_data" = "Αυτό θα διαγράψει όλες τις εκδόσεις και τα δεδομένα που χρησιμοποιούνται για λογαριασμούς επίδειξης.";
-"preference.title.done.erase_demo_data" = "Όλα τα δεδομένα του παιχνιδιού Demo έχουν διαγραφεί.";
+"preference.title.erase_demo_data" = "Erase Demo game data";
+"preference.title.confirm.erase_demo_data" = "This will erase all Demo game versions and data used for Demo accounts.";
+"preference.title.done.erase_demo_data" = "All of the Demo game data has been erased.";
 
 "preference.title.renderer" = "Απόδοση";
 
-"preference.title.renderer.release.auto" = "Αυτόματο";
+"preference.title.renderer.release.auto" = "Auto";
 "preference.title.renderer.release.gl4es" = "holy gl4es";
-"preference.title.renderer.release.angle" = "ΓΩΝΙΑ";
+"preference.title.renderer.release.angle" = "ANGLE";
 "preference.title.renderer.release.zink" = "Zink";
 
-"preference.title.renderer.debug.auto" = "Auto: gl4es ή ANGLE";
+"preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
-"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - εξαγωγές OpenGL 3.2 (Βασικό Προφίλ, περιορισμένο)";
+"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - exports OpenGL 3.2 (Core Profile, limited)";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
 
-"preference.detail.renderer" = "Αλλάξτε τη μηχανή απόδοσης OpenGL για χρήση. Το Zink είναι προσωρινά απενεργοποιημένο στο iOS 16 και αργότερα για να εντοπιστούν προβλήματα.";
+"preference.detail.renderer" = "Change the OpenGL render engine to use. Zink is temporarily disabled on iOS 16 and later to diagnose issues.";
 
-"preference.title.resolution" = "Ανάλυση (%)";
-"preference.detail.resolution" = "Σας επιτρέπει να μειώσετε την ανάλυση του παιχνιδιού.";
-"preference.title.max_framerate" = "Μέγιστος αριθμός καρέ";
-"preference.detail.max_framerate" = "Σας επιτρέπει να περιορίσετε το πλαίσιο παιχνιδιού σε 60FPS στις οθόνες ProMotion.";
+"preference.title.resolution" = "Resolution (%)";
+"preference.detail.resolution" = "Allows you to decrease the game resolution.";
+"preference.title.max_framerate" = "Maximum framerate";
+"preference.detail.max_framerate" = "Allows you to limit the game framerate to 60FPS on ProMotion displays.";
 
-"preference.title.fullscreen_airplay" = "Πλήρης Οθόνη AirPlay";
-"preference.detail.fullscreen_airplay" = "Επιτρέπει την παρουσίαση του παραθύρου του παιχνιδιού πλήρους οθόνης στην εξωτερική οθόνη αντί να αντικατοπτρίζει τα πάντα στην οθόνη.";
-"preference.title.silence_other_audio" = "Παύση ήχου όταν ανοίγει το παιχνίδι";
-"preference.detail.silence_other_audio" = "Ενεργοποιήστε για να επιτρέψετε στο PojavLauncher να κάνει παύση ήχου από άλλες εφαρμογές, όπως η Μουσική, κατά την εκκίνηση του παιχνιδιού.";
-"preference.title.default_gamepad_ctrl" = "Διαμόρφωση χειριστηρίου";
-"preference.title.hardware_hide" = "Απόκρυψη στοιχείων ελέγχου όταν η συσκευή είναι συνδεδεμένη";
-"preference.detail.hardware_hide" = "Ενεργοποιήστε τη συμπεριφορά της αυτόματης απενεργοποίησης της επικάλυψης ελέγχου οθόνης όταν ένα χειριστήριο ποντικιού ή παιχνιδιού είναι συνδεδεμένο.";
-"preference.title.gesture_mouse" = "Χειρονομίες Ποντικιού";
-"preference.detail.gesture_mouse" = "Ενεργοποιεί χειρονομίες, όπως το πάτημα για τοποθέτηση μπλοκ, κρατήστε πατημένο για να σπάσει το μπλοκ, κύλιση με 2 δάχτυλα";
-"preference.title.gesture_hotbar" = "Χειρονομίες hotbar";
-"preference.detail.gesture_hotbar" = "Ενεργοποιεί χειρονομίες, όπως να αγγίξετε την υποδοχή hotbar, να ανταλλάξετε αντικείμενα μεταξύ των χεριών, να ρίξετε αντικείμενα";
-"preference.title.disable_haptics" = "Απενεργοποίηση απτικών στην οθόνη";
-"preference.title.press_duration" = "Διάρκεια παρατεταμένης πίεσης (ms)";
-"preference.detail.press_duration" = "Αλλαγή παρατεταμένου πατήματος καθυστέρηση ενεργοποίησης για την καταστροφή των μπλοκ και ρίξιμο αντικειμένων.";
-"preference.title.button_scale" = "Κλίμακα κουμπιών οθόνης (%)";
-"preference.detail.button_scale" = "Μεγάλωμα αν τα κουμπιά είναι πολύ μικρά, συνήθως απαιτούνται για τους χρήστες iPad.";
-"preference.title.mouse_scale" = "Κλιμάκωση ποντικιού (%)";
-"preference.detail.mouse_scale" = "Αλλαγή μεγέθους εικονικού ποντικιού";
-"preference.title.mouse_speed" = "Ταχύτητα ποντικιού (%)";
-"preference.detail.mouse_speed" = "Αλλάζει την ταχύτητα του εικονικού ποντικιού";
-"preference.title.virtmouse_enable" = "Εικονικό ποντίκι";
-"preference.detail.virtmouse_enable" = "Ενεργοποιήστε αυτή την επιλογή για να ξεκινήσετε με εικονικό ποντίκι";
-"preference.title.slideable_hotbar" = "Συρόμενο hotbar";
-"preference.detail.slideable_hotbar" = "Κάντε το hotbar slideable όπως ο τροχός του ποντικιού";
+"preference.title.performance_hud" = "Show Performance HUD";
+"preference.detail.performance_hud" = "When available, show the performance monitoring overlay.";
 
-"preference.title.gyroscope_enable" = "Ενεργοποίηση εξομάλυνσης γυροσκοπίου";
-"preference.detail.gyroscope_enable" = "Ενεργοποιώντας το, θα σας επιτρέψει να γυρίσετε τον χαρακτήρα σας μέσα στο παιχνίδι γυρίζοντας το τηλέφωνό σας";
-"preference.title.gyroscope_invert_x_axis" = "Αντιστροφή γυροσκοπίου αριστερά και δεξιά";
-"preference.detail.gyroscope_invert_x_axis" = "Αντιστρέφει τον άξονα Χ του γυροσκοπίου";
-"preference.title.gyroscope_sensitivity" = "Ευαισθησία ελέγχων γυροσκοπίου";
-"preference.detail.gyroscope_sensitivity" = "Προσαρμόστε την ευαισθησία των ελέγχων γυροσκοπίου";
+"preference.title.fullscreen_airplay" = "Fullscreen AirPlay";
+"preference.detail.fullscreen_airplay" = "Allows presenting fullscreen game window on the external display rather than mirroring everything on screen.";
+"preference.title.silence_other_audio" = "Pause audio when game opens";
+"preference.detail.silence_other_audio" = "Enable to allow Amethyst to pause audio from other apps, such as Music, when launching the game.";
+"preference.title.silence_with_switch" = "Disable audio with silent switch";
+"preference.detail.silence_with_switch" = "Enable to disable audio when Silent Mode is on. Headphones and external speakers are not affected.";
+"preference.title.allow_microphone" = "Allow microphone input";
+"preference.detail.allow_microphone" = "Enable this only if you are using voice chat mod. Silent switch option will be ignored, and audio quality from other apps will be affected.";
+"preference.title.default_gamepad_ctrl" = "Controller configuration";
+"preference.title.hardware_hide" = "Hide controls when hardware is connected";
+"preference.detail.hardware_hide" = "Enable the behaviour of automatically disabling the on-screen control overlay when a mouse or game controller is connected.";
+"preference.title.recording_hide" = "Hide controls from screen recording";
+"preference.detail.recording_hide" = "Hides controls from screenshot and screen recording while they remain visible on the screen.";
+"preference.title.gesture_mouse" = "Mouse gestures";
+"preference.detail.gesture_mouse" = "Enables gestures, such as tap to place block, hold to break block, scrolling with 2 fingers";
+"preference.title.gesture_hotbar" = "Hotbar gestures";
+"preference.detail.gesture_hotbar" = "Enables gestures, such as touch the hotbar slot, swap items between hand, throw items";
+"preference.title.disable_haptics" = "Disable on-screen haptics";
+"preference.title.press_duration" = "Long-press duration (ms)";
+"preference.detail.press_duration" = "Trigger press duration for destroying blocks and dropping items.";
+"preference.title.button_scale" = "On-screen button scale (%)";
+"preference.detail.button_scale" = "Upscale them if buttons are too small, usually needed for iPad users.";
+"preference.title.mouse_scale" = "Mouse scaling (%)";
+"preference.detail.mouse_scale" = "Change the size of the virtual mouse";
+"preference.title.mouse_speed" = "Mouse speed (%)";
+"preference.detail.mouse_speed" = "Change the speed of the virtual mouse";
+"preference.title.virtmouse_enable" = "Virtual mouse";
+"preference.detail.virtmouse_enable" = "Enable this option to start with virtual mouse on";
+"preference.title.slideable_hotbar" = "Slideable hotbar";
+"preference.detail.slideable_hotbar" = "Make the hotbar slideable like the mouse wheel";
 
-"preference.title.manage_runtime" = "Διαχείριση runtimes";
-"preference.title.confirm.delete_runtime" = "Το %@ θα διαγραφεί";
-"preference.manage_runtime.header.default" = "Προτιμώμενη έκδοση Java";
-"preference.manage_runtime.default.1165" = "1.16.5 και παλαιότερα";
-"preference.manage_runtime.default.117" = "1.17 και νεότερη";
-"preference.manage_runtime.footer.default" = "Το Minecraft 1.16.5 και παλαιότερο μπορεί να τρέξει με μια νεότερη έκδοση Java, ωστόσο η συμβατότητα με τα mods δεν είναι εγγυημένη. Εξωτερικά runtimes μπορούν να τοποθετηθούν στο φάκελο \"java_runtimes\". Η αλλαγή της έκδοσης Java για το “Execute .jar” τίθεται σε ισχύ μόνο εάν ο εγκαταστάτης δεν αναμένει νεότερη έκδοση Java.";
-"preference.manage_runtime.footer.java8" = "Αυτή είναι η προεπιλεγμένη έκδοση για το Minecraft 1.16.5 και κάτω.";
-"preference.manage_runtime.footer.java17" = "Αυτή είναι η προεπιλεγμένη έκδοση για το Minecraft 1.17. και πάνω.";
-"preference.manage_runtime.header.invalid" = "Μη έγκυρα runtimes";
+"preference.title.gyroscope_enable" = "Enable gyroscope controls";
+"preference.detail.gyroscope_enable" = "Enabling this will allow you to turn in game by turning your device";
+"preference.title.gyroscope_invert_x_axis" = "Invert gyroscope left and right";
+"preference.detail.gyroscope_invert_x_axis" = "Inverts the X-axis of the gyroscope";
+"preference.title.gyroscope_sensitivity" = "Gyroscope controls sensitivity";
+"preference.detail.gyroscope_sensitivity" = "Adjust the sensitivity of gyroscope controls";
+
+"preference.title.manage_runtime" = "Manage runtimes";
+"preference.title.confirm.delete_runtime" = "%@ will be deleted";
+"preference.manage_runtime.header.default" = "Preferred Java version";
+"preference.manage_runtime.default.1165" = "1.16.5 and older";
+"preference.manage_runtime.default.117" = "1.17 and newer";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 and older may run with a newer Java version, however compatibility with mods is not guaranteed. External runtimes can be placed in the “java_runtimes” folder. Changing Java version for “Execute .jar” only takes effect if the installer does not expect a newer Java version.";
+"preference.manage_runtime.footer.java8" = "This is the default version for Minecraft 1.16.5 and older.";
+"preference.manage_runtime.footer.java17" = "This is the default version for Minecraft 1.17 and newer.";
+"preference.manage_runtime.header.invalid" = "Invalid runtimes";
 
 "preference.title.java_args" = "JVM Εντολές εκκίνησης";
-"preference.detail.java_args" = "Μετακινήστε τις παραμέτρους στην Java κατά την εκκίνηση του Minecraft. Προσέξτε, αυτό μπορεί να προκαλέσει σφάλμα του παιχνιδιού αν δεν τροποποιηθεί σωστά.";
-"preference.placeholder.java_args" = "Καθορισμός παραμέτρων...";
-"preference.title.env_variables" = "Μεταβλητές περιβάλλοντος";
-"preference.detail.env_variables" = "Μετακινήστε τις παραμέτρους στην Java κατά την εκκίνηση του Minecraft. Προσέξτε, αυτό μπορεί να προκαλέσει σφάλμα του παιχνιδιού αν δεν τροποποιηθεί σωστά.";
-"preference.placeholder.env_variables" = "Καθορισμός μεταβλητών...";
+"preference.detail.java_args" = "Pass arguments to Java when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
+"preference.placeholder.java_args" = "Specify arguments...";
+"preference.title.env_variables" = "Environment variables";
+"preference.detail.env_variables" = "Set custom environment variables when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
+"preference.placeholder.env_variables" = "Specify variables...";
 "preference.title.auto_ram" = "Αυτόματη RAM";
 "preference.detail.auto_ram" = "Ενεργοποιεί τον αυτόματο ρυθμιστή RAM";
-"preference.warn.auto_ram" = "Η απενεργοποίηση αυτής της επιλογής σε μια συσκευή unjailbroken μπορεί να δημιουργήσει αστάθεια αν μεταβληθεί. Συνεχίστε με προσοχή.";
-"preference.title.allocated_memory" = "Κατανομή μνήμης (MB)";
+"preference.warn.auto_ram" = "Disabling this option on an unjailbroken device can create instability if altered. Proceed with caution.";
+"preference.title.allocated_memory" = "Memory allocation (MB)";
 "preference.detail.allocated_memory" = "Ελέγχει πόση μνήμη δίνεται στο Minecraft";
-"preference.warn.allocated_memory" = "Λόγω των περιορισμών στο ίδιο το λειτουργικό σύστημα, αυτή η επιλογή μπορεί να προκαλέσει αστάθεια σε αυτή και υψηλότερες τιμές.";
-"preference.title.custom_env" = "Μεταβλητές περιβάλλοντος";
-"preference.detail.custom_env" = "Αυτή η επιλογή είναι υπό κατασκευή. Δημιουργήστε και επεξεργαστείτε custom_env.txt εν τω μεταξύ.";
+"preference.warn.allocated_memory" = "Due to limitations in the operating system itself, this option may cause instability at this and higher values. Proceed with caution.";
+"preference.title.custom_env" = "Environment variables";
+"preference.detail.custom_env" = "This option is under construction. Create and edit custom_env.txt in the meantime.";
 
-"preference.title.debug_skip_wait_jit" = "Παράλειψη διαλόγου \"Αναμονή για JIT\"";
-"preference.detail.debug_skip_wait_jit" = "Αυτό δεν σας επιτρέπει να εκκινήσετε χωρίς JIT, αντίθετα, αυτό παραλείπει τον έλεγχο αποσφαλμάτωσης, επειδή ο έλεγχος αποτυγχάνει σε ορισμένα jailbreaks.";
-"preference.title.debug_ipad_ui" = "Ξεκλείδωμα iPadOS UI";
-"preference.detail.debug_ipad_ui" = "Ξεκλειδώστε αποκλειστικό περιβάλλον εργασίας iPad (ειδοποίηση, πληκτρολόγιο, κλπ.) εάν είναι ενεργοποιημένο ή iPhone εάν είναι απενεργοποιημένο.";
-"preference.title.debug_auto_correction" = "Αυτόματη διόρθωση";
-"preference.detail.debug_auto_correction" = "Ενεργοποίηση αυτόματης διόρθωσης κατά την πληκτρολόγηση κειμένου στο παιχνίδι.";
-"preference.title.debug_hide_home_indicator" = "Απόκρυψη ένδειξης αρχικής οθόνης";
-"preference.detail.debug_hide_home_indicator" = "Αυτό θα απενεργοποιήσει το κλείδωμα της εγχώριας ένδειξης. Θα πρέπει να χρησιμοποιήσετε την Κατευθυνόμενη Πρόσβαση για να αποκρύψετε και να κλειδώσετε την αρχική ένδειξη ταυτόχρονα.";
+"preference.title.debug_skip_wait_jit" = "Skip \"Waiting for JIT\" dialog";
+"preference.detail.debug_skip_wait_jit" = "This does not allow you to launch without JIT, instead this skips debugger check, because check fails on certain jailbreaks.";
+"preference.title.debug_ipad_ui" = "Unlock iPadOS UI";
+"preference.detail.debug_ipad_ui" = "Unlock iPad-exclusive UI (alert, keyboard, etc.) if enabled or iPhone UI if disabled.";
+"preference.title.debug_auto_correction" = "Auto correction";
+"preference.detail.debug_auto_correction" = "Enable auto correction when typing text in game.";
+"preference.title.debug_hide_home_indicator" = "Hide home indicator";
+"preference.detail.debug_hide_home_indicator" = "This will disable home indicator locking. You will need to use Guided Access to hide and lock home indicator at the same time.";
 
 "preference.profile.title.name" = "Όνομα";
-"preference.profile.title.loader_type" = "Τύπος φορτωτή";
-"preference.profile.title.loader_vendor" = "Προμηθευτής φορτωτή";
-"preference.profile.title.loader_version" = "Έκδοση φορτωτή";
-"preference.profile.title.version" = "Έκδοση";
-"preference.profile.title.version_type" = "Είδος έκδοσης";
-"preference.profile.title.default_touch_control" = "Στοιχεία ελέγχου αφής";
-"preference.profile.title.default_gamepad_control" = "Έλεγχοι Gamepad";
+"preference.profile.title.loader_type" = "Loader type";
+"preference.profile.title.loader_vendor" = "Loader vendor";
+"preference.profile.title.loader_version" = "Loader version";
+"preference.profile.title.version" = "Version";
+"preference.profile.title.version_type" = "Version type";
+"preference.profile.title.default_touch_control" = "Touch controls";
+"preference.profile.title.default_gamepad_control" = "Gamepad controls";
 
-"profile.error.name_exists" = "Προφίλ με αυτό το όνομα υπάρχει ήδη. Παρακαλούμε χρησιμοποιήστε άλλο όνομα.";
-"profile.section.instance" = "Ρυθμίσεις Instance παιχνιδιού";
-"profile.section.profiles" = "Προφίλ σε αυτό το Instance";
-"profile.title.create" = "Δημιουργία νέου προφίλ";
-"profile.title.separate_preference" = "Απομονωμένες ρυθμίσεις";
-"profile.detail.separate_preference" = "Ενεργοποιήστε αυτή την επιλογή για να απομονώσετε τυχόν αλλαγές που έγιναν στις ρυθμίσεις. Αν κάνετε επαναφορά σε καθολικές ρυθμίσεις θα ρυθμιστούν αυτές και όχι οι προκαθορισμένες.";
-"profile.title.install_fabric_quilt" = "Εγκατάσταση Fabric/Quilt";
+"profile.error.name_exists" = "A profile with that name already exists. Please use another name.";
+"profile.section.instance" = "Game Instance settings";
+"profile.section.profiles" = "Profiles in this instance";
+"profile.title.create" = "Create new profile";
+"profile.title.separate_preference" = "Isolate settings";
+"profile.detail.separate_preference" = "Enable this option to isolate any changes made in settings. Doing a Reset will restore to global settings instead of default settings.";
+"profile.title.install_fabric_quilt" = "Install Fabric/Quilt";
 
-"controller_configurator.title.current" = "Αρχείο ρυθμίσεων Gamepad";
+"controller_configurator.title.current" = "Gamepad configuration file";
 "controller_configurator.title.type.xbox" = "Xbox";
 "controller_configurator.title.type.playstation" = "PlayStation";
 
-"controller_configurator.xbox.title.bumper_left" = "Αριστερό μπροστινό κουμπί";
-"controller_configurator.xbox.title.bumper_right" = "Δεξιό μπροστινό κουμπί";
-"controller_configurator.xbox.title.trigger_left" = "Αριστερή σκανδάλη";
-"controller_configurator.xbox.title.trigger_right" = "Δεξιά σκανδάλη";
-"controller_configurator.xbox.title.named_back" = "Οδηγός";
-"controller_configurator.xbox.title.named_start" = "Μενού";
+"controller_configurator.xbox.title.bumper_left" = "Left bumper";
+"controller_configurator.xbox.title.bumper_right" = "Right bumper";
+"controller_configurator.xbox.title.trigger_left" = "Left trigger";
+"controller_configurator.xbox.title.trigger_right" = "Right trigger";
+"controller_configurator.xbox.title.named_back" = "Guide";
+"controller_configurator.xbox.title.named_start" = "Menu";
 "controller_configurator.xbox.title.named_a" = "A";
 "controller_configurator.xbox.title.named_b" = "B";
 "controller_configurator.xbox.title.named_x" = "X";
 "controller_configurator.xbox.title.named_y" = "Y";
-"controller_configurator.xbox.title.dpad_up" = "Πάνω";
-"controller_configurator.xbox.title.dpad_down" = "Κάτω";
-"controller_configurator.xbox.title.dpad_left" = "Αριστερά";
-"controller_configurator.xbox.title.dpad_right" = "Δεξιά";
-"controller_configurator.xbox.title.thumb_left" = "Αριστερό κλικ αντίχειρα";
-"controller_configurator.xbox.title.thumb_right" = "Δεξί κλικ αντίχειρα";
+"controller_configurator.xbox.title.dpad_up" = "Up";
+"controller_configurator.xbox.title.dpad_down" = "Down";
+"controller_configurator.xbox.title.dpad_left" = "Left";
+"controller_configurator.xbox.title.dpad_right" = "Right";
+"controller_configurator.xbox.title.thumb_left" = "Left thumbstick click";
+"controller_configurator.xbox.title.thumb_right" = "Right thumbstick click";
 
 "controller_configurator.playstation.title.bumper_left" = "L1";
 "controller_configurator.playstation.title.bumper_right" = "R1";
 "controller_configurator.playstation.title.trigger_left" = "L2";
 "controller_configurator.playstation.title.trigger_right" = "R2";
-"controller_configurator.playstation.title.named_back" = "Επιλέξτε";
-"controller_configurator.playstation.title.named_start" = "Έναρξη";
-"controller_configurator.playstation.title.named_a" = "Σταυρός";
-"controller_configurator.playstation.title.named_b" = "Κύκλος";
-"controller_configurator.playstation.title.named_x" = "Τετράγωνο";
-"controller_configurator.playstation.title.named_y" = "Τρίγωνο";
-"controller_configurator.playstation.title.dpad_up" = "Πάνω";
-"controller_configurator.playstation.title.dpad_down" = "Κάτω";
-"controller_configurator.playstation.title.dpad_left" = "Αριστερά";
-"controller_configurator.playstation.title.dpad_right" = "Δεξιά";
+"controller_configurator.playstation.title.named_back" = "Select";
+"controller_configurator.playstation.title.named_start" = "Start";
+"controller_configurator.playstation.title.named_a" = "Cross";
+"controller_configurator.playstation.title.named_b" = "Circle";
+"controller_configurator.playstation.title.named_x" = "Square";
+"controller_configurator.playstation.title.named_y" = "Triangle";
+"controller_configurator.playstation.title.dpad_up" = "Up";
+"controller_configurator.playstation.title.dpad_down" = "Down";
+"controller_configurator.playstation.title.dpad_left" = "Left";
+"controller_configurator.playstation.title.dpad_right" = "Right";
 "controller_configurator.playstation.title.thumb_left" = "L3";
 "controller_configurator.playstation.title.thumb_right" = "R3";
 
-"controller_configurator.section.config_files" = "Τρέχουσα διαμόρφωση αρχείου";
-"controller_configurator.section.game_mappings" = "Χαρτογραφήσεις παιχνιδιού";
-"controller_configurator.section.footer.game_mappings" = "Δεσμοί όταν το ποντίκι είναι κλειδωμένο στο παιχνίδι.";
-"controller_configurator.section.menu_mappings" = "Χαρτογραφήσεις μενού";
-"controller_configurator.section.footer.menu_mappings" = "Δεσμοί όταν το ποντίκι δεν είναι κλειδωμένο, όπως στην οθόνη τίτλου ή στο μενού παύσης.";
-"controller_configurator.section.controller_style" = "Τύπος χειριστηρίου";
-"controller_configurator.section.footer.controller_style" = "Εμφάνιση διαφορετικών ονομάτων κουμπιών ελεγκτή σε αυτό το ρυθμιστή.";
+"controller_configurator.section.config_files" = "Current configuration file";
+"controller_configurator.section.game_mappings" = "Game mappings";
+"controller_configurator.section.footer.game_mappings" = "Bindings when the mouse is locked in game.";
+"controller_configurator.section.menu_mappings" = "Menu mappings";
+"controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
+"controller_configurator.section.controller_style" = "Controller type";
+"controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
