@@ -14,14 +14,14 @@
 
 // The play button
 "Play" = "Jugar";
-"Details" = "Detalles";
+"Details" = "Details";
 
 // Version categories
 "Installed" = "Instalada";
 "Snapshot" = "Snapshots";
 "Releases" = "Versiones lanzadas";
-"Unstable" = "Inestable";
-"Old-beta" = "Beta";
+"Unstable" = "Unstable";
+"Old-beta" = "Betas";
 "Old-alpha" = "Alphas";
 
 // Custom controls
@@ -31,24 +31,24 @@
 "Remove" = "Eliminar";
 "Resize" = "Cambiar tamaño";
 // Visibility
-"Always" = "Siempre";
-"In game" = "En el juego";
-"In menu" = "En el Menú";
+"Always" = "Always";
+"In game" = "In game";
+"In menu" = "In menu";
 
-"custom_controls.button_edit.forward_lock" = "Bloqueo hacia adelante";
+"custom_controls.button_edit.forward_lock" = "Forward lock";
 "custom_controls.button_edit.name" = "Nombre";
 "custom_controls.button_edit.size" = "Tamaño";
-"custom_controls.button_edit.mapping" = "Mapeo";
+"custom_controls.button_edit.mapping" = "Mapeado";
 "custom_controls.button_edit.orientation" = "Orientación";
 "custom_controls.button_edit.toggleable" = "Activable";
-"custom_controls.button_edit.mouse_pass" = "Paso del ratón";
+"custom_controls.button_edit.mouse_pass" = "Mouse pass";
 "custom_controls.button_edit.swipeable" = "Deslizable";
 "custom_controls.button_edit.bg_color" = "Color de fondo";
-"custom_controls.button_edit.stroke_width" = "Ancho del trazo (dp)";
+"custom_controls.button_edit.stroke_width" = "Stroke width (dp)";
 "custom_controls.button_edit.stroke_color" = "Color del trazo";
 "custom_controls.button_edit.corner_radius" = "Radio de las esquinas (%)";
 "custom_controls.button_edit.opacity" = "Opacidad (%)";
-"custom_controls.button_edit.visibility" = "Visibilidad";
+"custom_controls.button_edit.visibility" = "Visibility";
 
 "custom_controls.button_menu.add_subbutton" = "Añadir sub-botón";
 "custom_controls.control_menu.discard_changes" = "Descartar cambios";
@@ -62,24 +62,24 @@
 "custom_controls.control_menu.safe_area" = "Área segura";
 "custom_controls.control_menu.add_button" = "Añadir botón";
 "custom_controls.control_menu.add_drawer" = "Añadir Cajón";
-"custom_controls.control_menu.add_joystick" = "Añadir joystick";
-"custom_controls.error.incompatible" = "Esta versión de control (código %d) no está implementada en esta compilación del launcher.";
+"custom_controls.control_menu.add_joystick" = "Add joystick";
+"custom_controls.error.incompatible" = "This control version (code %d) is not implemented in this launcher build.";
 "custom_controls.hint" = "Mantenga pulsado en cualquier lugar de la pantalla para más opciones";
 
-"init.migrateDir" = "La carpeta de PojavLauncher ahora está en %@. Todos tus datos han sido movidos a esa nueva ubicación.";
+"init.migrateDir" = "La carpeta de Amethyst ahora está en %@. Todos tus datos han sido movidos a esa nueva ubicación.";
 
-"java.error.missing_main_class" = "%@ no tiene un atributo de clase principal. Si se trata de un mod, ponlo en la carpeta \"mods\" de su instancia seleccionada.";
-"java.error.missing_runtime" = "%@ requiere Java %d o posterior para ejecutarse. Por favor, instalalo primero y selecciónalo en los ajustes.";
+"java.error.missing_main_class" = "%@ is missing main class attribute. If this is a mod, put it into the “mods” folder of your selected instance.";
+"java.error.missing_runtime" = "%@ requires Java %d or later to run. Please install it first and specify it in Manage Runtimes.";
 
-"launcher.mcl.downloading_file" = "Descargando %@";
-"launcher.mcl.error_download" = "Error al descargar %@: %@";
+"launcher.mcl.downloading_file" = "Downloading %@";
+"launcher.mcl.error_download" = "Failed to download %@: %@";
 
 "launcher.menu.custom_controls" = "Controles personalizados";
-"launcher.menu.execute_jar" = "Ejecutar .jar";
+"launcher.menu.execute_jar" = "Execute .jar";
 
 "launcher.wait_jit.title" = "Esperando por JIT";
-"launcher.wait_jit.message" = "PojavLauncher utiliza la compilación Just-in-time para que Java funcione con el máximo rendimiento.";
-"launcher.wait_jit_trollstore.message" = "Si aún ves este mensaje, por favor activa el Esquema de URL en TrollStore.";
+"launcher.wait_jit.message" = "Amethyst utiliza la compilación Just-in-time para que Java funcione con el máximo rendimiento.";
+"launcher.wait_jit_trollstore.message" = "If you still see this message, please enable URL Scheme in TrollStore.";
 
 "login.error.username.outOfRange" = "El nombre de usuario debe tener al menos 3 caracteres y un máximo de 16 caracteres";
 
@@ -87,31 +87,31 @@
 
 "login.jit.checking" = "Buscando JIT";
 "login.jit.enabled" = "JIT ha sido habilitado";
-"login.jit.fail" = "JIT no pudo ser activado.";
-"login.jit.fail.title" = "JIT no pudo ser activado en tu dispositivo.";
-"login.jit.fail.description" = "No se han podido utilizar integraciones para habilitar JIT automáticamente en su dispositivo y ahora debe ser habilitado manualmente. Los errores han sido registrados en latestlog.txt.";
-"login.jit.fail.description_unsupported" = "Se ha detectado un método de instalación no compatible. Por favor, reinstala utilizando uno de los métodos soportados.";
+"login.jit.fail" = "JIT could not be enabled.";
+"login.jit.fail.title" = "JIT could not be enabled on your device.";
+"login.jit.fail.description" = "No integrations could be used to automatically enable JIT on your device, and it must now be enabled manually. Errors have been logged to latestlog.txt.";
+"login.jit.fail.description_unsupported" = "An unsupported installation method has been detected. Please reinstall using one of supported methods.";
 
 // Login buttons
 "login.menu.sendlogs" = "Envía tus logs";
-"login.option.add" = "Añadir cuenta";
+"login.option.add" = "Add account";
 "login.option.select" = "Seleccione una cuenta";
-"login.option.demo" = "Cuenta demo";
+"login.option.demo" = "Demo account";
 "login.option.microsoft" = "Cuenta de Microsoft";
 "login.option.local" = "Cuenta local";
 
-"login.warn.title.legacy_device" = "La próxima versión de PojavLauncher no será compatible con este dispositivo.";
-"login.warn.message.legacy_device" = "Para ejecutar la próxima versión mayor, se requiere un dispositivo capaz de ejecutar iOS 14.";
-"login.warn.title.legacy_ios" = "La próxima versión de PojavLauncher requerirá una actualización del sistema.";
-"login.warn.message.legacy_ios" = "Para ejecutar la próxima versión mayor, este dispositivo necesita estar ejecutando iOS 14 o posterior.";
-"login.warn.title.limited_ram" = "Este dispositivo tiene una cantidad limitada de memoria disponible.";
-"login.warn.message.limited_ram" = "Recomendamos dejar la RAM automática habilitada para prevenir problemas de inestabilidad y rendimiento.";
+"login.warn.title.legacy_device" = "The next release of Amethyst will not be compatible with this device.";
+"login.warn.message.legacy_device" = "To run the next major release, a device capable of running iOS 14 is required.";
+"login.warn.title.legacy_ios" = "The next release of Amethyst will require a system update.";
+"login.warn.message.legacy_ios" = "To run the next major release, this device needs to be running iOS 14 or later.";
+"login.warn.title.limited_ram" = "This device has a limited amount of memory available.";
+"login.warn.message.limited_ram" = "We recommend leaving auto RAM enabled to prevent instability and performance issues.";
 
-"login.warn.title.demomode" = "Tu cuenta es una demo";
+"login.warn.title.demomode" = "Your account is Demo";
 "login.warn.message.demomode" = "Como reemplazo del modo offline y el modo local, el modo demo te permitirá iniciar sesión en una cuenta de Microsoft que no tenga el juego para jugar a las trials de Java Edition, introducido en la versión 1.3.1 y versiones nuevas. Versiones anteriores a estas tienen acceso al juego entero, porque el launcher oficial no contiene estas restricciones. Ve a nuestro sitio web para saber más sobre esta transición de el modo offline.";
 
 "login.warn.title.localmode" = "El modo offline ahora es el modo local.";
-"login.warn.message.localmode" = "Puedes seguir jugando versiones ya instaladas, pero ya no puedes descargar Minecraft sin una cuenta de paga. No habrá soporte a problemas con las cuentas locales ni otros medios para adquirir Minecraft.";
+"login.warn.message.localmode" = "You can continue to play installed versions, but you can no longer download Minecraft without a paid account. No support will be provided for issues with local accounts, or other means of acquiring Minecraft.";
 
 "login.msa.error.xsts.noxboxacc" = "Esta cuenta de Microsoft no poseé un perfil de Xbox. Por favor, asegúrate de haber creado un perfil de Xbox en esta cuenta.\nCódigo de error: 2148916233";
 "login.msa.error.xsts.noxbox" = "Xbox Live no está disponible actualmente en tu país.\nCódigo de error: 2148916235";
@@ -126,15 +126,15 @@
 "login.msa.progress.checkMCProfile" = "(5/5) Comprobando el perfil de Minecraft";
 
 "News" = "Noticias";
-"Profiles" = "Perfiles";
+"Profiles" = "Profiles";
 "Settings" = "Ajustes";
 
 "preference.section.general" = "Configuración general";
 "preference.section.video" = "Configuración de Vídeo";
-"preference.section.footer.video" = "El renderizador automático permite a PojavLauncher elegir la mejor opción basada en la versión de Minecraft. La reducción de la resolución reduce la carga para la GPU para un mejor rendimiento.";
+"preference.section.footer.video" = "Auto renderer allows Amethyst to choose the best option based on Minecraft version. Decreasing resolution reduces GPU workload for better performance.";
 "preference.section.control" = "Personalización del control";
-"preference.section.debug" = "Ajustes de depuración de interfaz";
-"preference.section.footer.debug" = "Quizás sea necesario reiniciar el launcher para que todos los cambios tengan efecto.";
+"preference.section.debug" = "UI Debugging settings";
+"preference.section.footer.debug" = "Aparte de el debugging, estas opciones pueden ser útiles para los controles personalizados. Es posible que tengas que reiniciar el launcher para que los cambios tengan efecto.";
 //"preference.section.footer.control" = "";
 "preference.section.java" = "Ajustes de Java";
 //"preference.section.footer.java" = "";
@@ -152,12 +152,12 @@
 "preference.title.debug_logging" = "Registro de depuración";
 "preference.detail.debug_logging" = "Registra las configuraciones y acciones internas en latestlog.txt. Esto ayuda a los desarrolladores a encontrar problemas más fácilmente, pero es posible que el juego sea más lento, ya que los registros serán escritos con más frecuencia.";
 "preference.title.appicon" = "Establecer icono del app";
-"preference.detail.appicon" = "Le permite elegir entre diferentes iconos de PojavLauncher para tu pantalla de inicio.";
-"preference.title.appicon-default" = "PojavLauncher clásico claro";
-"preference.title.appicon-dark" = "PojavLauncher clásico oscuro";
-"preference.title.appicon-development" = "Desarrollo escrito";
-"preference.title.hidden_sidebar" = "Oculta la barra lateral del menú principal por defecto";
-"preference.detail.hidden_sidebar" = "Permite ocultar la barra lateral del menú principal por defecto y al girar.";
+"preference.detail.appicon" = "Le permite elegir entre diferentes iconos de Amethyst para tu pantalla de inicio.";
+"preference.title.appicon-default" = "Amethyst clásico claro";
+"preference.title.appicon-dark" = "Amethyst clásico oscuro";
+"preference.title.appicon-development" = "Penciled Development";
+"preference.title.hidden_sidebar" = "Hide main menu sidebar by default";
+"preference.detail.hidden_sidebar" = "Allows you to hide the sidebar on the main menu by default and when rotating.";
 
 "preference.title.reset_warnings" = "Reiniciar todas las advertencias";
 "preference.title.done.reset_warnings" = "Todas las advertencias han sido reiniciadas.";
@@ -166,9 +166,9 @@
 "preference.title.confirm.reset_settings" = "Esto va a remover todas tus configuraciones, incluyendo resolución, tamaño de botones y argumentos de Java.";
 "preference.title.done.reset_settings" = "Todas las configuraciones predeterminadas han sido restauradas.";
 
-"preference.title.erase_demo_data" = "Borrar datos de la demo del juego";
-"preference.title.confirm.erase_demo_data" = "Esto borrará todas las versiones Demo del juego y los datos utilizados para las cuentas Demo.";
-"preference.title.done.erase_demo_data" = "Todos los datos de la Demo han sido borrados.";
+"preference.title.erase_demo_data" = "Erase Demo game data";
+"preference.title.confirm.erase_demo_data" = "This will erase all Demo game versions and data used for Demo accounts.";
+"preference.title.done.erase_demo_data" = "All of the Demo game data has been erased.";
 
 "preference.title.renderer" = "Renderizador";
 
@@ -186,30 +186,32 @@
 
 "preference.title.resolution" = "Resolución (%)";
 "preference.detail.resolution" = "Permite reducir la resolución del juego.";
-"preference.title.max_framerate" = "FPS máximos";
-"preference.detail.max_framerate" = "Te permite limitar el juego a 60FPS en pantallas ProMotion.";
+"preference.title.max_framerate" = "Maximum framerate";
+"preference.detail.max_framerate" = "Allows you to limit the game framerate to 60FPS on ProMotion displays.";
 
-"preference.title.performance_hud" = "Mostrar HUD de rendimiento";
-"preference.detail.performance_hud" = "Cuando esté disponible, mostrar la superposición del monitoreo del rendimiento.";
+"preference.title.performance_hud" = "Show Performance HUD";
+"preference.detail.performance_hud" = "When available, show the performance monitoring overlay.";
 
 "preference.title.fullscreen_airplay" = "AirPlay en pantalla completa";
 "preference.detail.fullscreen_airplay" = "Permite presentar la ventana de juego a pantalla completa en la pantalla externa en lugar de reflejar todo en la pantalla interna.";
-"preference.title.silence_other_audio" = "Pausar audio al abrir el juego";
-"preference.detail.silence_other_audio" = "Actívalo para permitir a PojavLauncher pausar el audio de otras aplicaciones, como la música, al iniciar el juego.";
-"preference.title.silence_with_switch" = "Desactivar el audio con el interruptor silencioso y denegar la entrada del micrófono";
-"preference.detail.silence_with_switch" = "Actívalo para desactivar el audio cuando el modo silencioso está encendido, y denegar la entrada del micrófono. Los auriculares y los altavoces externos no se ven afectados.";
-"preference.title.default_gamepad_ctrl" = "Configuración del mando";
-"preference.title.hardware_hide" = "Ocultar controles cuando el hardware está conectado";
-"preference.detail.hardware_hide" = "Activa el comportamiento de desactivar automáticamente los controles en pantalla cuando un ratón o un mando están conectados.";
-"preference.title.recording_hide" = "Ocultar controles de la grabación de pantalla";
-"preference.detail.recording_hide" = "Oculta los controles de la captura y grabación de pantalla mientras permanezcna visibles en la pantalla.";
-"preference.title.gesture_mouse" = "Gestos de ratón";
-"preference.detail.gesture_mouse" = "Habilita gestos, como tocar para colocar bloques, mantener para romper bloques, desplazar con 2 dedos";
-"preference.title.gesture_hotbar" = "Gestos de la hotbar";
-"preference.detail.gesture_hotbar" = "Habilita gestos, como tocar la ranura de la hotbar, intercambiar objetos entre manos, tirar objetos";
-"preference.title.disable_haptics" = "Desactivar hápticos en pantalla";
+"preference.title.silence_other_audio" = "Pause audio when game opens";
+"preference.detail.silence_other_audio" = "Enable to allow Amethyst to pause audio from other apps, such as Music, when launching the game.";
+"preference.title.silence_with_switch" = "Disable audio with silent switch";
+"preference.detail.silence_with_switch" = "Enable to disable audio when Silent Mode is on. Headphones and external speakers are not affected.";
+"preference.title.allow_microphone" = "Allow microphone input";
+"preference.detail.allow_microphone" = "Enable this only if you are using voice chat mod. Silent switch option will be ignored, and audio quality from other apps will be affected.";
+"preference.title.default_gamepad_ctrl" = "Controller configuration";
+"preference.title.hardware_hide" = "Hide controls when hardware is connected";
+"preference.detail.hardware_hide" = "Enable the behaviour of automatically disabling the on-screen control overlay when a mouse or game controller is connected.";
+"preference.title.recording_hide" = "Hide controls from screen recording";
+"preference.detail.recording_hide" = "Hides controls from screenshot and screen recording while they remain visible on the screen.";
+"preference.title.gesture_mouse" = "Mouse gestures";
+"preference.detail.gesture_mouse" = "Enables gestures, such as tap to place block, hold to break block, scrolling with 2 fingers";
+"preference.title.gesture_hotbar" = "Hotbar gestures";
+"preference.detail.gesture_hotbar" = "Enables gestures, such as touch the hotbar slot, swap items between hand, throw items";
+"preference.title.disable_haptics" = "Disable on-screen haptics";
 "preference.title.press_duration" = "Duración para pulsado largo (ms)";
-"preference.detail.press_duration" = "Cambia la duración del retraso para romper bloques y tirar objetos.";
+"preference.detail.press_duration" = "Trigger press duration for destroying blocks and dropping items.";
 "preference.title.button_scale" = "Escala de botones en pantalla (%)";
 "preference.detail.button_scale" = "Sube de tamaño a los botones si resultan ser muy pequeños, es usualmente necesario para usuarios de iPad.";
 "preference.title.mouse_scale" = "Tamaño del ratón (%)";
@@ -221,37 +223,37 @@
 "preference.title.slideable_hotbar" = "Hotbar deslizable";
 "preference.detail.slideable_hotbar" = "Permite deslizarse en el hotbar como la rueda del ratón";
 
-"preference.title.gyroscope_enable" = "Habilitar controles de giroscopio";
-"preference.detail.gyroscope_enable" = "Activar esto te permitirá girar la camara en el juego girando tu teléfono";
-"preference.title.gyroscope_invert_x_axis" = "Invertir izquierda y derecha en el giroscopio";
-"preference.detail.gyroscope_invert_x_axis" = "Invierte el eje X del giroscopio";
-"preference.title.gyroscope_sensitivity" = "Sensibilidad del giroscopio";
-"preference.detail.gyroscope_sensitivity" = "Ajustar la sensibilidad de los controles por giroscopio";
+"preference.title.gyroscope_enable" = "Enable gyroscope controls";
+"preference.detail.gyroscope_enable" = "Enabling this will allow you to turn in game by turning your device";
+"preference.title.gyroscope_invert_x_axis" = "Invert gyroscope left and right";
+"preference.detail.gyroscope_invert_x_axis" = "Inverts the X-axis of the gyroscope";
+"preference.title.gyroscope_sensitivity" = "Gyroscope controls sensitivity";
+"preference.detail.gyroscope_sensitivity" = "Adjust the sensitivity of gyroscope controls";
 
-"preference.title.manage_runtime" = "Administrar runtimes";
-"preference.title.confirm.delete_runtime" = "%@ será eliminado";
-"preference.manage_runtime.header.default" = "Versión de Java preferida";
-"preference.manage_runtime.default.1165" = "1.16.5 y anteriores";
-"preference.manage_runtime.default.117" = "1.17 y más recientes";
-"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 y anteriores pueden ejecutarse con una versión más reciente de Java, sin embargo la compatibilidad con mods no está garantizada. Los runtimes externos pueden colocarse en la carpeta “java_runtimes”. Cambiar la versión de Java para “Ejecutar .jar” sólo tendrá efecto si el instalador no espera una versión más reciente de Java.";
-"preference.manage_runtime.footer.java8" = "Esta es la versión predeterminada para Minecraft 1.16.5 y posteriores.";
-"preference.manage_runtime.footer.java17" = "Esta es la versión predeterminada para Minecraft 1.17. y superiores.";
-"preference.manage_runtime.header.invalid" = "Runtimes inválidos";
+"preference.title.manage_runtime" = "Manage runtimes";
+"preference.title.confirm.delete_runtime" = "%@ will be deleted";
+"preference.manage_runtime.header.default" = "Preferred Java version";
+"preference.manage_runtime.default.1165" = "1.16.5 and older";
+"preference.manage_runtime.default.117" = "1.17 and newer";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 and older may run with a newer Java version, however compatibility with mods is not guaranteed. External runtimes can be placed in the “java_runtimes” folder. Changing Java version for “Execute .jar” only takes effect if the installer does not expect a newer Java version.";
+"preference.manage_runtime.footer.java8" = "This is the default version for Minecraft 1.16.5 and older.";
+"preference.manage_runtime.footer.java17" = "This is the default version for Minecraft 1.17 and newer.";
+"preference.manage_runtime.header.invalid" = "Invalid runtimes";
 
-"preference.title.java_args" = "Argumentos de lanzamiento JVM";
-"preference.detail.java_args" = "Pasa los argumentos a Java al iniciar Minecraft. Ten cuidado, esto puede hacer que el juego se cierre si se modifica incorrectamente.";
+"preference.title.java_args" = "JRE Argumentos de lanzamiento";
+"preference.detail.java_args" = "Pass arguments to Java when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
 "preference.placeholder.java_args" = "Especifica argumentos...";
-"preference.title.env_variables" = "Variables de entorno";
-"preference.detail.env_variables" = "Establece variables de entorno personalizadas al iniciar Minecraft. Ten cuidado, esto puede hacer que el juego se cierre si se modifica incorrectamente.";
-"preference.placeholder.env_variables" = "Especificar variables...";
+"preference.title.env_variables" = "Environment variables";
+"preference.detail.env_variables" = "Set custom environment variables when launching Minecraft. Be careful, this can make the game crash if modified incorrectly.";
+"preference.placeholder.env_variables" = "Specify variables...";
 "preference.title.auto_ram" = "Auto RAM";
 "preference.detail.auto_ram" = "Habilita el ajuste automático de RAM";
 "preference.warn.auto_ram" = "Deshabilitar esta opción para un dispositivo sin JailBreak puede crear inestabilidad si es alterada. Procede con cuidado.";
 "preference.title.allocated_memory" = "Cantidad de memoria (MB)";
 "preference.detail.allocated_memory" = "Controla cuánta memoria se le da a Minecraft";
 "preference.warn.allocated_memory" = "Debido a limitaciones con el sistema operativo en sí, esta opción puede causar inestabilidad en esta y mayores cantidades. Procede con cuidado.";
-"preference.title.custom_env" = "Variables de entorno";
-"preference.detail.custom_env" = "Esta opción está en construcción. Crea y edita custom_env.txt mientras tanto.";
+"preference.title.custom_env" = "Environment variables";
+"preference.detail.custom_env" = "This option is under construction. Create and edit custom_env.txt in the meantime.";
 
 "preference.title.debug_skip_wait_jit" = "Omitir diálogo \"Esperando por JIT\"";
 "preference.detail.debug_skip_wait_jit" = "Esto no le permite jugar sin JIT, solo la omite la comprobación del depurador, porque la comprobación falla en ciertas jailbreaks.";
@@ -259,68 +261,68 @@
 "preference.detail.debug_ipad_ui" = "Activa la interfaz exclusiva de iPad (alerta, teclado, etc.) si está opción está habilitada, o usar la interfaz de iPhone si está opción está desactivada.";
 "preference.title.debug_auto_correction" = "Corrección automática";
 "preference.detail.debug_auto_correction" = "Activar corrección automática al escribir texto en el juego.";
-"preference.title.debug_hide_home_indicator" = "Esconder indicador de inicio";
-"preference.detail.debug_hide_home_indicator" = "Esto desactivará el bloqueo del indicador de inicio. Necesitarás utilizar Acceso Guiado para ocultar y bloquear el indicador de inicio al mismo tiempo.";
+"preference.title.debug_hide_home_indicator" = "Hide home indicator";
+"preference.detail.debug_hide_home_indicator" = "This will disable home indicator locking. You will need to use Guided Access to hide and lock home indicator at the same time.";
 
 "preference.profile.title.name" = "Nombre";
-"preference.profile.title.loader_type" = "Tipo de loader";
-"preference.profile.title.loader_vendor" = "Desarollador del loader";
-"preference.profile.title.loader_version" = "Versión del loader";
-"preference.profile.title.version" = "Versión";
-"preference.profile.title.version_type" = "Tipo de versión";
-"preference.profile.title.default_touch_control" = "Controles táctiles";
-"preference.profile.title.default_gamepad_control" = "Controles de mando";
+"preference.profile.title.loader_type" = "Loader type";
+"preference.profile.title.loader_vendor" = "Loader vendor";
+"preference.profile.title.loader_version" = "Loader version";
+"preference.profile.title.version" = "Version";
+"preference.profile.title.version_type" = "Version type";
+"preference.profile.title.default_touch_control" = "Touch controls";
+"preference.profile.title.default_gamepad_control" = "Gamepad controls";
 
-"profile.error.name_exists" = "Un perfil con este nombre ya existe. Por favor usa otro nombre.";
-"profile.section.instance" = "Configuración de instancia del juego";
-"profile.section.profiles" = "Perfiles en esta instancia";
-"profile.title.create" = "Crear un perfil nuevo";
-"profile.title.separate_preference" = "Aislar ajustes";
-"profile.detail.separate_preference" = "Activa esta opción para aislar cualquier cambio realizado en la configuración. Al hacer una restauración, se restaurará a la configuración global en lugar de la predeterminada.";
-"profile.title.install_fabric_quilt" = "Instalar Fabric/Quilt";
+"profile.error.name_exists" = "A profile with that name already exists. Please use another name.";
+"profile.section.instance" = "Game Instance settings";
+"profile.section.profiles" = "Profiles in this instance";
+"profile.title.create" = "Create new profile";
+"profile.title.separate_preference" = "Isolate settings";
+"profile.detail.separate_preference" = "Enable this option to isolate any changes made in settings. Doing a Reset will restore to global settings instead of default settings.";
+"profile.title.install_fabric_quilt" = "Install Fabric/Quilt";
 
-"controller_configurator.title.current" = "Archivo de configuración del mando";
+"controller_configurator.title.current" = "Gamepad configuration file";
 "controller_configurator.title.type.xbox" = "Xbox";
 "controller_configurator.title.type.playstation" = "PlayStation";
 
-"controller_configurator.xbox.title.bumper_left" = "Bumper izquierdo";
-"controller_configurator.xbox.title.bumper_right" = "Bumper derecho";
-"controller_configurator.xbox.title.trigger_left" = "Gatillo izquierdo";
-"controller_configurator.xbox.title.trigger_right" = "Gatillo derecho";
-"controller_configurator.xbox.title.named_back" = "Guia";
-"controller_configurator.xbox.title.named_start" = "Menú";
+"controller_configurator.xbox.title.bumper_left" = "Left bumper";
+"controller_configurator.xbox.title.bumper_right" = "Right bumper";
+"controller_configurator.xbox.title.trigger_left" = "Left trigger";
+"controller_configurator.xbox.title.trigger_right" = "Right trigger";
+"controller_configurator.xbox.title.named_back" = "Guide";
+"controller_configurator.xbox.title.named_start" = "Menu";
 "controller_configurator.xbox.title.named_a" = "A";
 "controller_configurator.xbox.title.named_b" = "B";
 "controller_configurator.xbox.title.named_x" = "X";
 "controller_configurator.xbox.title.named_y" = "Y";
-"controller_configurator.xbox.title.dpad_up" = "Arriba";
-"controller_configurator.xbox.title.dpad_down" = "Abajo";
-"controller_configurator.xbox.title.dpad_left" = "Izquierda";
-"controller_configurator.xbox.title.dpad_right" = "Derecha";
-"controller_configurator.xbox.title.thumb_left" = "Clic de la palanca izquierda";
-"controller_configurator.xbox.title.thumb_right" = "Clic de la palanca derecha";
+"controller_configurator.xbox.title.dpad_up" = "Up";
+"controller_configurator.xbox.title.dpad_down" = "Down";
+"controller_configurator.xbox.title.dpad_left" = "Left";
+"controller_configurator.xbox.title.dpad_right" = "Right";
+"controller_configurator.xbox.title.thumb_left" = "Left thumbstick click";
+"controller_configurator.xbox.title.thumb_right" = "Right thumbstick click";
 
 "controller_configurator.playstation.title.bumper_left" = "L1";
 "controller_configurator.playstation.title.bumper_right" = "R1";
 "controller_configurator.playstation.title.trigger_left" = "L2";
 "controller_configurator.playstation.title.trigger_right" = "R2";
-"controller_configurator.playstation.title.named_back" = "Seleccionar";
+"controller_configurator.playstation.title.named_back" = "Select";
 "controller_configurator.playstation.title.named_start" = "Start";
-"controller_configurator.playstation.title.named_a" = "Cruz";
-"controller_configurator.playstation.title.named_b" = "Círculo";
-"controller_configurator.playstation.title.named_x" = "Cuadrado";
-"controller_configurator.playstation.title.named_y" = "Triángulo";
-"controller_configurator.playstation.title.dpad_up" = "Arriba";
-"controller_configurator.playstation.title.dpad_down" = "Abajo";
-"controller_configurator.playstation.title.dpad_left" = "Izquierda";
-"controller_configurator.playstation.title.dpad_right" = "Derecha";
+"controller_configurator.playstation.title.named_a" = "Cross";
+"controller_configurator.playstation.title.named_b" = "Circle";
+"controller_configurator.playstation.title.named_x" = "Square";
+"controller_configurator.playstation.title.named_y" = "Triangle";
+"controller_configurator.playstation.title.dpad_up" = "Up";
+"controller_configurator.playstation.title.dpad_down" = "Down";
+"controller_configurator.playstation.title.dpad_left" = "Left";
+"controller_configurator.playstation.title.dpad_right" = "Right";
 "controller_configurator.playstation.title.thumb_left" = "L3";
 "controller_configurator.playstation.title.thumb_right" = "R3";
 
-"controller_configurator.section.config_files" = "Configuración actual";
-"controller_configurator.section.game_mappings" = "Controles del juego";
-"controller_configurator.section.footer.game_mappings" = "Controles cuando el ratón está en el juego.";
-"controller_configurator.section.menu_mappings" = "Controles del menú";
-"controller_configurator.section.footer.menu_mappings" = "Controles cuando el ratón no está en el juego, como en el menú de pausa y título.";
-"controller_configurator.section.controller_style" = "Tipo de control";
-"controller_configurator.section.footer.controller_style" = "Mostrar nombres de botones de controlador diferentes en este configurador.";
+"controller_configurator.section.config_files" = "Current configuration file";
+"controller_configurator.section.game_mappings" = "Game mappings";
+"controller_configurator.section.footer.game_mappings" = "Bindings when the mouse is locked in game.";
+"controller_configurator.section.menu_mappings" = "Menu mappings";
+"controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
+"controller_configurator.section.controller_style" = "Controller type";
+"controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
