@@ -211,7 +211,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     } else {
         allocmem = getPrefInt(@"java.allocated_memory");
     }
-    NSLog(@"[JavaLauncher] Max RAM allocation is set to %d MB", allocmem);
+    NSLog(@"[JavaLauncher] Max RAM allocation is set to %d MB", 960);
     if (!validateVirtualMemorySpace(allocmem)) {
         UIKit_returnToSplitView();
         if (getEntitlementValue(@"com.apple.developer.kernel.increased-memory-limit")) {
