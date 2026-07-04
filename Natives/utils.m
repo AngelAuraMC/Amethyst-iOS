@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h>
+#include <sys/utsname.h>
+#include <math.h>
 
 #include "utils.h"
 
@@ -194,19 +195,31 @@ BOOL DeviceCanCreateRXMap(void) {
     munmap(map, getpagesize());
     return ret == 0;
 }
-BOOL DeviceHasTXM(void) {
-    DIR *d = opendir("/private/preboot");
-    if(!d) return NO;
-    struct dirent *dir;
-    char txmPath[PATH_MAX];
-    while ((dir = readdir(d)) != NULL) {
-        if(strlen(dir->d_name) == 96) {
-            snprintf(txmPath, sizeof(txmPath), "/private/preboot/%s/usr/standalone/firmware/FUD/Ap,TrustedExecutionMonitor.img4", dir->d_name);
-            break;
-        }
-    }
-    closedir(d);
-    return access(txmPath, F_OK) == 0;
+NSString *DeviceHardwareIdentifier(void) {
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    return [NSString stringWithUTF8String:systemInfo.machine];
+}
+double DeviceVersionFromIdentifier(NSString *identifier) {
+    NSString *pattern = [identifier hasPrefix:@"iPad"] ? @"iPad(\\d+),(\\d+)" : @"iPhone(\\d+),(\\d+)";
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
+    NSTextCheckingResult *match = [regex firstMatchInString:identifier options:0 range:NSMakeRange(0, identifier.length)];
+    if (!match) return -1;
+    NSInteger major = [[identifier substringWithRange:[match rangeAtIndex:1]] integerValue];
+    NSInteger minor = [[identifier substringWithRange:[match rangeAtIndex:2]] integerValue];
+    double divisor = pow(10.0, (double)[NSString stringWithFormat:@"%ld", (long)minor].length);
+    return major + (minor / divisor);
+}
+BOOL DeviceHasTXMOnIOS27(void) {
+    NSString *hw = DeviceHardwareIdentifier();
+    return ![hw isEqualToString:@"iPad8,11"] && ![hw isEqualToString:@"iPad8,12"];
+}
+BOOL DeviceHasTXMOnIOS26(void) {
+    NSString *hw = DeviceHardwareIdentifier();
+    double ver = DeviceVersionFromIdentifier(hw);
+    if (ver < 0) return NO;
+    double firstTXM = [hw hasPrefix:@"iPad"] ? 14.5 : 14.2;
+    return ver >= firstTXM;
 }
 JITFlags DeviceGetJITFlags(BOOL refresh) {
     static JITFlags cachedFlags = 0;
@@ -223,15 +236,21 @@ JITFlags DeviceGetJITFlags(BOOL refresh) {
             NSLog(@"[JIT] Using overridden JIT flags: 0x%X", cachedFlags);
             return;
         }
-        
+
         if (@available(iOS 26.0, *)) {
             cachedFlags |= JIT_FLAG_IS_IOS_26;
             if (!DeviceCanCreateRXMap()) {
                 cachedFlags |= JIT_FLAG_FORCE_MIRRORED;
             }
         }
-        if (DeviceHasTXM()) {
-            cachedFlags |= JIT_FLAG_HAS_TXM;
+        if (@available(iOS 27.0, *)) {
+            if (DeviceHasTXMOnIOS27()) {
+                cachedFlags |= JIT_FLAG_HAS_TXM;
+            }
+        } else if (@available(iOS 26.0, *)) {
+            if (DeviceHasTXMOnIOS26()) {
+                cachedFlags |= JIT_FLAG_HAS_TXM;
+            }
         }
     });
     return cachedFlags;
