@@ -18,7 +18,7 @@ import org.lwjgl.*;
 import org.lwjgl.system.*;
 import org.lwjgl.system.macosx.*;
 
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.APIUtil.*;
 import static org.lwjgl.system.Checks.*;
 import static org.lwjgl.system.JNI.*;
@@ -316,17 +316,20 @@ public class GLFW
 
     /** Input options. */
     public static final int
-    GLFW_CURSOR               = 0x33001,
-    GLFW_STICKY_KEYS          = 0x33002,
-    GLFW_STICKY_MOUSE_BUTTONS = 0x33003,
-    GLFW_LOCK_KEY_MODS        = 0x33004,
-    GLFW_RAW_MOUSE_MOTION     = 0x33005;
+    GLFW_CURSOR                  = 0x33001,
+    GLFW_STICKY_KEYS             = 0x33002,
+    GLFW_STICKY_MOUSE_BUTTONS    = 0x33003,
+    GLFW_LOCK_KEY_MODS           = 0x33004,
+    GLFW_RAW_MOUSE_MOTION        = 0x33005,
+    GLFW_UNLIMITED_MOUSE_BUTTONS = 0x33006,
+    GLFW_IME                     = 0x33007;
 
     /** Cursor state. */
     public static final int
     GLFW_CURSOR_NORMAL   = 0x34001,
     GLFW_CURSOR_HIDDEN   = 0x34002,
-    GLFW_CURSOR_DISABLED = 0x34003;
+    GLFW_CURSOR_DISABLED = 0x34003,
+    GLFW_CURSOR_CAPTURED = 0x34004;
 
     /** The regular arrow cursor shape. */
     public static final int GLFW_ARROW_CURSOR = 0x36001;
@@ -499,6 +502,10 @@ public class GLFW
     /* volatile */ public static GLFWWindowRefreshCallback mGLFWWindowRefreshCallback;
     /* volatile */ public static GLFWWindowSizeCallback mGLFWWindowSizeCallback;
 
+    public static GLFWPreeditCallback mGLFWPreeditCallback;
+    public static GLFWIMEStatusCallback mGLFWIMEStatusCallback;
+    public static GLFWPreeditCandidateCallback mGLFWPreeditCandidateCallback;
+
     volatile public static int mGLFWWindowWidth, mGLFWWindowHeight;
 
     private static GLFWGammaRamp mGLFWGammaRamp;
@@ -515,7 +522,7 @@ public class GLFW
     static {
         try {
             System.load(System.getenv("BUNDLE_PATH") + "/AngelAuraAmethyst");
-        } catch (UnsatisfiedLinkError e) {
+} catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
         }
         String[] size = System.getProperty("glfw.windowSize").split("x");
@@ -779,6 +786,28 @@ public class GLFW
         return lastCallback;
     }
 
+    public static GLFWPreeditCallback glfwSetPreeditCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWpreeditfun") GLFWPreeditCallbackI cbfun) {
+        GLFWPreeditCallback lastCallback = mGLFWPreeditCallback;
+        if (cbfun == null) mGLFWPreeditCallback = null;
+        else mGLFWPreeditCallback = GLFWPreeditCallback.create(cbfun);
+
+        return lastCallback;
+    }
+    public static GLFWIMEStatusCallback glfwSetIMEStatusCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWimestatusfun") @Nullable GLFWIMEStatusCallbackI cbfun) {
+        GLFWIMEStatusCallback lastCallback = mGLFWIMEStatusCallback;
+        if (cbfun == null) mGLFWIMEStatusCallback = null;
+        else mGLFWIMEStatusCallback = GLFWIMEStatusCallback.create(cbfun);
+
+        return lastCallback;
+    }
+    public static GLFWPreeditCandidateCallback glfwSetPreeditCandidateCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWpreeditcandidatefun") @Nullable GLFWPreeditCandidateCallbackI cbfun) {
+        GLFWPreeditCandidateCallback lastCallback = mGLFWPreeditCandidateCallback;
+        if (cbfun == null) mGLFWPreeditCandidateCallback = null;
+        else mGLFWPreeditCandidateCallback = GLFWPreeditCandidateCallback.create(cbfun);
+
+        return lastCallback;
+    }
+
     public static GLFWWindowSizeCallback glfwSetWindowSizeCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWwindowsizefun") GLFWWindowSizeCallbackI cbfun) {
         GLFWWindowSizeCallback lastCallback = mGLFWWindowSizeCallback;
         if (cbfun == null) mGLFWWindowSizeCallback = null;
@@ -807,6 +836,10 @@ public class GLFW
 
     public static int glfwGetPlatform() {
         return GLFW_PLATFORM_X11;
+    }
+
+    public static boolean glfwPlatformSupported(int platform) {
+        return platform == GLFW_PLATFORM_X11;
     }
 
     @NativeType("GLFWwindow *")
@@ -864,6 +897,12 @@ public class GLFW
         ypos.put(0);
         width.put(mGLFWWindowWidth);
         height.put(mGLFWWindowHeight);
+    }
+
+    @Nullable
+    @NativeType("char const *")
+    public static String glfwGetMonitorName(@NativeType("GLFWmonitor *") long monitor) {
+        return String.format(Locale.US, "iOS Display (%dx%d)", mGLFWWindowWidth, mGLFWWindowHeight);
     }
 
     @NativeType("GLFWmonitor *")
@@ -984,6 +1023,11 @@ public class GLFW
 
         win.windowAttribs.put(GLFW_HOVERED, 1);
         win.windowAttribs.put(GLFW_VISIBLE, 1);
+        win.windowAttribs.put(GLFW_RESIZABLE, GLFW_FALSE);
+        win.inputModes.put(GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        win.inputModes.put(GLFW_STICKY_KEYS, GLFW_FALSE);
+        win.inputModes.put(GLFW_STICKY_MOUSE_BUTTONS, GLFW_FALSE);
+        win.inputModes.put(GLFW_IME, GLFW_FALSE);
 
         mGLFWWindowMap.put(ptr, win);
         mainContext = ptr;
@@ -1114,6 +1158,9 @@ public class GLFW
     }
 
     public static int glfwGetKey(@NativeType("GLFWwindow *") long window, int key) {
+        if (key == GLFW_KEY_LAST) {
+            return GLFW_KEY_LAST;
+        }
         return keyDownBuffer.get(Math.max(0, key-31));
     }
 
