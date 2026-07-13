@@ -80,6 +80,13 @@
 
         NSString *versionStr = [library[@"name"] componentsSeparatedByString:@":"][2];
         NSArray<NSString *> *version = [versionStr componentsSeparatedByString:@"."];
+        if ([library[@"name"] hasPrefix:@"org.lwjgl:lwjgl:"]) {
+            // Record the actual declared LWJGL core version so JavaLauncher.m
+            // can pick the correct vendored lwjgl-X.Y.Z folder by checking the
+            // real dependency version instead of guessing from the Minecraft
+            // version id (which isn't reliable across snapshots/modpacks).
+            json[@"lwjglVersion"] = versionStr;
+        }
         if ([library[@"name"] hasPrefix:@"net.java.dev.jna:jna:"]) {
             // Special handling for LabyMod 1.8.9 and Forge 1.12.2(?)
             // we have libjnidispatch 5.13.0 in Frameworks directory

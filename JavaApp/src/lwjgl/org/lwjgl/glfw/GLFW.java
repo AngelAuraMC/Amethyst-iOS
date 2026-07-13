@@ -502,9 +502,20 @@ public class GLFW
     /* volatile */ public static GLFWWindowRefreshCallback mGLFWWindowRefreshCallback;
     /* volatile */ public static GLFWWindowSizeCallback mGLFWWindowSizeCallback;
 
-    public static GLFWPreeditCallback mGLFWPreeditCallback;
-    public static GLFWIMEStatusCallback mGLFWIMEStatusCallback;
-    public static GLFWPreeditCandidateCallback mGLFWPreeditCandidateCallback;
+    // NOTE: these three fields are intentionally typed as Object, not their real
+    // LWJGL 3.4.1 callback types (GLFWPreeditCallback/GLFWIMEStatusCallback/
+    // GLFWPreeditCandidateCallback). Those types don't exist in LWJGL 3.3.3's
+    // vendor jar (used by Minecraft 1.21.11 and below). GLFW's static
+    // initializer eventually triggers APIUtil.apiClassTokens(), which calls
+    // Class.getDeclaredFields() on this class - and resolving a field's
+    // declared type is NOT lazy like method bodies are, so a missing type
+    // here fails class loading for the ENTIRE GLFW class under 3.3.3, not
+    // just these three fields. Casts happen locally in the methods below;
+    // the public method signatures are untouched so real IME callers under
+    // 3.4.1/26.1+ see the exact same API as upstream LWJGL.
+    public static Object mGLFWPreeditCallback;
+    public static Object mGLFWIMEStatusCallback;
+    public static Object mGLFWPreeditCandidateCallback;
 
     volatile public static int mGLFWWindowWidth, mGLFWWindowHeight;
 
@@ -787,21 +798,21 @@ public class GLFW
     }
 
     public static GLFWPreeditCallback glfwSetPreeditCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWpreeditfun") GLFWPreeditCallbackI cbfun) {
-        GLFWPreeditCallback lastCallback = mGLFWPreeditCallback;
+        GLFWPreeditCallback lastCallback = (GLFWPreeditCallback) mGLFWPreeditCallback;
         if (cbfun == null) mGLFWPreeditCallback = null;
         else mGLFWPreeditCallback = GLFWPreeditCallback.create(cbfun);
 
         return lastCallback;
     }
     public static GLFWIMEStatusCallback glfwSetIMEStatusCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWimestatusfun") @Nullable GLFWIMEStatusCallbackI cbfun) {
-        GLFWIMEStatusCallback lastCallback = mGLFWIMEStatusCallback;
+        GLFWIMEStatusCallback lastCallback = (GLFWIMEStatusCallback) mGLFWIMEStatusCallback;
         if (cbfun == null) mGLFWIMEStatusCallback = null;
         else mGLFWIMEStatusCallback = GLFWIMEStatusCallback.create(cbfun);
 
         return lastCallback;
     }
     public static GLFWPreeditCandidateCallback glfwSetPreeditCandidateCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWpreeditcandidatefun") @Nullable GLFWPreeditCandidateCallbackI cbfun) {
-        GLFWPreeditCandidateCallback lastCallback = mGLFWPreeditCandidateCallback;
+        GLFWPreeditCandidateCallback lastCallback = (GLFWPreeditCandidateCallback) mGLFWPreeditCandidateCallback;
         if (cbfun == null) mGLFWPreeditCandidateCallback = null;
         else mGLFWPreeditCandidateCallback = GLFWPreeditCandidateCallback.create(cbfun);
 
