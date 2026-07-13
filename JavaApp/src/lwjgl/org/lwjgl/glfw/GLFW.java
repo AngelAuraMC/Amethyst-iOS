@@ -505,14 +505,7 @@ public class GLFW
     // NOTE: these three fields are intentionally typed as Object, not their real
     // LWJGL 3.4.1 callback types (GLFWPreeditCallback/GLFWIMEStatusCallback/
     // GLFWPreeditCandidateCallback). Those types don't exist in LWJGL 3.3.3's
-    // vendor jar (used by Minecraft 1.21.11 and below). GLFW's static
-    // initializer eventually triggers APIUtil.apiClassTokens(), which calls
-    // Class.getDeclaredFields() on this class - and resolving a field's
-    // declared type is NOT lazy like method bodies are, so a missing type
-    // here fails class loading for the ENTIRE GLFW class under 3.3.3, not
-    // just these three fields. Casts happen locally in the methods below;
-    // the public method signatures are untouched so real IME callers under
-    // 3.4.1/26.1+ see the exact same API as upstream LWJGL.
+    // vendor jar (used by Minecraft 1.21.11 and below)
     public static Object mGLFWPreeditCallback;
     public static Object mGLFWIMEStatusCallback;
     public static Object mGLFWPreeditCandidateCallback;

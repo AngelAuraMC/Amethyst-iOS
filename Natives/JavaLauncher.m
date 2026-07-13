@@ -168,11 +168,10 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
             defaultJRETag = @"1_17_newer";
         }
 
-        // Use LWJGL 3.4.1 for 26.1+, 3.3.3 for 1.21.11 and below.
-        // Prefer checking the actual declared LWJGL library version (set by
-        // MinecraftResourceUtils tweakVersionJson: as launchTarget[@"lwjglVersion"])
-        // over guessing from the Minecraft version id, since the id doesn't
-        // reliably track LWJGL version across snapshots/modpacks/version json quirks.
+        // Use LWJGL 3.4.1 for 26.1+, 3.3.3 for 1.21.11-.
+       // Prefer launchTarget[@"lwjglVersion"] over guessing from the Minecraft version ID,
+      // which is unreliable for snapshots, modpacks, or custom JSONs.
+
         NSString *lwjglVersionStr = launchTarget[@"lwjglVersion"];
         if ([lwjglVersionStr isKindOfClass:NSString.class] && lwjglVersionStr.length > 0) {
             NSArray<NSString *> *lwjglVersion = [lwjglVersionStr componentsSeparatedByString:@"."];
