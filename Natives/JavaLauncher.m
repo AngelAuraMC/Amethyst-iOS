@@ -9,6 +9,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <mach/mach.h>
+#include <mach/task.h>
+#include <mach/thread_status.h>
+#include <mach/exception_types.h>
+
 #include "utils.h"
 
 #import "ios_uikit_bridge.h"
