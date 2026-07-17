@@ -180,6 +180,13 @@ NSMutableDictionary* createButton(NSString* name, int* keycodes, NSString* dynam
 }
 
 - (void)setFrame:(CGRect)frame {
+    // Keep the frame square
+    if (self.frame.size.width != frame.size.width) {
+        frame.size.height = frame.size.width;
+    } else if (self.frame.size.height != frame.size.height) {
+        frame.size.width = frame.size.height;
+    }
+    
     [super setFrame:frame];
     self.mCenter = CGPointMake(frame.size.width/2, frame.size.height/2);
     CGFloat minSize = MIN(frame.size.width, frame.size.height);

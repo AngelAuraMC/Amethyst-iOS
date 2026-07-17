@@ -30,7 +30,15 @@ BOOL isJITEnabled(BOOL checkCSFlags) {
 
     int flags;
     csops(getpid(), 0, &flags, sizeof(flags));
-    return (flags & CS_DEBUGGED) != 0;
+    if ((flags & CS_DEBUGGED) == 0) {
+        return NO;
+    }
+    if (!DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM)) {
+        // Device below iOS 26 or without TXM is sufficient at this point
+        return YES;
+    }
+    // Device with iOS 26+ and TXM requires a debugger attached for JIT script to bypass TXM restrictions
+    return JIT26IsLikelyDebuggerKeepAttached();
 }
 
 void openLink(UIViewController* sender, NSURL* link) {
@@ -185,6 +193,11 @@ void JIT26SendJITScript(NSString* script) {
     BreakSendJITScript((char*)script.UTF8String, script.length);
 }
 
+BOOL JIT26IsLikelyDebuggerKeepAttached(void) {
+    // getppid() always return launchd PID (1) unless debugger is actively attached
+    return getppid() != 1;
+}
+
 BOOL DeviceCanCreateRXMap(void) {
     // This is only guaranteed to be accurate when JIT is already enabled. Obviously this is only useful for vphone and similar internal environments where JIT is always enabled.
     uint32_t *map = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
@@ -194,9 +207,26 @@ BOOL DeviceCanCreateRXMap(void) {
     munmap(map, getpagesize());
     return ret == 0;
 }
-BOOL DeviceHasTXM(void) {
+
+BOOL DeviceHasTXMReal(void) {
     DIR *d = opendir("/private/preboot");
-    if(!d) return NO;
+    if(!d) {
+        // /private/preboot is not accessible in 27.0 and 26.6?, fallback to speculation
+        NSUInteger (*MGGetSInt64Answer)(NSString *) = dlsym(RTLD_DEFAULT, "MGGetSInt64Answer");
+        NSUInteger chipID = MGGetSInt64Answer(@"ChipID");
+        switch(chipID) {
+            case 0x8020: // A12
+            case 0x8027: // A12X/Z
+                return NO;
+            case 0x8030: // A13
+            case 0x8101: // A14
+            case 0x8103: // M1
+                if (@available(iOS 27.0, *)) return YES; return NO;
+            default:
+                if (@available(iOS 19.0, *)) return YES; return NO;
+        }
+    }
+    // deterministically detect TXM for 17.0-26.5?
     struct dirent *dir;
     char txmPath[PATH_MAX];
     while ((dir = readdir(d)) != NULL) {
@@ -208,6 +238,11 @@ BOOL DeviceHasTXM(void) {
     closedir(d);
     return access(txmPath, F_OK) == 0;
 }
+// Thin wrapper of DeviceHasJITFlags to respect overriden flag
+__exported BOOL DeviceHasTXM(void) {
+    return DeviceHasJITFlags(JIT_FLAG_HAS_TXM);
+}
+
 JITFlags DeviceGetJITFlags(BOOL refresh) {
     static JITFlags cachedFlags = 0;
     static dispatch_once_t onceToken;
@@ -230,9 +265,11 @@ JITFlags DeviceGetJITFlags(BOOL refresh) {
                 cachedFlags |= JIT_FLAG_FORCE_MIRRORED;
             }
         }
-        if (DeviceHasTXM()) {
+        if (DeviceHasTXMReal()) {
             cachedFlags |= JIT_FLAG_HAS_TXM;
         }
+        
+        if (refresh) NSLog(@"[JIT] Using computed JIT flags: 0x%X", cachedFlags);
     });
     return cachedFlags;
 }

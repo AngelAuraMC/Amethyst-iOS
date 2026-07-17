@@ -23,7 +23,9 @@ void handle_fatal_exit(int code) {
         return;
     }
 
-    [PLLogOutputView handleExitCode:code];
+    if (![PLLogOutputView handleExitCode:code]) {
+        return;
+    }
 
     if (fatalExitGroup != nil) {
         // Likely other threads are crashing, put them to sleep

@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "AppDelegate.h"
 #import "SurfaceViewController.h"
+#import "MinecraftOptionUtils.h"
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -379,7 +380,6 @@ const int hotbarKeys[9] = {
     GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6,
     GLFW_KEY_7, GLFW_KEY_8, GLFW_KEY_9
 };
-int guiScale = 1;
 int mcscale(CGFloat input) {
     return (int)((guiScale * input)/resolutionScale);
 }
@@ -399,10 +399,6 @@ int callback_SurfaceViewController_touchHotbar(CGFloat x, CGFloat y) {
     return hotbarKeys[(int) MathUtils_map(x, barX, barX + barWidth, 0, 9)];
 }
 
-JNIEXPORT void JNICALL Java_net_kdt_pojavlaunch_uikit_UIKit_updateMCGuiScale(JNIEnv* env, jclass clazz, jint scale) {
-    guiScale = scale;
-}
-
 JNIEXPORT jstring JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeClipboard(JNIEnv* env, jclass clazz, jint action, jstring copySrc) {
     NSDebugLog(@"Debug: Clipboard access is going on\n");
     return UIKit_accessClipboard(env, action, copySrc);
@@ -410,6 +406,10 @@ JNIEXPORT jstring JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeClipboard(JNI
 
 JNIEXPORT void JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeSetGrabbing(JNIEnv* env, jclass clazz, jboolean grabbing, jfloat xset, jfloat yset) {
     isGrabbing = grabbing;
+    
+    if(grabbing) {
+        [MinecraftOptionUtils.sharedInstance updateMCGuiScale];
+    }
 
     dispatch_async(dispatch_get_main_queue(), ^{
         SurfaceViewController *vc = ((SurfaceViewController *)UIWindow.mainWindow.rootViewController);

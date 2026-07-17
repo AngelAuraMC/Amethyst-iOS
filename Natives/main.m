@@ -38,6 +38,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     NSLog(@"Uncaught exception: %@", exception.description);
     NSLog(@"Call stack: %@", exception.callStackSymbols);
     usleep(10000);
+    handle_fatal_exit(SIGABRT);
 }
 
 bool init_checkForsubstrated() {

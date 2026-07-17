@@ -61,17 +61,6 @@ public class PojavLauncher {
 
         String sizeStr = System.getProperty("cacio.managed.screensize");
         System.setProperty("glfw.windowSize", sizeStr);
-        String[] size = sizeStr.split("x");
-        MCOptionUtils.load();
-        MCOptionUtils.set("fullscreen", "false");
-        MCOptionUtils.set("overrideWidth", size[0]);
-        MCOptionUtils.set("overrideHeight", size[1]);
-        // Default settings for performance
-        MCOptionUtils.setDefault("mipmapLevels", "0");
-        MCOptionUtils.setDefault("particles", "1");
-        MCOptionUtils.setDefault("renderDistance", "2");
-        MCOptionUtils.setDefault("simulationDistance", "5");
-        MCOptionUtils.save();
 
         // Setup Forge splash.properties
         File forgeSplashFile = new File(Tools.DIR_GAME_NEW, "config/splash.properties");

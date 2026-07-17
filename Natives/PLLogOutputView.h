@@ -5,5 +5,5 @@
 - (void)actionStartStopLogOutput;
 - (void)actionToggleLogOutput;
 + (void)appendToLog:(NSString *)line;
-+ (void)handleExitCode:(int)code;
++ (BOOL)handleExitCode:(int)code;
 @end

@@ -66,6 +66,7 @@ void* JIT26PrepareRegion(void *addr, size_t len);
 void JIT26PrepareRegionForPatching(void *addr, size_t len);
 void JIT26SetDetachAfterFirstBr(BOOL value);
 void JIT26SendJITScript(NSString* script);
+BOOL JIT26IsLikelyDebuggerKeepAttached(void);
 
 // Device JIT flags
 typedef enum {
@@ -86,6 +87,7 @@ BOOL PLPatchMachOPlatformForFile(const char *path);
 
 UIViewController* currentVC();
 void openLink(UIViewController* sender, NSURL* link);
+void handle_fatal_exit(int code);
 
 NSString* localize(NSString* key, NSString* comment);
 NSMutableDictionary* parseJSONFromFile(NSString *path);
