@@ -537,7 +537,14 @@ public class GLFW
         // CallbackBridge.receiveCallback(CallbackBridge.EVENT_TYPE_FRAMEBUFFER_SIZE, mGLFWWindowWidth, mGLFWWindowHeight, 0, 0);
         // CallbackBridge.receiveCallback(CallbackBridge.EVENT_TYPE_WINDOW_SIZE, mGLFWWindowWidth, mGLFWWindowHeight, 0, 0);
 
-        mGLFWErrorCallback = GLFWErrorCallback.createPrint();
+        try {
+            mGLFWErrorCallback = GLFWErrorCallback.createPrint();
+        } catch (Throwable t) {
+            // GLFWErrorCallback.createPrint() creates a LWJGL native Callback,
+            // Whuch needs libffi and that isnt included
+            t.printStackTrace();
+            mGLFWErrorCallback = null;
+        }
         mGLFWKeyCodes = new ArrayMap<>();
 
         mGLFWWindowMap = new ArrayMap<>();
@@ -1143,7 +1150,6 @@ public class GLFW
         if (mode == GLFW_CURSOR) {
             switch (value) {
                 case GLFW_CURSOR_DISABLED:
-                    net.kdt.pojavlaunch.uikit.UIKit.updateMCGuiScale();
                     CallbackBridge.nativeSetGrabbing(true);
                     break;
                 default: CallbackBridge.nativeSetGrabbing(false);
