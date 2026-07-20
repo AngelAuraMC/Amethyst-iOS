@@ -541,7 +541,7 @@ public class GLFW
             mGLFWErrorCallback = GLFWErrorCallback.createPrint();
         } catch (Throwable t) {
             // GLFWErrorCallback.createPrint() creates a LWJGL native Callback,
-            // Whuch needs libffi and that isnt included
+            // Which needs libffi and that isnt included
             t.printStackTrace();
             mGLFWErrorCallback = null;
         }
