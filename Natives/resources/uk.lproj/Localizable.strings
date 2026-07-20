@@ -168,7 +168,7 @@
 "preference.title.renderer.debug.auto" = "Авто: gl4 або ANGLE";
 "preference.title.renderer.debug.gl4es" = "Gl4es 1.1.4 - експортує OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - експортує OpenGL 3.2 (Базовий профіль, обмежений)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - експортує OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Зміни двигун візуалізації OpenGL для використання";
 

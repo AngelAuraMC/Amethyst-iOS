@@ -8,7 +8,10 @@
 static PLPreferences* pref;
 
 void loadPreferences(BOOL reset) {
-    assert(getenv("POJAV_HOME"));
+    if (!getenv("POJAV_HOME")) {
+        NSLog(@"FATAL: POJAV_HOME environment variable is not set. Cannot load preferences.");
+        return;
+    }
     if (reset) {
         [pref reset];
     } else {
@@ -139,30 +142,36 @@ NSArray* getRendererKeys(BOOL containsDefault) {
         @ RENDERER_NAME_GL4ES,
         @ RENDERER_NAME_MTL_ANGLE,
         @ RENDERER_NAME_MOBILEGLUES,
-        @ RENDERER_NAME_VK_ZINK
+        @ RENDERER_NAME_LTW,
+        @ RENDERER_NAME_VK_ZINK,
+        @ RENDERER_NAME_VULKAN
     ].mutableCopy;
 
     if (containsDefault) {
         [array insertObject:@"(default)" atIndex:0];
     }
-    
+
     return array;
 }
 
 NSArray* getRendererNames(BOOL containsDefault) {
-    NSMutableArray *array;
-
-    array = @[
+    NSMutableArray *array = [NSMutableArray array];
+    if (containsDefault) {
+        [array addObject:@"(default)"];
+    }
+    NSString *names[] = {
         localize(@"preference.title.renderer.debug.auto", nil),
         localize(@"preference.title.renderer.debug.gl4es", nil),
         localize(@"preference.title.renderer.debug.angle", nil),
         localize(@"preference.title.renderer.debug.mg", nil),
-        localize(@"preference.title.renderer.debug.zink", nil)
-    ].mutableCopy;
-
-    if (containsDefault) {
-        [array insertObject:@"(default)" atIndex:0];
+        localize(@"preference.title.renderer.debug.ltw", nil),
+        localize(@"preference.title.renderer.debug.zink", nil),
+        localize(@"preference.title.renderer.debug.vulkan", nil)
+    };
+    for (int i = 0; i < sizeof(names)/sizeof(names[0]); i++) {
+        if (names[i]) {
+            [array addObject:names[i]];
+        }
     }
-
     return array;
 }

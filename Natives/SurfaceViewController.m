@@ -278,22 +278,76 @@ static GameSurfaceView* pojavWindow;
 
 - (void)updateAudioSettings {
     NSError *sessionError = nil;
+    AVAudioSession *session = AVAudioSession.sharedInstance;
+    // Deactivate before changing category to avoid audio glitches
+    [session setActive:NO error:nil];
+
     AVAudioSessionCategory category;
     AVAudioSessionCategoryOptions options = 0;
     if(getPrefBool(@"video.allow_microphone")) {
         category = AVAudioSessionCategoryPlayAndRecord;
         options |= AVAudioSessionCategoryOptionAllowAirPlay | AVAudioSessionCategoryOptionAllowBluetoothA2DP | AVAudioSessionCategoryOptionDefaultToSpeaker;
-    } else if(getPrefBool(@"video.silence_with_switch")) {
-        category = AVAudioSessionCategorySoloAmbient;
     } else {
         category = AVAudioSessionCategoryPlayback;
     }
     if(!getPrefBool(@"video.silence_other_audio")) {
         options |= AVAudioSessionCategoryOptionMixWithOthers;
     }
-    AVAudioSession *session = AVAudioSession.sharedInstance;
     [session setCategory:category withOptions:options error:&sessionError];
+
+    if(getPrefBool(@"video.allow_microphone")) {
+        [session setPreferredSampleRate:48000.0 error:&sessionError];
+        [session setPreferredIOBufferDuration:0.005 error:&sessionError];
+    }
+
     [session setActive:YES error:&sessionError];
+
+    if(getPrefBool(@"video.allow_microphone")) {
+        [self selectMicrophoneSource];
+    }
+}
+
+- (void)selectMicrophoneSource {
+    NSError *error = nil;
+    AVAudioSession *session = AVAudioSession.sharedInstance;
+
+    AVAudioSessionPortDescription *builtInMic = nil;
+    for (AVAudioSessionPortDescription *input in session.availableInputs) {
+        if ([input.portType isEqualToString:AVAudioSessionPortBuiltInMic]) {
+            builtInMic = input;
+            break;
+        }
+    }
+
+    if (!builtInMic || builtInMic.dataSources.count == 0) {
+        NSLog(@"[MicSource] No built-in mic or no data sources available");
+        return;
+    }
+
+    NSString *source = getPrefObject(@"video.microphone_source");
+    NSArray<NSString *> *preferredOrder = nil;
+    if (!source || [source isEqualToString:@"auto"]) {
+        preferredOrder = @[@"Front", @"Bottom", @"Back"];
+    } else if ([source isEqualToString:@"front"]) {
+        preferredOrder = @[@"Front"];
+    } else if ([source isEqualToString:@"bottom"]) {
+        preferredOrder = @[@"Bottom"];
+    } else if ([source isEqualToString:@"back"]) {
+        preferredOrder = @[@"Back"];
+    }
+
+    for (NSString *prefName in preferredOrder) {
+        for (AVAudioSessionDataSourceDescription *dataSource in builtInMic.dataSources) {
+            if ([dataSource.dataSourceName localizedCaseInsensitiveContainsString:prefName]) {
+                [session setPreferredInput:builtInMic error:&error];
+                [builtInMic setPreferredDataSource:dataSource error:&error];
+                NSLog(@"[MicSource] Selected: %@", dataSource.dataSourceName);
+                return;
+            }
+        }
+    }
+
+    NSLog(@"[MicSource] No matching data source found, using system default");
 }
 
 - (void)updateJetsamControl {
@@ -619,33 +673,25 @@ static GameSurfaceView* pojavWindow;
 }
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-    BOOL handled = NO;
-
     for (UIPress *press in presses) {
-        if (press.key != nil && [KeyboardInput sendKeyEvent:press.key down:YES]) {
-            handled = YES;
+        if (press.key != nil) {
+            [KeyboardInput sendKeyEvent:press.key down:YES];
         }
     }
-    
-
-    if (!handled) {
-        [super pressesBegan:presses withEvent:event];
-    }
+    // Always call super so that inputTextField (UITextInput) can receive
+    // key events for text input (e.g., Minecraft chat).
+    [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-    BOOL handled = NO;
-
     for (UIPress *press in presses) {
-        if (press.key != nil && [KeyboardInput sendKeyEvent:press.key down:NO]) {
-            handled = YES;
+        if (press.key != nil) {
+            [KeyboardInput sendKeyEvent:press.key down:NO];
         }
     }
-    
-
-    if (!handled) {
-        [super pressesEnded:presses withEvent:event];
-    }
+    // Always call super so that inputTextField (UITextInput) can receive
+    // key-up events properly.
+    [super pressesEnded:presses withEvent:event];
 }
 
 - (BOOL)prefersPointerLocked {
@@ -655,9 +701,10 @@ static GameSurfaceView* pojavWindow;
 - (void)registerMouseCallbacks:(GCMouse *)mouse {
     NSLog(@"Input: Got mouse %@", mouse);
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput * _Nonnull mouse, float deltaX, float deltaY) {
-        if (!self.view.window.windowScene.pointerLockState.locked) {
-            return;
-        }
+        // Always forward mouse movement to the game.
+        // When pointer is locked (in-game grabbing), deltaX/deltaY are true deltas.
+        // When pointer is NOT locked (menu, or Bluetooth mouse before lock activates),
+        // we still send the delta so the virtual mouse or cursor can move.
         [self sendTouchPoint:CGPointMake(deltaX, -deltaY) withEvent:ACTION_MOVE_MOTION];
     };
 

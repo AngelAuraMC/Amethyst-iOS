@@ -71,11 +71,35 @@ public final class Platform {
     /** Current platform architecture. */
     public static final String ARCH;
 
-    private static final List<Class> matchingClasses = new ArrayList<Class>();
+    private static final Set<String> matchingClassNames = new HashSet<String>();
     private static Object stackWalker;
     private static Method stackWalkerGetCaller;
-    private static boolean isMacFoundVoiceChatMod;
-    private static int isMacFindRetries = 10;
+
+    static {
+        matchingClassNames.add("de.maxhenkel.voicechat.config.ClientConfig");
+        matchingClassNames.add("de.maxhenkel.voicechat.VoicechatClient");
+        // MicrophoneManager removed: on iOS, OpenAL AudioUnit capture is broken,
+        // so we let isMac() return true so the mod uses Java microphone (javax.sound via AVFoundation)
+        // matchingClassNames.add("de.maxhenkel.voicechat.voice.client.microphone.MicrophoneManager");
+        matchingClassNames.add("de.maxhenkel.voicechat.macos.VersionCheck");
+        // NativeValidator removed: on iOS, macOS native dylibs (Opus, LAME, RNNoise, Speex)
+        // are incompatible and crash with SIGILL. Removing this lets isMac() return true,
+        // which causes NativeValidator to check macOS version via VersionCheck and skip.
+        // The mod falls back to pure Java Opus (Concentus) for voice chat.
+        // matchingClassNames.add("de.maxhenkel.voicechat.natives.NativeValidator");
+        matchingClassNames.add("de.maxhenkel.voicechat.natives.OpusManager");
+        matchingClassNames.add("de.maxhenkel.voicechat.natives.LameManager");
+        matchingClassNames.add("de.maxhenkel.voicechat.natives.RNNoiseManager");
+        matchingClassNames.add("de.maxhenkel.voicechat.natives.SpeexManager");
+        matchingClassNames.add("de.maxhenkel.opus4j.OpusDecoder");
+        matchingClassNames.add("de.maxhenkel.opus4j.OpusEncoder");
+        matchingClassNames.add("de.maxhenkel.voicechat.plugins.impl.opus.NativeOpusDecoderImpl");
+        matchingClassNames.add("de.maxhenkel.voicechat.plugins.impl.opus.NativeOpusEncoderImpl");
+        matchingClassNames.add("de.maxhenkel.voicechat.voice.client.AudioChannel");
+        matchingClassNames.add("de.maxhenkel.voicechat.voice.client.AudioEncoder");
+        matchingClassNames.add("de.maxhenkel.voicechat.voice.client.MicrophoneThread");
+        matchingClassNames.add("su.plo.voice.client.audio.device.VoiceDeviceManager");
+    }
 
     static {
         osType = MAC;
@@ -100,7 +124,6 @@ public final class Platform {
             stackWalker = cStackWalker.getMethod("getInstance", cStackWalkerOption).invoke(null, RETAIN_CLASS_REFERENCE);
             stackWalkerGetCaller = cStackWalker.getMethod("getCallerClass");
         } catch (Throwable th) {
-            isMacFindRetries = 0;
         }
     }
     private Platform() { }
@@ -108,31 +131,15 @@ public final class Platform {
         return osType;
     }
     public static final boolean isMac() {
-        if (isMacFindRetries <= 0) {
-            return true;
-        } else if (!isMacFoundVoiceChatMod) {
-            isMacFindRetries--;
-            try {
-                matchingClasses.add(Class.forName("de.maxhenkel.voicechat.config.ClientConfig"));
-                matchingClasses.add(Class.forName("de.maxhenkel.voicechat.VoicechatClient"));
-                isMacFoundVoiceChatMod = true;
-            } catch (Throwable th) {}
-            try {
-                matchingClasses.add(Class.forName("su.plo.voice.client.audio.device.VoiceDeviceManager"));
-                isMacFoundVoiceChatMod = true;
-            } catch (Throwable th) {}
-        }
- 
-        // All voice chat mods calls this thing and straight out disable OpenAL input
-        // so we must trick them into NOT forcefully disabling it
         try {
             Class caller = (Class)stackWalkerGetCaller.invoke(stackWalker);
-            System.out.println("Platform.isMac called from " + caller.getName());
-            return !matchingClasses.contains(caller);
+            if (matchingClassNames.contains(caller.getName())) {
+                return false;
+            }
         } catch (Throwable e) {
-            // We're calling a public method, this should never happen
             throw new RuntimeException(e);
         }
+        return true;
     }
     public static final boolean isAndroid() {
         return osType == ANDROID;

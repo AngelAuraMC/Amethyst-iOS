@@ -118,7 +118,7 @@
 
 "preference.title.renderer" = "Renderer";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - exports OpenGL 2.1";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Cambia il motore di rendering OpenGL in uso";
 

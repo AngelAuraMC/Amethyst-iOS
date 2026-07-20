@@ -114,15 +114,19 @@ int keycodeTable[UIKeyboardHIDUsageKeyboardRightGUI+1];
     }
 
     // key.characters.length < 11: skip sending characters if the string starts with UIKeyInput
-    if (isDown && key.characters.length < 11) {
+    BOOL sentChars = NO;
+    if (isDown && key.characters.length > 0 && key.characters.length < 11) {
         for (int i = 0; i < key.characters.length; i++) {
             int keychar = [key.characters characterAtIndex:i];
             CallbackBridge_nativeSendCharMods(keychar, modifiers);
             CallbackBridge_nativeSendChar(keychar);
         }
+        sentChars = YES;
     }
 
-    return keycode != 0 || isDown;
+    // Return YES if we handled a known keycode OR sent character events,
+    // so that the caller knows this event was consumed.
+    return keycode != 0 || sentChars;
 }
 
 @end

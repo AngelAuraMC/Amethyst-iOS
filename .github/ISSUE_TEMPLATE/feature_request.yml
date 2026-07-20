@@ -1,31 +1,28 @@
-name: Feature request
-description: 'Ask for new features.'
-title: "[F-Req] <Short description>"
-labels: [enhancement]
+name: Informational
+description: 'Quick docs, when they are needed.'
+title: "[Info] <Short description>"
+labels: [documentation]
 body:
 - type: textarea
-  id: version
   attributes:
-    label: Is this request related to a bug?
+    label: Add some background
     description: |
-      Give us some details into the problem, and how this affects it.
-    placeholder: 'Example: You should add a version selector because of the text box being too small.'
+      What is this documentation for? If it is a solution doc, what is causing the issue? Why is it important to document?
   validations:
-    required: false
+    required: true
 
 - type: textarea
   attributes:
-    label: Describe the request.
+    label: Time to document.
     description: |
-      What do you want to see changed, added, or removed? Make sure to be specific.
-      placeholder: 'Example: A scrollable version picker.'
+      Write the documentation here. Solutions, simple tricks, screenshots and other goodies belong in this section.
   validations:
-    required: false
+    required: true
 
 - type: textarea
   attributes:
-    label: Anything else?
+    label: Disclaimers
     description: |
-      Add any other context about the problem here.
+      If you are posting a solution this risky, post a disclaimer saying it is!
   validations:
     required: false

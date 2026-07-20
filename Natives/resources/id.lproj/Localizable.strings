@@ -154,7 +154,7 @@
 "preference.title.renderer.debug.auto" = "Otomatis: gl4es atau ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - mengekspor OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - mengekspor OpenGL 3.2 (Profil Core, terbatas)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - mengekspor OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Ganti mesin render OpenGL yang dipake";
 

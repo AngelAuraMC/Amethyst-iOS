@@ -171,7 +171,7 @@ der Minecraft-Version zu wählen. Verringerte Auflösung reduziert die Arbeitsla
 "preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - gibt OpenGL 2.1 aus";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - gibt OpenGL 3.2 (Kernprofil, begrenzt) aus";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - gibt OpenGL 4.1 aus";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Ändern Sie die OpenGL-Rendering-Engine";
 

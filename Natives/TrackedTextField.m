@@ -5,8 +5,6 @@
 
 extern bool isUseStackQueueCall;
 
-// There are private functions that we are unable to find public replacements
-// (Both are found by placing breakpoints)
 @interface UITextField(private)
 - (NSRange)insertFilteredText:(NSString *)text;
 - (id) replaceRangeWithTextWithoutClosingTyping:(UITextRange *)range replacementText:(NSString *)text;
@@ -15,30 +13,37 @@ extern bool isUseStackQueueCall;
 @interface TrackedTextField()
 @property(nonatomic) int lastTextPos;
 @property(nonatomic) CGFloat lastPointX;
+@property(nonatomic) BOOL ignoreBridgeEvents; 
 @end
 
 @implementation TrackedTextField
 
 - (void)sendMultiBackspaces:(int)times {
+    // NSLog(@"[KeyboardDebug] sendMultiBackspaces called, times: %d", times);
     for (int i = 0; i < times; i++) {
         self.sendKey(GLFW_KEY_BACKSPACE, 0, 1, 0);
         self.sendKey(GLFW_KEY_BACKSPACE, 0, 0, 0);
     }
 }
 
-// workaround pasted text not being caught
 - (void)paste:(id)sender {
+    // NSLog(@"[KeyboardDebug] Paste triggered. Text: '%@'", UIPasteboard.generalPasteboard.string);
     [super paste:sender];
     [self sendText:UIPasteboard.generalPasteboard.string];
 }
 
 - (void)sendText:(NSString *)text {
+    // NSLog(@"[KeyboardDebug] sendText processing string: '%@' (length: %lu)", text, (unsigned long)text.length);
     for (int i = 0; i < text.length; i++) {
-        // Directly convert unichar to jchar since both are in UTF-16 encoding.
         unichar theChar = [text characterAtIndex:i];
+        // NSLog(@"[KeyboardDebug] Sending character: '%C' (Unicode decimal: %d)", theChar, theChar);
+        
         if (isUseStackQueueCall && self.sendCharMods != nil) {
+            // NSLog(@"[KeyboardDebug] -> Routing to sendCharMods block");
             self.sendCharMods(theChar, 0);
         } else {
+            // NSLog(@"[KeyboardDebug] -> Routing to sendChar block (isUseStackQueueCall: %d, sendCharMods present: %s)", 
+            //       isUseStackQueueCall, self.sendCharMods != nil ? "YES" : "NO");
             self.sendChar(theChar);
         }
     }
@@ -49,12 +54,10 @@ extern bool isUseStackQueueCall;
     self.lastPointX = point.x;
 }
 
-// Handle cursor movement in the empty space
 - (void)updateFloatingCursorAtPoint:(CGPoint)point {
     [super updateFloatingCursorAtPoint:point];
 
     if (self.lastPointX == 0 || (self.lastTextPos > 0 && self.lastTextPos < self.text.length)) {
-        // This is handled in -[TrackedTextField closestPositionToPoint:]
         return;
     }
 
@@ -75,7 +78,6 @@ extern bool isUseStackQueueCall;
 }
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point {
-    // Handle cursor movement between characters
     UITextPosition *position = [super closestPositionToPoint:point];
     int start = [self offsetFromPosition:self.beginningOfDocument toPosition:position];
     if (start - self.lastTextPos != 0) {
@@ -88,8 +90,8 @@ extern bool isUseStackQueueCall;
 }
 
 - (void)deleteBackward {
+    // NSLog(@"[KeyboardDebug] deleteBackward invoked (Backspace pressed)");
     if (self.text.length > 1) {
-        // Keep the first character (a space)
         [super deleteBackward];
     } else {
         self.text = @" ";
@@ -104,49 +106,98 @@ extern bool isUseStackQueueCall;
     return YES;
 }
 
-// Old name: insertText
-- (NSRange)insertFilteredText:(NSString *)text {
-    int cursorPos = [super offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
+- (void)insertText:(NSString *)text {
+    // NSLog(@"[KeyboardDebug] UIKeyInput insertText received raw input from iOS: '%@'", text);
+    if (self.ignoreBridgeEvents) {
+        // NSLog(@"[KeyboardDebug] insertText bypassed (ignoreBridgeEvents is active)");
+        [super insertText:text];
+        return;
+    }
+    self.ignoreBridgeEvents = YES;
 
+    int cursorPos = [super offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
     int off = self.lastTextPos - cursorPos;
     if (off > 0) {
-        // Handle text markup by first deleting N amount of characters equal to the replaced text
         [self sendMultiBackspaces:off];
     }
-    // What else is done by past-autocomplete (insert a space after autocompletion)
-    // See -[TrackedTextField replaceRangeWithTextWithoutClosingTyping:replacementText:]
 
     self.lastTextPos = cursorPos + text.length;
+    [self sendText:text];
 
+    [super insertText:text];
+    self.ignoreBridgeEvents = NO;
+}
+
+- (void)replaceRange:(UITextRange *)range withText:(NSString *)text {
+    // NSLog(@"[KeyboardDebug] replaceRange:withText: caught auto-correction/replacement: '%@'", text);
+    if (self.ignoreBridgeEvents) {
+        [super replaceRange:range withText:text];
+        return;
+    }
+    self.ignoreBridgeEvents = YES;
+
+    int oldLength = [super offsetFromPosition:range.start toPosition:range.end];
+    [self sendMultiBackspaces:oldLength];
+    [self sendText:text];
+    self.lastTextPos += text.length - oldLength;
+
+    [super replaceRange:range withText:text];
+    self.ignoreBridgeEvents = NO;
+}
+
+- (NSRange)insertFilteredText:(NSString *)text {
+    // NSLog(@"[KeyboardDebug] Private insertFilteredText called: '%@'", text);
+    if (self.ignoreBridgeEvents) {
+        return [super insertFilteredText:text];
+    }
+    self.ignoreBridgeEvents = YES;
+
+    int cursorPos = [super offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
+    int off = self.lastTextPos - cursorPos;
+    if (off > 0) {
+        [self sendMultiBackspaces:off];
+    }
+
+    self.lastTextPos = cursorPos + text.length;
     [self sendText:text];
 
     NSRange range = [super insertFilteredText:text];
+    self.ignoreBridgeEvents = NO;
     return range;
 }
 
 - (id)replaceRangeWithTextWithoutClosingTyping:(UITextRange *)range replacementText:(NSString *)text
 {
+    // NSLog(@"[KeyboardDebug] replaceRangeWithTextWithoutClosingTyping called: '%@'", text);
+    if (self.ignoreBridgeEvents) {
+        return [super replaceRangeWithTextWithoutClosingTyping:range replacementText:text];
+    }
+    self.ignoreBridgeEvents = YES;
+
     int oldLength = [super offsetFromPosition:range.start toPosition:range.end];
-
-    // Delete the range of needs for autocompletion
     [self sendMultiBackspaces:oldLength];
-
-    // Insert the autocompleted text
     [self sendText:text];
     self.lastTextPos += text.length - oldLength;
 
-    return [super replaceRangeWithTextWithoutClosingTyping:range replacementText:text];
+    id result = [super replaceRangeWithTextWithoutClosingTyping:range replacementText:text];
+    self.ignoreBridgeEvents = NO;
+    return result;
 }
 
 - (void)setAttributedMarkedText:(NSAttributedString *)markedText selectedRange:(NSRange)selectedRange {
-    // Delete the marked range
+    // NSLog(@"[KeyboardDebug] setAttributedMarkedText (marked text update): '%@'", markedText.string);
+    if (self.ignoreBridgeEvents) {
+        [super setAttributedMarkedText:markedText selectedRange:selectedRange];
+        return;
+    }
+    self.ignoreBridgeEvents = YES;
+
     NSInteger markedLength = [self offsetFromPosition:self.markedTextRange.start toPosition:self.markedTextRange.end];
     [self sendMultiBackspaces:markedLength];
 
     [super setAttributedMarkedText:markedText selectedRange:selectedRange];
-
-    // Insert the new text
     [self sendText:markedText.string];
+    self.ignoreBridgeEvents = NO;
 }
 
 - (void)setText:(NSString *)text {

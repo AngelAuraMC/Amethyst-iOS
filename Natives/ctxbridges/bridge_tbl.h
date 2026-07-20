@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include "gl_bridge.h"
 #include "osm_bridge.h"
+#include "vk_bridge.h"
 
 typedef union {
     gl_render_window_t gl;
     osm_render_window_t osm;
+    vk_render_window_t vk;
 } basic_render_window_t;
 
 typedef basic_render_window_t* (*br_init_context_t)(basic_render_window_t* share);

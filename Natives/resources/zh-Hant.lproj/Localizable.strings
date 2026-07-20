@@ -141,7 +141,7 @@
 "preference.title.renderer.debug.auto" = "自動：gl4es或ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 － 輸出OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE（1.17+）— 輸出OpenGL 3.2（核心，有限）";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) － 輸出OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "改變要使用的OpenGL渲染引擎";
 

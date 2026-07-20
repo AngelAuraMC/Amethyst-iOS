@@ -36,6 +36,7 @@ $(CLASSES): $(OUTPUTDIR)/%.class: $(SOURCEDIR)/%.java
 $(OUTPUTDIR)/launcher.jar: $(CLASSES) check_empty_classes
 	@set -e
 	@echo "Creating $@"
+	@cp -r $(SOURCEDIR)/launcher/META-INF $(basename $@)/ 2>/dev/null || true
 	@$(BOOTJDK)/jar -cf $@ -C $(basename $@) .
 
 $(OUTPUTDIR)/lwjgl.jar: $(CLASSES) check_empty_classes
@@ -43,7 +44,12 @@ $(OUTPUTDIR)/lwjgl.jar: $(CLASSES) check_empty_classes
 	@echo "Creating $@"
 	@mkdir -p $(OUTPUTDIR)/lwjgl_lib
 	@cd $(OUTPUTDIR)/lwjgl_lib && find ../../libs/lwjgl -name 'lwjgl*.jar' -exec $(BOOTJDK)/jar -xf {} \; && rm -rf META-INF
+	@cd $(OUTPUTDIR)/lwjgl_lib && $(BOOTJDK)/jar -xf "../../../lwjgl.jar" && rm -rf META-INF
 	@cp -R $(OUTPUTDIR)/lwjgl/* $(OUTPUTDIR)/lwjgl_lib/
+	@mkdir -p $(OUTPUTDIR)/lwjgl_lib/com/apple/ios/audio
+	@cp -R $(OUTPUTDIR)/launcher/com/apple/ios/audio/*.class $(OUTPUTDIR)/lwjgl_lib/com/apple/ios/audio/
+	@mkdir -p $(OUTPUTDIR)/lwjgl_lib/META-INF/services
+	@cp $(SOURCEDIR)/launcher/META-INF/services/javax.sound.sampled.spi.MixerProvider $(OUTPUTDIR)/lwjgl_lib/META-INF/services/
 	@$(BOOTJDK)/jar -cf $@ -C $(OUTPUTDIR)/lwjgl_lib .
 
 $(OUTPUTDIR)/patchjna_agent.jar: $(CLASSES)

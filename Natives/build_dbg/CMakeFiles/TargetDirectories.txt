@@ -1,0 +1,11 @@
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/awt_headless.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/awt_xawt.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/tinygl4angle.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/glsl_optimizer.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/ltw.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/AFNetworking.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/AmethystAccountJNI.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/audio_capture.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/AngelAuraAmethyst.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/edit_cache.dir
+/Volumes/D/Amethyst-iOS-25/Natives/build_dbg/CMakeFiles/rebuild_cache.dir

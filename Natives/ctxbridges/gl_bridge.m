@@ -12,12 +12,39 @@ static egl_library handle;
 
 void dlsym_EGL() {
     void* dl_handle = dlopen("@rpath/libtinygl4angle.dylib", RTLD_GLOBAL);
-    NSCAssert(dl_handle, @(dlerror()));
+    if (!dl_handle) {
+        dl_handle = dlopen("@rpath/libEGL.framework/libEGL", RTLD_LOCAL);
+    }
+    if (!dl_handle) {
+        NSLog(@"EGLBridge: Failed to load ANGLE EGL library");
+        return;
+    }
+    BOOL useLTW = [@ RENDERER_NAME_LTW isEqualToString:
+        NSProcessInfo.processInfo.environment[@"AMETHYST_RENDERER"]];
+
     handle.eglBindAPI = dlsym(dl_handle, "eglBindAPI");
     handle.eglChooseConfig = dlsym(dl_handle, "eglChooseConfig");
-    handle.eglCreateContext = dlsym(dl_handle, "eglCreateContext");
+    if (useLTW) {
+        // Resolve EGL functions from LTW's own handle so its wrappers
+        // (eglCreateContext, eglDestroyContext, eglMakeCurrent) are
+        // picked up. RTLD_DEFAULT may find ANGLE's instead due to flat
+        // namespace search order, so use dlopen + dlsym on the LTW
+        // handle directly.
+        void* ltw = dlopen("@rpath/libltw.dylib", RTLD_LAZY | RTLD_LOCAL);
+        if (ltw) {
+            handle.eglCreateContext = dlsym(ltw, "eglCreateContext");
+            handle.eglDestroyContext = dlsym(ltw, "eglDestroyContext");
+            handle.eglMakeCurrent = dlsym(ltw, "eglMakeCurrent");
+        }
+        if (!handle.eglCreateContext) handle.eglCreateContext = dlsym(dl_handle, "eglCreateContext");
+        if (!handle.eglDestroyContext) handle.eglDestroyContext = dlsym(dl_handle, "eglDestroyContext");
+        if (!handle.eglMakeCurrent) handle.eglMakeCurrent = dlsym(dl_handle, "eglMakeCurrent");
+    } else {
+        handle.eglCreateContext = dlsym(dl_handle, "eglCreateContext");
+        handle.eglDestroyContext = dlsym(dl_handle, "eglDestroyContext");
+        handle.eglMakeCurrent = dlsym(dl_handle, "eglMakeCurrent");
+    }
     handle.eglCreateWindowSurface = dlsym(dl_handle, "eglCreateWindowSurface");
-    handle.eglDestroyContext = dlsym(dl_handle, "eglDestroyContext");
     handle.eglDestroySurface = dlsym(dl_handle, "eglDestroySurface");
     handle.eglGetConfigAttrib = dlsym(dl_handle, "eglGetConfigAttrib");
     handle.eglGetCurrentContext = dlsym(dl_handle, "eglGetCurrentContext");
@@ -25,7 +52,6 @@ void dlsym_EGL() {
     handle.eglGetError = dlsym(dl_handle, "eglGetError");
     handle.eglGetPlatformDisplay = dlsym(dl_handle, "eglGetPlatformDisplay");
     handle.eglInitialize = dlsym(dl_handle, "eglInitialize");
-    handle.eglMakeCurrent = dlsym(dl_handle, "eglMakeCurrent");
     handle.eglSwapBuffers = dlsym(dl_handle, "eglSwapBuffers");
     handle.eglReleaseThread = dlsym(dl_handle, "eglReleaseThread");
     handle.eglSwapInterval = dlsym(dl_handle, "eglSwapInterval");
@@ -51,7 +77,7 @@ static bool gl_init() {
 gl_render_window_t* gl_init_context(gl_render_window_t *share) {
     gl_render_window_t* bundle = calloc(1, sizeof(gl_render_window_t));
 
-    NSString *renderer = NSProcessInfo.processInfo.environment[@"POJAV_RENDERER"];
+    NSString *renderer = NSProcessInfo.processInfo.environment[@"AMETHYST_RENDERER"];
     BOOL angleDesktopGL = [renderer isEqualToString:@ RENDERER_NAME_MTL_ANGLE];
 
     const EGLint attribs[] = {
@@ -72,8 +98,11 @@ gl_render_window_t* gl_init_context(gl_render_window_t *share) {
         free(bundle);
         return NULL;
     }
-    assert(bundle->config);
-    assert(num_configs > 0);
+    if (!bundle->config || num_configs == 0) {
+        NSDebugLog(@"EGLBridge: No suitable EGL config found (num_configs=%d, config=%p)", num_configs, bundle->config);
+        free(bundle);
+        return NULL;
+    }
 
     if (!handle.eglGetConfigAttrib(g_EglDisplay, bundle->config, EGL_NATIVE_VISUAL_ID, &vid)) {
         NSDebugLog(@"EGLBridge: Error eglGetConfigAttrib() failed: 0x%x", handle.eglGetError());
@@ -129,10 +158,9 @@ void gl_make_current(gl_render_window_t* bundle) {
 }
 
 void gl_swap_buffers() {
+    if (!currentBundle) return;
     if (!handle.eglSwapBuffers(g_EglDisplay, currentBundle->gl.surface) && handle.eglGetError() == EGL_BAD_SURFACE) {
         NSLog(@"eglSwapBuffers error 0x%x", handle.eglGetError());
-        //stopSwapBuffers = true;
-        //closeGLFWWindow();
     }
 }
 
@@ -141,13 +169,15 @@ void gl_swap_interval(int swapInterval) {
 }
 
 void gl_terminate() {
-    handle.eglMakeCurrent(g_EglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-    handle.eglDestroySurface(g_EglDisplay, currentBundle->gl.surface);
-    handle.eglDestroyContext(g_EglDisplay, currentBundle->gl.context);
+    if (currentBundle) {
+        handle.eglMakeCurrent(g_EglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        handle.eglDestroySurface(g_EglDisplay, currentBundle->gl.surface);
+        handle.eglDestroyContext(g_EglDisplay, currentBundle->gl.context);
+        free(currentBundle);
+        currentBundle = nil;
+    }
     handle.eglTerminate(g_EglDisplay);
     handle.eglReleaseThread();
-    free(currentBundle);
-    currentBundle = nil;
 }
 
 void set_gl_bridge_tbl() {

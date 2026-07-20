@@ -169,7 +169,7 @@
 "preference.title.renderer.debug.auto" = "Авто: gl4es или ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 — обеспечивает OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) — обеспечивает OpenGL 3.2 (ограниченно, Core Profile)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) — обеспечивает OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Выберите используемую графическую реализацию OpenGL. Zink временно отключён для диагностики ошибок для iOS 16 и новее.";
 

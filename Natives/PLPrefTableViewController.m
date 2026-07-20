@@ -172,7 +172,8 @@
     self.typeChildPane = ^void(UITableViewCell *cell, NSString *section, NSString *key, NSDictionary *item) {
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cell.selectionStyle = UITableViewCellSelectionStyleGray;
-        cell.detailTextLabel.text = weakSelf.getPreference(section, key);
+        id value = weakSelf.getPreference(section, key);
+        cell.detailTextLabel.text = [value isKindOfClass:[NSString class]] ? value : [value description];
     };
 
     self.typeTextField = ^void(UITableViewCell *cell, NSString *section, NSString *key, NSDictionary *item) {
@@ -198,7 +199,8 @@
     self.typePickField = ^void(UITableViewCell *cell, NSString *section, NSString *key, NSDictionary *item) {
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cell.selectionStyle = UITableViewCellSelectionStyleGray;
-        cell.detailTextLabel.text = weakSelf.getPreference(section, key);
+        id value = weakSelf.getPreference(section, key);
+        cell.detailTextLabel.text = [value isKindOfClass:[NSString class]] ? value : [value description];
     };
 
     self.typeSlider = ^void(UITableViewCell *cell, NSString *section, NSString *key, NSDictionary *item) {
@@ -218,7 +220,9 @@
         if (customSwitchValue == nil) {
             [view setOn:[weakSelf.getPreference(section, key) boolValue] animated:NO];
         } else {
-            [view setOn:[weakSelf.getPreference(section, key) isEqualToString:customSwitchValue[1]] animated:NO];
+            id prefValue = weakSelf.getPreference(section, key);
+            NSString *prefStr = [prefValue isKindOfClass:[NSString class]] ? prefValue : [prefValue description];
+            [view setOn:[prefStr isEqualToString:customSwitchValue[1]] animated:NO];
         }
         [view addTarget:weakSelf action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
         cell.accessoryView = view;
@@ -373,7 +377,9 @@
                     invokeAction(pickKeys[i]);
                 }
             }]];
-        if ([cell.detailTextLabel.text isEqualToString:pickKeys[i]]) {
+        id detailText = cell.detailTextLabel.text;
+        NSString *detailStr = [detailText isKindOfClass:[NSString class]] ? detailText : [detailText description];
+        if ([detailStr isEqualToString:pickKeys[i]]) {
             menuItems.lastObject.state = UIMenuElementStateOn;
         }
     }

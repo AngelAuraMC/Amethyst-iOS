@@ -3,6 +3,7 @@
 #import "UIKit+hook.h"
 #import "config.h"
 #import "utils.h"
+#import "ZinkConfig.h"
 
 @interface PLPreferences()
 @end
@@ -25,7 +26,8 @@
             @"fullscreen_airplay": @YES,
             @"silence_other_audio": @NO,
             @"silence_with_switch": @NO,
-            @"allow_microphone": @NO
+            @"allow_microphone": @NO,
+            @"microphone_source": @"auto"
         }.mutableCopy,
         @"control": @{
             @"default_ctrl": @"default.json",
@@ -56,12 +58,32 @@
                 }.mutableCopy,
                 @"8": @"internal",
                 @"17": @"internal",
-                @"21": @"internal"
+                @"21": @"internal",
+                @"25": @"internal"
             }.mutableCopy,
             @"java_args": @"",
             @"env_variables": @"",
             @"auto_ram": @(!getEntitlementValue(@"com.apple.private.memorystatus")),
             @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.25)]
+        }.mutableCopy,
+        @"mobileglues": @{
+            @"enable_angle": @NO,
+            @"enable_no_error": @(0),
+            @"enable_ext_timer_query": @YES,
+            @"enable_ext_compute_shader": @NO,
+            @"enable_ext_direct_state_access": @NO,
+            @"max_glsl_cache_size": @(32),
+            @"multidraw_mode": @(0),
+            @"angle_depth_clear_fix_mode": @(0),
+            @"custom_gl_version": @(0),
+            @"fsr1_setting": @(0)
+        }.mutableCopy,
+        @"zink": @{
+            @"optimization_level": @(-1),
+            @"gl_override": @(0),
+            @"enable_gl_thread": @YES,
+            @"glsl_cache_size": @(32),
+            @"api_features": @(0xFFFFFFFF)
         }.mutableCopy,
         @"internal": @{
             @"isolated": @NO,
@@ -86,7 +108,11 @@
             @"debug_ipad_ui": @(realUIIdiom == UIUserInterfaceIdiomPad),
             @"debug_auto_correction": @YES,
             @"debug_show_layout_bounds": @NO,
-            @"debug_show_layout_overlap": @NO
+            @"debug_show_layout_overlap": @NO,
+            @"debug_server_enabled": @NO,
+            @"debug_server_port": @(9090),
+            @"debug_server_token": @"",
+            @"debug_server_localhost_only": @NO
         }.mutableCopy;
         defaults[@"warnings"] = @{
             @"local_warn": @YES,

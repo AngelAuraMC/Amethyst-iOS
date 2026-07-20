@@ -6,7 +6,6 @@
 /JavaApp/local_out
 /Natives/AngelAuraAmethyst
 /Natives/build
-/Natives/external/UnzipKit
 .DS_Store
 xcshareddata/
 xcuserdata/
@@ -14,3 +13,6 @@ project.xcworkspace/
 /depends
 /Natives/config.h
 entitlements.codesign.xml
+/Compare
+/.rule/
+/sample/

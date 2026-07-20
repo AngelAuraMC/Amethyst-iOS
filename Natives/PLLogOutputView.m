@@ -169,8 +169,8 @@ static PLLogOutputView* current;
     });
 }
 
-+ (BOOL)handleExitCode:(int)code {
-    if (!current) return NO;
++ (void)handleExitCode:(int)code {
+    if (!current) return;
     dispatch_async(dispatch_get_main_queue(), ^(void){
         if (current.navController.view.hidden) {
             [current actionToggleLogOutput];
@@ -206,7 +206,6 @@ static PLLogOutputView* current;
 
         fatalErrorOccurred = YES;
     });
-    return YES;
 }
 
 @end

@@ -29,9 +29,9 @@ void AWTInputBridge_nativeSendData(int type, int i1, int i2, int i3, int i4) {
             (*runtimeJNIEnvPtr)->ExceptionClear(runtimeJNIEnvPtr);
             class_CTCAndroidInput = (*runtimeJNIEnvPtr)->FindClass(runtimeJNIEnvPtr, "com/github/caciocavallosilano/cacio/ctc/CTCAndroidInput");
         }
-        assert(class_CTCAndroidInput != NULL);
+        if (!class_CTCAndroidInput) return;
         method_ReceiveInput = (*runtimeJNIEnvPtr)->GetStaticMethodID(runtimeJNIEnvPtr, class_CTCAndroidInput, "receiveData", "(IIIII)V");
-        assert(method_ReceiveInput != NULL);
+        if (!method_ReceiveInput) return;
     }
 
     (*runtimeJNIEnvPtr)->CallStaticVoidMethod(
@@ -69,10 +69,10 @@ void AWTInputBridge_sendKey(int keycode) {
     } else if (!surfaceJNIEnv) {
         // Obtain JNIEnvs
         (*runtimeJavaVMPtr)->AttachCurrentThread(runtimeJavaVMPtr, &surfaceJNIEnv, NULL);
-        assert(surfaceJNIEnv);
+        if (!surfaceJNIEnv) return;
         dispatch_async(dispatch_get_main_queue(), ^{
             (*runtimeJavaVMPtr)->AttachCurrentThread(runtimeJavaVMPtr, &runtimeJNIEnvPtr, NULL);
-            assert(runtimeJNIEnvPtr);
+            if (!runtimeJNIEnvPtr) return;
         });
 
         // Obtain CTCScreen.getCurrentScreenRGB()
@@ -81,9 +81,9 @@ void AWTInputBridge_sendKey(int keycode) {
             (*surfaceJNIEnv)->ExceptionClear(surfaceJNIEnv);
             class_CTCScreen = (*surfaceJNIEnv)->FindClass(surfaceJNIEnv, "com/github/caciocavallosilano/cacio/ctc/CTCScreen");
         }
-        assert(class_CTCScreen != NULL);
+        if (!class_CTCScreen) return;
         method_GetRGB = (*surfaceJNIEnv)->GetStaticMethodID(surfaceJNIEnv, class_CTCScreen, "getCurrentScreenRGB", "()[I");
-        assert(method_GetRGB != NULL);
+        if (!method_GetRGB) return;
         rgbArray = calloc(4, (size_t) (windowWidth * windowHeight));
     }
 

@@ -23,9 +23,7 @@ void handle_fatal_exit(int code) {
         return;
     }
 
-    if (![PLLogOutputView handleExitCode:code]) {
-        return;
-    }
+    [PLLogOutputView handleExitCode:code];
 
     if (fatalExitGroup != nil) {
         // Likely other threads are crashing, put them to sleep
@@ -116,7 +114,9 @@ void *hooked_dlopen_26_ppl(const char *path, int mode) {
     mach_port_t thread = mach_thread_self();
     thread_get_state(thread, ARM_DEBUG_STATE64, (thread_state_t)&origDebugState, &(mach_msg_type_number_t){ARM_DEBUG_STATE64_COUNT});
     thread_swap_exception_ports(thread, mask, handler, behavior, flavor, &mask, &masksCnt, &handler, &behavior, &flavor);
-    assert(masksCnt == 1);
+    if (masksCnt != 1) {
+        NSLog(@"main_hook: Expected 1 exception port, got %d. HW breakpoint hook may fail.", masksCnt);
+    }
     
     // hook stuff. this will overwrite LiveContainer private container multitask's hook, we will load __TEXT using JIT inside
     arm_debug_state64_t hookDebugState = {0};

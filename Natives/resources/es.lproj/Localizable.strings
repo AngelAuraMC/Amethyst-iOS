@@ -132,7 +132,7 @@
 "preference.title.renderer.debug.auto" = "Automático: gl4es o ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - exporta a OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - exporta OpenGL 3.1 (perfil Core, limitado)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exporta a OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Cambiar el motor de renderizado para que OpenGL utilicé";
 

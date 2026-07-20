@@ -13,6 +13,7 @@
 #import "config.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
+#import "debug/DebugServer.h"
 
 @interface LauncherPreferencesViewController()
 @property(nonatomic) NSArray<NSString*> *rendererKeys, *rendererList;
@@ -44,7 +45,11 @@
     self.hasDetail = YES;
     self.prefDetailVisible = self.navigationController == nil;
     
-    self.prefSections = @[@"general", @"video", @"control", @"java", @"debug"];
+    self.prefSections = @[@"general", @"video",
+#if MOBILEGLUES_ENABLED
+        @"mobileglues",
+#endif
+        @"control", @"java", @"debug"];
 
     self.rendererKeys = getRendererKeys(NO);
     self.rendererList = getRendererNames(NO);
@@ -214,9 +219,124 @@
             @{@"key": @"allow_microphone",
               @"hasDetail": @YES,
               @"icon": @"mic",
-              @"type": self.typeSwitch
+              @"type": self.typeSwitch,
+              @"requestReload": @YES
             },
-        ], @[
+            @{@"key": @"microphone_source",
+              @"hasDetail": @YES,
+              @"icon": @"mic.badge.plus",
+              @"type": self.typePickField,
+              @"enableCondition": ^BOOL(){
+                  return [getPrefObject(@"video.allow_microphone") boolValue];
+              },
+              @"pickKeys": @[@"auto", @"front", @"bottom", @"back"],
+              @"pickList": @[
+                  localize(@"preference.title.microphone_source-auto", nil),
+                  localize(@"preference.title.microphone_source-front", nil),
+                  localize(@"preference.title.microphone_source-bottom", nil),
+                  localize(@"preference.title.microphone_source-back", nil)
+              ]
+            },
+        ],
+#if MOBILEGLUES_ENABLED
+        @[
+            // MobileGlues settings
+            @{@"icon": @"cpu"},
+            @{@"key": @"enable_angle",
+              @"hasDetail": @YES,
+              @"icon": @"triangle",
+              @"type": self.typeSwitch,
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"enable_no_error",
+              @"hasDetail": @YES,
+              @"icon": @"exclamationmark.triangle",
+              @"type": self.typePickField,
+              @"enableCondition": whenNotInGame,
+              @"pickKeys": @[@"0", @"1", @"2"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_enable_no_error-0", nil),
+                  localize(@"preference.title.mg_enable_no_error-1", nil),
+                  localize(@"preference.title.mg_enable_no_error-2", nil)
+              ]
+            },
+            @{@"key": @"enable_ext_timer_query",
+              @"hasDetail": @YES,
+              @"icon": @"clock",
+              @"type": self.typeSwitch,
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"enable_ext_compute_shader",
+              @"hasDetail": @YES,
+              @"icon": @"cube.transparent",
+              @"type": self.typeSwitch,
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"enable_ext_direct_state_access",
+              @"hasDetail": @YES,
+              @"icon": @"directconnect",
+              @"type": self.typeSwitch,
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"max_glsl_cache_size",
+              @"hasDetail": @YES,
+              @"icon": @"memorychip",
+              @"type": self.typeSlider,
+              @"min": @(0),
+              @"max": @(256),
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"multidraw_mode",
+              @"hasDetail": @YES,
+              @"icon": @"square.stack.3d.down.dottedline",
+              @"type": self.typePickField,
+              @"enableCondition": whenNotInGame,
+              @"pickKeys": @[@"0", @"1", @"2"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_multidraw_mode-0", nil),
+                  localize(@"preference.title.mg_multidraw_mode-1", nil),
+                  localize(@"preference.title.mg_multidraw_mode-2", nil)
+              ]
+            },
+            @{@"key": @"angle_depth_clear_fix_mode",
+              @"hasDetail": @YES,
+              @"icon": @"rectangle.3.group",
+              @"type": self.typeSwitch,
+              @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"custom_gl_version",
+              @"hasDetail": @YES,
+              @"icon": @"number",
+              @"type": self.typePickField,
+              @"enableCondition": whenNotInGame,
+              @"pickKeys": @[@"0", @"4.0", @"4.1", @"4.2", @"4.3", @"4.4", @"4.5", @"4.6"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_custom_gl_version-0", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.0", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.1", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.2", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.3", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.4", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.5", nil),
+                  localize(@"preference.title.mg_custom_gl_version-4.6", nil)
+              ]
+            },
+            @{@"key": @"fsr1_setting",
+              @"hasDetail": @YES,
+              @"icon": @"square.grid.3x2",
+              @"type": self.typePickField,
+              @"enableCondition": whenNotInGame,
+              @"pickKeys": @[@"0", @"1", @"2", @"3"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_fsr1_setting-0", nil),
+                  localize(@"preference.title.mg_fsr1_setting-1", nil),
+                  localize(@"preference.title.mg_fsr1_setting-2", nil),
+                  localize(@"preference.title.mg_fsr1_setting-3", nil)
+              ]
+            },
+        ],
+#endif
+        @[
             // Control settings
             @{@"icon": @"gamecontroller"},
             @{@"key": @"default_gamepad_ctrl",
@@ -399,6 +519,37 @@
             @{@"key": @"debug_auto_correction",
                 @"hasDetail": @YES,
                 @"icon": @"textformat.abc.dottedunderline",
+                @"type": self.typeSwitch
+            },
+            @{@"key": @"debug_server_enabled",
+                @"hasDetail": @YES,
+                @"icon": @"network",
+                @"type": self.typeSwitch,
+                @"action": ^(BOOL enabled) {
+                    if (enabled) {
+                        NSString *token = getPrefObject(@"debug.debug_server_token");
+                        if (token.length < 8) {
+                            token = [DebugServer generateToken];
+                            setPrefObject(@"debug.debug_server_token", token);
+                        }
+                        uint16_t port = (uint16_t)getPrefInt(@"debug.debug_server_port") ?: 9090;
+                        BOOL localhost = getPrefBool(@"debug.debug_server_localhost_only");
+                        if ([DebugServer.shared startWithPort:port localhostOnly:localhost token:token]) {
+                            showDialog(localize(@"preference.title.debug_server_enabled", nil),
+                                [NSString stringWithFormat:@"URL: %@\n\nToken:\n%@",
+                                    [DebugServer.shared displayURL], token]);
+                        } else {
+                            showDialog(@"Debug server failed",
+                                [NSString stringWithFormat:@"Could not bind to port %u. Try a different port via prefs or kill whatever is using it.", port]);
+                        }
+                    } else {
+                        [DebugServer.shared stop];
+                    }
+                }
+            },
+            @{@"key": @"debug_server_localhost_only",
+                @"hasDetail": @YES,
+                @"icon": @"lock.shield",
                 @"type": self.typeSwitch
             }
         ]

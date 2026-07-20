@@ -1,6 +1,8 @@
 #import "SceneDelegate.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
+#import "LauncherPreferences.h"
+#import "debug/DebugServer.h"
 
 extern UIWindow *mainWindow;
 
@@ -18,6 +20,19 @@ extern UIWindow *mainWindow;
     mainWindow = self.window;
     launchInitialViewController(self.window);
     [self.window makeKeyAndVisible];
+
+    if (getPrefBool(@"debug.debug_server_enabled")) {
+        NSString *token = getPrefObject(@"debug.debug_server_token");
+        if (token.length < 8) {
+            token = [DebugServer generateToken];
+            setPrefObject(@"debug.debug_server_token", token);
+        }
+        uint16_t port = (uint16_t)getPrefInt(@"debug.debug_server_port") ?: 9090;
+        BOOL localhost = getPrefBool(@"debug.debug_server_localhost_only");
+        if ([DebugServer.shared startWithPort:port localhostOnly:localhost token:token]) {
+            NSLog(@"[DebugServer] Ready at %@ (token: %@)", [DebugServer.shared displayURL], token);
+        }
+    }
 }
 
 

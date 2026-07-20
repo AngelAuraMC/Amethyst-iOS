@@ -139,7 +139,7 @@
 
 "preference.title.renderer.debug.auto" = "خودکار: gl4es یا ANGLE";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - OpenGL 3.2 را صادر می کند (نمایه هسته، محدود)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - OpenGL 4.1 را صادر می کند";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.title.resolution" = "وضوح (%)";
 "preference.detail.resolution" = "به شما امکان می دهد وضوح بازی را کاهش دهید.";

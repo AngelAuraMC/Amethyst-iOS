@@ -18,6 +18,7 @@
 #include "ctxbridges/bridge_tbl.h"
 #include "ctxbridges/osmesa_internal.h"
 #include "utils.h"
+#include "ZinkConfig.h"
 
 int clientAPI;
 
@@ -49,22 +50,33 @@ int pojavInit(BOOL useStackQueue) {
 }
 
 int pojavInitOpenGL() {
-    NSString *renderer = NSProcessInfo.processInfo.environment[@"POJAV_RENDERER"];
+    NSString *renderer = NSProcessInfo.processInfo.environment[@"AMETHYST_RENDERER"];
     BOOL isAuto = [renderer isEqualToString:@"auto"];
     if (isAuto || [renderer isEqualToString:@ RENDERER_NAME_GL4ES]) {
         // At this point, if renderer is still auto (unspecified major version), pick gl4es
         renderer = @ RENDERER_NAME_GL4ES;
-        setenv("POJAV_RENDERER", renderer.UTF8String, 1);
+        setenv("AMETHYST_RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
         renderer = @ RENDERER_NAME_MOBILEGLUES;
-        setenv("POJAV_RENDERER", renderer.UTF8String, 1);
+        setenv("AMETHYST_RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MTL_ANGLE]) {
         set_gl_bridge_tbl();
+    } else if ([renderer isEqualToString:@ RENDERER_NAME_LTW]) {
+        // Pre-load ANGLE as host EGL before LTW, so LTW's constructor
+        // finds eglGetProcAddress via RTLD_DEFAULT.
+        dlopen("@rpath/libtinygl4angle.dylib", RTLD_GLOBAL);
+        set_gl_bridge_tbl();
     } else if ([renderer hasPrefix:@"libOSMesa"]) {
         setenv("GALLIUM_DRIVER","zink",1);
+        [ZinkConfig applyZinkEnvironmentFromPreferences];
+        // Pre-load Vulkan loader for Zink before Mesa initializes
+        NSString *vkPath = [NSBundle.mainBundle.privateFrameworksPath stringByAppendingPathComponent:@"libvulkan.1.dylib"];
+        dlopen(vkPath.UTF8String, RTLD_LAZY | RTLD_GLOBAL);
         set_osm_bridge_tbl();
+    } else if ([renderer isEqualToString:@ RENDERER_NAME_VULKAN]) {
+        set_vk_bridge_tbl();
     }
     JNI_LWJGL_changeRenderer(renderer.UTF8String);
     // Preload renderer library
@@ -77,16 +89,16 @@ int pojavInitOpenGL() {
 void pojavSetWindowHint(int hint, int value) {
     if (hint == GLFW_CLIENT_API) {
         clientAPI = value;
-    } else if (strcmp(getenv("POJAV_RENDERER"), "auto")==0 && hint == GLFW_CONTEXT_VERSION_MAJOR) {
+    } else if (strcmp(getenv("AMETHYST_RENDERER"), "auto")==0 && hint == GLFW_CONTEXT_VERSION_MAJOR) {
         switch (value) {
             case 1:
             case 2:
-                setenv("POJAV_RENDERER", RENDERER_NAME_GL4ES, 1);
+                setenv("AMETHYST_RENDERER", RENDERER_NAME_GL4ES, 1);
                 JNI_LWJGL_changeRenderer(RENDERER_NAME_GL4ES);
                 break;
             // case 4: use Zink?
             default:
-                setenv("POJAV_RENDERER", RENDERER_NAME_MOBILEGLUES, 1);
+                setenv("AMETHYST_RENDERER", RENDERER_NAME_MOBILEGLUES, 1);
                 JNI_LWJGL_changeRenderer(RENDERER_NAME_MOBILEGLUES);
                 break;
         }
@@ -94,10 +106,12 @@ void pojavSetWindowHint(int hint, int value) {
 }
 
 void pojavSwapBuffers() {
+    if (!br_swap_buffers) return;
     br_swap_buffers();
 }
 
 void pojavMakeCurrent(basic_render_window_t* window) {
+    if (!br_make_current) return;
     br_make_current(window);
 }
 
@@ -113,7 +127,11 @@ void* pojavCreateContext(basic_render_window_t* contextSrc) {
         pojavInitOpenGL();
     }
 
-    return br_init_context(contextSrc);
+    basic_render_window_t* ctx = br_init_context(contextSrc);
+    if (ctx) {
+        pojavMakeCurrent(ctx);
+    }
+    return ctx;
 }
 
 void pojavSwapInterval(int interval) {

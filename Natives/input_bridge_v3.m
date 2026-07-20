@@ -10,7 +10,6 @@
 #import <UIKit/UIKit.h>
 #import "AppDelegate.h"
 #import "SurfaceViewController.h"
-#import "MinecraftOptionUtils.h"
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -146,7 +145,10 @@ void hackFix18LWJGL(void *addr) {
     char tempPage[PAGE_SIZE];
     memcpy(tempPage, addr, PAGE_SIZE);
     void *result = mmap(addr, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE | MAP_ANON, -1, 0);
-    assert(result != MAP_FAILED);
+    if (result == MAP_FAILED) {
+        NSLog(@"hackFix18LWJGL: mmap failed: %s", strerror(errno));
+        return;
+    }
     memcpy(addr, tempPage, PAGE_SIZE);
     mprotect(addr, PAGE_SIZE, PROT_READ | PROT_EXEC);
 }
@@ -280,10 +282,17 @@ void pojavPumpEvents(void* window) {
         GLFWInputEvent event = events[i];
         switch(event.type) {
             case EVENT_TYPE_CHAR:
+                // NSLog(@"[KeyboardDebug] Queue: Processing EVENT_TYPE_CHAR for character %d", event.i1);
                 if(GLFW_invoke_Char) GLFW_invoke_Char(window, event.i1);
                 break;
             case EVENT_TYPE_CHAR_MODS:
-                if(GLFW_invoke_CharMods) GLFW_invoke_CharMods(window, event.i1, event.i2);
+                // NSLog(@"[KeyboardDebug] Queue: Processing EVENT_TYPE_CHAR_MODS for character %d", event.i1);
+                if(GLFW_invoke_CharMods) {
+                    GLFW_invoke_CharMods(window, event.i1, event.i2);
+                } else if (GLFW_invoke_Char) {
+                    //NSLog(@"[KeyboardDebug] Queue: Fallback to GLFW_invoke_Char for character %d", event.i1);
+                    GLFW_invoke_Char(window, event.i1);
+                }
                 break;
             case EVENT_TYPE_KEY:
                 if(GLFW_invoke_Key) GLFW_invoke_Key(window, event.i1, event.i2, event.i3, event.i4);
@@ -380,6 +389,7 @@ const int hotbarKeys[9] = {
     GLFW_KEY_4, GLFW_KEY_5, GLFW_KEY_6,
     GLFW_KEY_7, GLFW_KEY_8, GLFW_KEY_9
 };
+int guiScale = 1;
 int mcscale(CGFloat input) {
     return (int)((guiScale * input)/resolutionScale);
 }
@@ -399,6 +409,10 @@ int callback_SurfaceViewController_touchHotbar(CGFloat x, CGFloat y) {
     return hotbarKeys[(int) MathUtils_map(x, barX, barX + barWidth, 0, 9)];
 }
 
+JNIEXPORT void JNICALL Java_net_kdt_pojavlaunch_uikit_UIKit_updateMCGuiScale(JNIEnv* env, jclass clazz, jint scale) {
+    guiScale = scale;
+}
+
 JNIEXPORT jstring JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeClipboard(JNIEnv* env, jclass clazz, jint action, jstring copySrc) {
     NSDebugLog(@"Debug: Clipboard access is going on\n");
     return UIKit_accessClipboard(env, action, copySrc);
@@ -406,10 +420,6 @@ JNIEXPORT jstring JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeClipboard(JNI
 
 JNIEXPORT void JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeSetGrabbing(JNIEnv* env, jclass clazz, jboolean grabbing, jfloat xset, jfloat yset) {
     isGrabbing = grabbing;
-    
-    if(grabbing) {
-        [MinecraftOptionUtils.sharedInstance updateMCGuiScale];
-    }
 
     dispatch_async(dispatch_get_main_queue(), ^{
         SurfaceViewController *vc = ((SurfaceViewController *)UIWindow.mainWindow.rootViewController);
@@ -448,14 +458,27 @@ BOOL CallbackBridge_nativeSendChar(jchar codepoint /* jint codepoint */) {
 }
 
 BOOL CallbackBridge_nativeSendCharMods(jchar codepoint, int mods) {
-    if (GLFW_invoke_CharMods && isInputReady) {
+    // NSLog(@"[KeyboardDebug] Bridge: Got character code=%d, modifiers=%d", codepoint, mods);
+    // NSLog(@"[KeyboardDebug] Bridge: Game status: GLFW_invoke_CharMods=%p, GLFW_invoke_Char=%p, isInputReady=%d", 
+    //      GLFW_invoke_CharMods, GLFW_invoke_Char, isInputReady);
+
+    if ((GLFW_invoke_CharMods || GLFW_invoke_Char) && isInputReady) {
         if (isUseStackQueueCall) {
+            // NSLog(@"[KeyboardDebug] Bridge: Sending character %d to stack-queue (isUseStackQueueCall)", codepoint);
             sendData(EVENT_TYPE_CHAR_MODS, (unsigned int) codepoint, mods, 0, 0);
         } else {
-            GLFW_invoke_CharMods((void*) showingWindow, codepoint, mods);
+            if (GLFW_invoke_CharMods) {
+                // NSLog(@"[KeyboardDebug] Bridge: Direct call to GLFW_invoke_CharMods for character %d", codepoint);
+                GLFW_invoke_CharMods((void*) showingWindow, codepoint, mods);
+            } else {
+                // NSLog(@"[KeyboardDebug] Bridge: Fallback! Direct call to GLFW_invoke_Char for character %d", codepoint);
+                GLFW_invoke_Char((void*) showingWindow, (unsigned int) codepoint);
+            }
         }
         return YES;
     }
+    
+    // NSLog(@"[KeyboardDebug] Bridge CRITICAL ERROR: Character %d DISCARDED! Reason: No handlers or game not ready.", codepoint);
     return NO;
 }
 /*

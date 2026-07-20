@@ -170,7 +170,7 @@
 "preference.title.renderer.debug.auto" = "تلقائياً: gl4es أو ANGLE";
 "preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - الصادرات OpenGL 3.2 (موجز أساسي محدود)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "تغيير محرك عرض OpenGL للاستخدام. يتم تعطيل الزنك مؤقتاً على iOS 16 وفيما بعد لتشخيص المشكلات.";
 

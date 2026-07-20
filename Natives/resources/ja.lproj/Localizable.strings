@@ -139,7 +139,7 @@
 
 "preference.title.renderer.debug.auto" = "自動: gl4es または angle";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - エクスポートOpenGL 3.2 (Core Profile, limited)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - MoltenVK経由でOpenGL 4.1をエクスポート";
 
 "preference.title.resolution" = "解像度 (%)";
 "preference.detail.resolution" = "ゲームの解像度を下げることができます。";

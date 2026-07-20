@@ -1,7 +1,10 @@
+#include <mach/mach.h>
+#include <mach/task.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <libgen.h>
+#include <mach/mach.h>
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,11 +13,11 @@
 #include <unistd.h>
 
 #include "utils.h"
+#include "ZinkConfig.h"
 
 #import "ios_uikit_bridge.h"
 #import "JavaLauncher.h"
 #import "LauncherPreferences.h"
-#import "MinecraftOptionUtils.h"
 #import "PLLogOutputView.h"
 #import "PLProfiles.h"
 
@@ -49,6 +52,9 @@ void init_loadDefaultEnv() {
     // Override OpenGL version to 4.1 for Zink
     setenv("MESA_GL_VERSION_OVERRIDE", "4.1", 1);
 
+    // Suppress [mvk-info] log spam (swapchain creation, etc.)
+    setenv("MVK_CONFIG_LOG_LEVEL", "2", 1);
+
     // Runs JVM in a separate thread
     setenv("HACK_IGNORE_START_ON_FIRST_THREAD", "1", 1);
 }
@@ -67,6 +73,82 @@ void init_loadCustomEnv() {
         NSString *value = [line substringFromIndex:range.location+range.length];
         setenv(key.UTF8String, value.UTF8String, 1);
         NSLog(@"[JavaLauncher] Added custom env variable: %@", line);
+    }
+}
+
+void init_loadMobileGluesConfig() {
+    NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
+    BOOL usesMobileGlues = [renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES] ||
+        [renderer isEqualToString:@"auto"] ||
+        [renderer isEqualToString:@ RENDERER_NAME_VULKAN];
+
+    if (!usesMobileGlues) {
+        return;
+    }
+
+    NSString *mgDirPath = [NSString stringWithFormat:@"%s/MG", getenv("POJAV_HOME")];
+    setenv("MG_DIR_PATH", mgDirPath.UTF8String, 1);
+
+    NSMutableDictionary *config = [NSMutableDictionary dictionary];
+
+    // Set safe defaults for compatibility, then let user preferences override
+    config[@"enableExtGL43"] = @1;
+    config[@"enableExtDirectStateAccess"] = @1;
+    config[@"maxGlslCacheSize"] = @128;
+    config[@"customGLVersion"] = @0x030100;
+
+    id enableAngle = getPrefObject(@"mobileglues.enable_angle");
+    if (enableAngle) config[@"enableANGLE"] = [enableAngle boolValue] ? @1 : @0;
+
+    id enableNoError = getPrefObject(@"mobileglues.enable_no_error");
+    if (enableNoError) config[@"enableNoError"] = @([enableNoError intValue]);
+
+    id enableExtTimerQuery = getPrefObject(@"mobileglues.enable_ext_timer_query");
+    if (enableExtTimerQuery) config[@"enableExtTimerQuery"] = [enableExtTimerQuery boolValue] ? @1 : @0;
+
+    id enableExtComputeShader = getPrefObject(@"mobileglues.enable_ext_compute_shader");
+    if (enableExtComputeShader) config[@"enableExtComputeShader"] = [enableExtComputeShader boolValue] ? @1 : @0;
+
+    id enableExtDirectStateAccess = getPrefObject(@"mobileglues.enable_ext_direct_state_access");
+    if (enableExtDirectStateAccess) config[@"enableExtDirectStateAccess"] = [enableExtDirectStateAccess boolValue] ? @1 : @0;
+
+    id maxGlslCacheSize = getPrefObject(@"mobileglues.max_glsl_cache_size");
+    if (maxGlslCacheSize) config[@"maxGlslCacheSize"] = @([maxGlslCacheSize intValue]);
+
+    id multidrawMode = getPrefObject(@"mobileglues.multidraw_mode");
+    if (multidrawMode) config[@"multidrawMode"] = @([multidrawMode intValue]);
+
+    id angleDepthClearFixMode = getPrefObject(@"mobileglues.angle_depth_clear_fix_mode");
+    if (angleDepthClearFixMode) config[@"angleDepthClearFixMode"] = [angleDepthClearFixMode boolValue] ? @1 : @0;
+
+    id customGlVersion = getPrefObject(@"mobileglues.custom_gl_version");
+    if (customGlVersion) {
+        NSString *verStr = [customGlVersion description];
+        if ([verStr isEqualToString:@"3.0"]) config[@"customGLVersion"] = @0x030000;
+        else if ([verStr isEqualToString:@"3.1"]) config[@"customGLVersion"] = @0x030100;
+        else if ([verStr isEqualToString:@"3.2"]) config[@"customGLVersion"] = @0x030200;
+        else if ([verStr isEqualToString:@"3.3"]) config[@"customGLVersion"] = @0x030300;
+        else if ([verStr isEqualToString:@"4.0"]) config[@"customGLVersion"] = @0x040000;
+        else if ([verStr isEqualToString:@"4.1"]) config[@"customGLVersion"] = @0x040100;
+        else if ([verStr isEqualToString:@"4.2"]) config[@"customGLVersion"] = @0x040200;
+        else if ([verStr isEqualToString:@"4.3"]) config[@"customGLVersion"] = @0x040300;
+        else if ([verStr isEqualToString:@"4.4"]) config[@"customGLVersion"] = @0x040400;
+        else if ([verStr isEqualToString:@"4.5"]) config[@"customGLVersion"] = @0x040500;
+        else if ([verStr isEqualToString:@"4.6"]) config[@"customGLVersion"] = @0x040600;
+    }
+
+    id fsr1Setting = getPrefObject(@"mobileglues.fsr1_setting");
+    if (fsr1Setting) config[@"fsr1Setting"] = @([fsr1Setting intValue]);
+
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:config options:NSJSONWritingPrettyPrinted error:&error];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [fm createDirectoryAtPath:mgDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+        [jsonString writeToFile:[mgDirPath stringByAppendingPathComponent:@"config.json"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        NSLog(@"[JavaLauncher] MobileGlues config written to %@/config.json", mgDirPath);
+    } else {
+        NSLog(@"[JavaLauncher] Failed to serialize MobileGlues config: %@", error);
     }
 }
 
@@ -104,8 +186,8 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
 
     init_loadDefaultEnv();
     init_loadCustomEnv();
+    init_loadMobileGluesConfig();
 
-    DeviceGetJITFlags(YES); // refresh JIT flags right after loading env
     BOOL requiresTXMWorkaround = DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM);
     BOOL jit26AlwaysAttached = getPrefBool(@"debug.debug_always_attached_jit");
     if (requiresTXMWorkaround) {
@@ -169,10 +251,20 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
             defaultJRETag = @"1_17_newer";
         }
 
-        // Setup POJAV_RENDERER
+        // Setup AMETHYST_RENDERER
         NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
         NSLog(@"[JavaLauncher] RENDERER is set to %@\n", renderer);
-        setenv("POJAV_RENDERER", renderer.UTF8String, 1);
+        setenv("AMETHYST_RENDERER", renderer.UTF8String, 1);
+
+        // Apply Zink-specific environment variables if Zink renderer is selected
+        if ([renderer hasPrefix:@"libOSMesa"]) {
+            [ZinkConfig applyZinkEnvironmentFromPreferences];
+            // Show active config summary as a console-readable env var + log
+            NSString *configSummary = [ZinkConfig activeConfigSummary];
+            NSLog(@"[ZinkConfig] ========== Zink Renderer Active ==========");
+            NSLog(@"[ZinkConfig] %@", configSummary);
+            setenv("ZINK_ACTIVE_CONFIG", configSummary.UTF8String, 1);
+        }
         // Setup gameDir
         gameDir = [NSString stringWithFormat:@"%s/instances/%@/%@",
             getenv("POJAV_HOME"), getPrefObject(@"general.game_directory"),
@@ -193,14 +285,13 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
             isExecuteJar ? [launchTarget lastPathComponent] : PLProfiles.current.selectedProfile[@"lastVersionId"], minVersion]);
         return 1;
     } else if ([javaHome hasPrefix:@(getenv("POJAV_HOME"))]) {
-        // Copy libawt_xawt.dylib
+        // Symlink libawt_xawt.dylib
         NSString *dest = [NSString stringWithFormat:@"%@/lib/libawt_xawt.dylib", javaHome];
         NSString *source = [NSString stringWithFormat:@"%@/Frameworks/libawt_xawt.dylib", NSBundle.mainBundle.bundlePath];
         NSError *error;
-        [fm removeItemAtPath:dest error:nil];
-        [fm copyItemAtPath:source toPath:dest error:&error];
+        [fm createSymbolicLinkAtPath:dest withDestinationPath:source error:&error];
         if (error) {
-            NSLog(@"[JavaLauncher] Copy libawt_xawt.dylib failed: %@", error.localizedDescription);
+            NSLog(@"[JavaLauncher] Symlink libawt_xawt.dylib failed: %@", error.localizedDescription);
         }
     }
 
@@ -225,9 +316,6 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         return 1;
     }
 
-    // Setup options.txt
-    [MinecraftOptionUtils setupOptionsAtGameDir:gameDir];
-    
     int margc = -1;
     const char *margv[1000];
 
@@ -249,14 +337,55 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-Dlog4j2.formatMsgNoLookups=true";
 
     // Preset OpenGL libname
-    const char *glLibName = getenv("POJAV_RENDERER");
+    const char *glLibName = getenv("AMETHYST_RENDERER");
     if (glLibName) {
         if (!strcmp(glLibName, "auto")) {
             // workaround only applies to 1.20.2+
             glLibName = RENDERER_NAME_MTL_ANGLE;
         }
-        margv[++margc] = [NSString stringWithFormat:@"-Dorg.lwjgl.opengl.libname=%s", glLibName].UTF8String;
+        // libMoltenVK is a Vulkan loader, not a GL implementation; binding it as
+        // opengl.libname makes LWJGL fail looking up GL symbols. The Vulkan
+        // libname is set in PojavLauncher.java instead.
+        //
+        // BUT: Minecraft 26.2's NativeLibrariesBootstrap.loadOpenGL() initializes
+        // org.lwjgl.opengl.GL during startup REGARDLESS of which renderer the
+        // game ultimately uses. With opengl.libname unset, LWJGL falls back to
+        // MacOSXLibraryBundle.getWithIdentifier("com.apple.opengl") which fails
+        // on iOS (no system OpenGL framework) →
+        //   java.lang.UnsatisfiedLinkError: Failed to retrieve bundle with
+        //   identifier: com.apple.opengl
+        // Point opengl.libname at libmobileglues.dylib for Vulkan setups —
+        // MobileGlues is purpose-built for GL-on-Metal/Vulkan on mobile and
+        // already uses our shipped libspirv-cross.dylib for shader translation.
+        // GL.create() finds GL function pointers; if Minecraft ever does call
+        // a GL entry point (compat code, shader build, etc.) MobileGlues can
+        // route it through Vulkan rather than crashing like a context-less
+        // gl4es would.
+        if (strcmp(glLibName, RENDERER_NAME_VULKAN) == 0) {
+            setenv("MVK_CONFIG_RESUME_LOST_DEVICE", "1", 1);
+            setenv("MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS", "1", 1);
+            setenv("MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS", "1", 1);
+        }
+        const char *openglLibName = (strcmp(glLibName, RENDERER_NAME_VULKAN) == 0)
+            ? RENDERER_NAME_MOBILEGLUES
+            : glLibName;
+        margv[++margc] = [NSString stringWithFormat:@"-Dorg.lwjgl.opengl.libname=%s", openglLibName].UTF8String;
     }
+
+    // Point LWJGL spvc bindings at libspirv-cross-c-shared.0.dylib (the one
+    // MobileGlues ships and that's already loaded into the process by the
+    // time spvc.<clinit> runs). LWJGL's default would be to dlopen
+    // "libspirv-cross.dylib"; if we ship a separate file with that filename
+    // it collides at dyld registration because both share the install_name
+    // @rpath/libspirv-cross-c-shared.0.dylib. Reusing the already-loaded
+    // C library avoids the duplicate.
+    //
+    // NOTE: LWJGL's Library.loadNative passes the configured libname through
+    // Platform.mapLibraryNameBundled which on macOS prefixes "lib" and
+    // suffixes ".dylib". Pass just the base name "spirv-cross-c-shared.0"
+    // so the result is libspirv-cross-c-shared.0.dylib (not
+    // liblibspirv-cross-c-shared.0.dylib.dylib).
+    margv[++margc] = "-Dorg.lwjgl.spvc.libname=spirv-cross-c-shared.0";
 
     NSString *librariesPath = [NSString stringWithFormat:@"%@/libs", NSBundle.mainBundle.bundlePath];
     margv[++margc] = [NSString stringWithFormat:@"-javaagent:%@/patchjna_agent.jar=", librariesPath].UTF8String;
@@ -268,9 +397,24 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-XX:+UnlockExperimentalVMOptions";
     margv[++margc] = "-XX:+DisablePrimordialThreadGuardPages";
 
-    // On iOS 26, use mirror mapped JIT by default
+    // Use ParallelGC instead of G1GC. On mobile with limited heap (~922MB),
+    // G1GC's Full GC can pause the app for 1-2 minutes, causing the "freeze
+    // then resume" issue. ParallelGC is more efficient for small heaps and
+    // avoids stop-the-world compaction stalls on iOS.
+    margv[++margc] = "-XX:+UseParallelGC";
+    margv[++margc] = "-XX:ParallelGCThreads=2";
+
+    // On iOS 26+, use mirror mapped JIT for better code cache performance.
+    // JDK 25 (jre25-ios-v1) has a bug in MirrorMappedCodeCache that causes
+    // SIGBUS in ScavengableNMethods::register_nmethod during JIT compilation.
+    // jre25-ios-v2 is supposed to fix this, but keep the flag off for Java 25
+    // until v2 is confirmed stable across all devices.
+    NSString *currentJavaHome = [NSString stringWithUTF8String:getenv("JAVA_HOME") ?: ""];
+    BOOL isJava25Home = [currentJavaHome containsString:@"java-25"];
     if (@available(iOS 26.0, *)) {
-        margv[++margc] = "-XX:+MirrorMappedCodeCache";
+        if (!isJava25Home) {
+            margv[++margc] = "-XX:+MirrorMappedCodeCache";
+        }
     }
 
     // Disable Forge 1.16.x early progress window
@@ -281,7 +425,11 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     NSString *libjlipath11 = [NSString stringWithFormat:@"%@/lib/libjli.dylib", javaHome]; // java 11+
     BOOL isJava8 = [fm fileExistsAtPath:libjlipath8];
     setenv("INTERNAL_JLI_PATH", (isJava8 ? libjlipath8 : libjlipath11).UTF8String, 1);
+    NSLog(@"[Bisect] About to dlopen libjli at %s", getenv("INTERNAL_JLI_PATH"));
+    fflush(stdout); fflush(stderr);
     void* libjli = dlopen(getenv("INTERNAL_JLI_PATH"), RTLD_GLOBAL);
+    NSLog(@"[Bisect] dlopen returned %p", libjli);
+    fflush(stdout); fflush(stderr);
 
     if (!libjli) {
         const char *error = dlerror();

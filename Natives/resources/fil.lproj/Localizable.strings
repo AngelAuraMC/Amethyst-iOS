@@ -140,7 +140,7 @@
 "preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - ini-export ang OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "tinygl4angle (1.17+) - ini-export ang OpenGL 3.2 (Core Profile, limitado)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - ini-export ang OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
 
 "preference.detail.renderer" = "Baguhin ang OpenGL render engine na gagamitin";
 

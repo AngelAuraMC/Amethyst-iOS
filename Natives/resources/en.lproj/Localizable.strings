@@ -172,6 +172,48 @@
 "preference.title.confirm.erase_demo_data" = "This will erase all Demo game versions and data used for Demo accounts.";
 "preference.title.done.erase_demo_data" = "All of the Demo game data has been erased.";
 
+"preference.section.mobileglues" = "MobileGlues Settings";
+"preference.section.footer.mobileglues" = "These settings only apply when MobileGlues renderer is selected. Changes take effect after relaunching the game.";
+
+"preference.title.enable_angle" = "ANGLE ES Driver";
+"preference.detail.enable_angle" = "Use ANGLE as the OpenGL ES driver instead of the system driver. May improve compatibility on some devices.";
+"preference.title.enable_no_error" = "Ignore Shader Errors";
+"preference.detail.enable_no_error" = "Controls how shader compilation errors are handled.";
+"preference.title.mg_enable_no_error-0" = "Disabled (Report Errors)";
+"preference.title.mg_enable_no_error-1" = "Enabled (Ignore Errors)";
+"preference.title.mg_enable_no_error-2" = "Enabled + Log (Ignore and Log)";
+"preference.title.enable_ext_timer_query" = "Timer Query Extension";
+"preference.detail.enable_ext_timer_query" = "Enable GL_EXT_timer_query for GPU timing queries. Improves performance measurement.";
+"preference.title.enable_ext_compute_shader" = "Compute Shader Extension";
+"preference.detail.enable_ext_compute_shader" = "Enable GL_ARB_compute_shader for GPU compute operations. Required by some shader packs.";
+"preference.title.enable_ext_direct_state_access" = "Direct State Access";
+"preference.detail.enable_ext_direct_state_access" = "Enable GL_ARB_direct_state_access for modern OpenGL object management. Improves performance.";
+"preference.title.max_glsl_cache_size" = "GLSL Cache Size (MB)";
+"preference.detail.max_glsl_cache_size" = "Maximum size of the GLSL shader cache in megabytes. Larger cache speeds up shader reloads. Set to 0 to disable caching.";
+"preference.title.multidraw_mode" = "Multidraw Mode";
+"preference.detail.multidraw_mode" = "Multi-draw indirect rendering mode for improved draw call performance.";
+"preference.title.mg_multidraw_mode-0" = "Auto";
+"preference.title.mg_multidraw_mode-1" = "Indirect";
+"preference.title.mg_multidraw_mode-2" = "Emulated";
+"preference.title.angle_depth_clear_fix_mode" = "ANGLE Depth Clear Fix";
+"preference.detail.angle_depth_clear_fix_mode" = "Workaround for depth buffer clearing issues when using ANGLE ES driver.";
+"preference.title.custom_gl_version" = "Custom OpenGL Version";
+"preference.detail.custom_gl_version" = "Override the reported OpenGL version. Useful for compatibility with mods that require specific GL versions.";
+"preference.title.mg_custom_gl_version-0" = "Default";
+"preference.title.mg_custom_gl_version-4.0" = "OpenGL 4.0";
+"preference.title.mg_custom_gl_version-4.1" = "OpenGL 4.1";
+"preference.title.mg_custom_gl_version-4.2" = "OpenGL 4.2";
+"preference.title.mg_custom_gl_version-4.3" = "OpenGL 4.3";
+"preference.title.mg_custom_gl_version-4.4" = "OpenGL 4.4";
+"preference.title.mg_custom_gl_version-4.5" = "OpenGL 4.5";
+"preference.title.mg_custom_gl_version-4.6" = "OpenGL 4.6";
+"preference.title.fsr1_setting" = "FSR 1.0 Upscaling";
+"preference.detail.fsr1_setting" = "AMD FidelityFX Super Resolution 1.0 upscaling quality. Improves performance at lower resolutions.";
+"preference.title.mg_fsr1_setting-0" = "Off";
+"preference.title.mg_fsr1_setting-1" = "Ultra Quality";
+"preference.title.mg_fsr1_setting-2" = "Quality";
+"preference.title.mg_fsr1_setting-3" = "Performance";
+
 "preference.title.renderer" = "Renderer";
 
 "preference.title.renderer.release.auto" = "Auto";
@@ -179,14 +221,42 @@
 "preference.title.renderer.release.angle" = "ANGLE";
 "preference.title.renderer.release.mg" = "MobileGlues";
 "preference.title.renderer.release.zink" = "Zink";
+"preference.title.renderer.release.ltw" = "LTW";
 
 "preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - exports OpenGL 3.2 (Core Profile, limited)";
 "preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - exports OpenGL 4.0, EXPERIMENTAL";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - exports OpenGL 4.1 via MoltenVK";
+"preference.title.renderer.debug.vulkan" = "MoltenVK - native Vulkan via Metal (1.21.6+ snapshots only)";
+"preference.title.renderer.debug.ltw" = "LTW (1.17+) - OpenGL 3.3 via OpenGL ES/Metal, EXPERIMENTAL";
 
-"preference.detail.renderer" = "Change the OpenGL render engine to use. Zink is temporarily disabled on iOS 16 and later to diagnose issues.";
+"Device Info" = "Device Info";
+
+"preference.title.zink_gl_override" = "GL Version Override";
+"preference.detail.zink_gl_override" = "Override the OpenGL version reported by Zink. Lower versions improve compatibility on older GPUs. 0 = auto based on optimization level.";
+"preference.title.zink_gl_override-0" = "Auto (from optimization level)";
+"preference.title.zink_gl_override-3.3" = "OpenGL 3.3 (max compatibility)";
+"preference.title.zink_gl_override-4.0" = "OpenGL 4.0";
+"preference.title.zink_gl_override-4.1" = "OpenGL 4.1 (experimental)";
+
+"preference.title.zink_enable_gl_thread" = "GL Threading";
+"preference.detail.zink_enable_gl_thread" = "Enable Mesa GL threading for better multi-core performance. Disable if you experience rendering artifacts or crashes.";
+"preference.title.zink_glsl_cache_size" = "GLSL Cache Size (MB)";
+"preference.detail.zink_glsl_cache_size" = "Maximum size of the GLSL shader cache. Larger cache reduces shader compilation time.";
+"preference.title.zink_api_features" = "API Feature Set";
+"preference.detail.zink_api_features" = "Controls which OpenGL extensions are available. Limited sets improve performance on older devices.";
+"preference.title.zink_api_features-0" = "Minimal (no ext except basic)";
+"preference.title.zink_api_features-1" = "Basic (core GL only)";
+"preference.title.zink_api_features-2" = "Standard (common extensions)";
+"preference.title.zink_api_features-3" = "Full (all supported extensions)";
+
+"preference.title.debug_server_enabled" = "Debug HTTP server";
+"preference.detail.debug_server_enabled" = "Exposes a web panel on port 9090 for log tail, file browser, and game control. Token-protected. Toggle on to see the URL.";
+"preference.title.debug_server_localhost_only" = "Bind to localhost only";
+"preference.detail.debug_server_localhost_only" = "When ON, the debug server only accepts loopback connections (no LAN access). Turn OFF to connect from a desktop on the same WiFi.";
+
+"preference.detail.renderer" = "Change the OpenGL render engine to use.";
 
 "preference.title.resolution" = "Resolution (%)";
 "preference.detail.resolution" = "Allows you to decrease the game resolution.";
@@ -204,6 +274,12 @@
 "preference.detail.silence_with_switch" = "Enable to disable audio when Silent Mode is on. Headphones and external speakers are not affected.";
 "preference.title.allow_microphone" = "Allow microphone input";
 "preference.detail.allow_microphone" = "Enable this only if you are using voice chat mod. Silent switch option will be ignored, and audio quality from other apps will be affected.";
+"preference.title.microphone_source" = "Microphone selection";
+"preference.detail.microphone_source" = "Auto priority: Front → Bottom → Back. If one fails, the next is tried.";
+"preference.title.microphone_source-auto" = "Auto (Recommended)";
+"preference.title.microphone_source-front" = "Front microphone";
+"preference.title.microphone_source-bottom" = "Bottom microphone";
+"preference.title.microphone_source-back" = "Back microphone";
 "preference.title.default_gamepad_ctrl" = "Controller configuration";
 "preference.title.hardware_hide" = "Hide controls when hardware is connected";
 "preference.detail.hardware_hide" = "Enable the behaviour of automatically disabling the on-screen control overlay when a mouse or game controller is connected.";
