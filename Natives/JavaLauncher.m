@@ -9,6 +9,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <mach/mach.h>
+#include <mach/task.h>
+#include <mach/thread_status.h>
+#include <mach/exception_types.h>
+
 #include "utils.h"
 
 #import "ios_uikit_bridge.h"
@@ -151,6 +156,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     BOOL launchJar = NO;
     NSString *gameDir;
     NSString *defaultJRETag;
+    NSString *lwjglFolder = @"lwjgl-3.3.3";
     NSCAssert(launchTarget, @"Unexpected nil launchTarget");
     if ([launchTarget isKindOfClass:NSDictionary.class]) {
         // Get preferred Java version from current profile
@@ -168,6 +174,28 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         } else {
             defaultJRETag = @"1_17_newer";
         }
+
+        // Use LWJGL 3.4.1 for 26.1+, 3.3.3 for 1.21.11-.
+       // Prefer launchTarget[@"lwjglVersion"] over guessing from the Minecraft version ID,
+      // which is unreliable for snapshots, modpacks, or custom JSONs.
+
+        NSString *lwjglVersionStr = launchTarget[@"lwjglVersion"];
+        if ([lwjglVersionStr isKindOfClass:NSString.class] && lwjglVersionStr.length > 0) {
+            NSArray<NSString *> *lwjglVersion = [lwjglVersionStr componentsSeparatedByString:@"."];
+            int lwjglMajor = lwjglVersion.count > 0 ? [lwjglVersion[0] intValue] : 0;
+            int lwjglMinor = lwjglVersion.count > 1 ? [lwjglVersion[1] intValue] : 0;
+            if (lwjglMajor > 3 || (lwjglMajor == 3 && lwjglMinor >= 4)) {
+                lwjglFolder = @"lwjgl-3.4.1";
+            }
+        } else {
+            // Fallback: no lwjglVersion recorded (unexpected) - guess from the
+            // Minecraft version id like before.
+            int mcMajorVersion = [launchTarget[@"id"] intValue];
+            if (mcMajorVersion >= 26) {
+                lwjglFolder = @"lwjgl-3.4.1";
+            }
+        }
+        NSLog(@"[JavaLauncher] Using LWJGL from %@", lwjglFolder);
 
         // Setup POJAV_RENDERER
         NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
@@ -238,7 +266,8 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
     margv[++margc] = "-Xms128M";
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
-    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks", NSBundle.mainBundle.bundlePath].UTF8String;
+    NSString *lwjglNativesFolder = [lwjglFolder isEqualToString:@"lwjgl-3.4.1"] ? @"lwjgl34" : @"lwjgl33";
+    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks:%@/Frameworks/%@", NSBundle.mainBundle.bundlePath, NSBundle.mainBundle.bundlePath, lwjglNativesFolder].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", gameDir].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.home=%s", getenv("POJAV_HOME")].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.timezone=%@", NSTimeZone.localTimeZone.name].UTF8String;
@@ -357,7 +386,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     init_loadCustomJvmFlags(&margc, (const char **)margv);
     NSLog(@"[Init] Found JLI lib");
 
-    NSString *classpath = [NSString stringWithFormat:@"%@/*", librariesPath];
+    NSString *classpath = [NSString stringWithFormat:@"%@/*:%@/%@/*", librariesPath, librariesPath, lwjglFolder];
     if (launchJar) {
         classpath = [classpath stringByAppendingFormat:@":%@", launchTarget];
     }
