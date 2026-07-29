@@ -30,6 +30,11 @@ jobs:
           brew install --cask zulu@8
           /usr/libexec/java_home -v 1.8
 
+      - name: Select Xcode 26
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app
+          xcodebuild -version
+
       - name: Checkout repository submodules
         run: git submodule update --init --recursive
 
