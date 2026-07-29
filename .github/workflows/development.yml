@@ -25,7 +25,10 @@ jobs:
         uses: actions/checkout@main
 
       - name: Install build tools
-        run: brew install ldid make wget
+        run: |
+          brew install ldid make wget
+          brew install --cask zulu@8
+          /usr/libexec/java_home -v 1.8
 
       - name: Checkout repository submodules
         run: git submodule update --init --recursive
@@ -77,6 +80,7 @@ jobs:
         run: |
           export PATH=/opt/homebrew/bin:$PATH
           export SLIMMED=1
+          export SDKPATH=$(xcrun --sdk iphoneos --show-sdk-path)
           if [ "${{ matrix.platform_name }}" == "ios" ]; then
             # Build ipa only (fork build: TrollStore tipa skipped for CI time)
             gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=${{ matrix.platform }}
