@@ -209,11 +209,52 @@ void registerOpenHandler(JNIEnv *env) {
 }
 
 // JNI_OnLoad
+static void logPendingException(JNIEnv *env, const char *ctx) {
+    jthrowable exc = (*env)->ExceptionOccurred(env);
+    if (exc == NULL) return;
+    (*env)->ExceptionClear(env);
+    jclass throwableCls = (*env)->FindClass(env, "java/lang/Throwable");
+    if (throwableCls == NULL) { (*env)->ExceptionClear(env); return; }
+    jmethodID mToString = (*env)->GetMethodID(env, throwableCls, "toString", "()Ljava/lang/String;");
+    jmethodID mGetCause = (*env)->GetMethodID(env, throwableCls, "getCause", "()Ljava/lang/Throwable;");
+    jthrowable cur = exc;
+    for (int depth = 0; cur != NULL && depth < 5; depth++) {
+        jstring s = (jstring)(*env)->CallObjectMethod(env, cur, mToString);
+        if ((*env)->ExceptionOccurred(env)) { (*env)->ExceptionClear(env); break; }
+        if (s != NULL) {
+            const char *cs = (*env)->GetStringUTFChars(env, s, NULL);
+            NSLog(@"%s: %s%s", ctx, depth ? "caused by: " : "", cs);
+            (*env)->ReleaseStringUTFChars(env, s, cs);
+        }
+        cur = (jthrowable)(*env)->CallObjectMethod(env, cur, mGetCause);
+        if ((*env)->ExceptionOccurred(env)) { (*env)->ExceptionClear(env); break; }
+    }
+}
+
 void JNI_OnLoadGLFW() {
     jclass localGlfwClass = (*runtimeJNIEnvPtr)->FindClass(runtimeJNIEnvPtr, "org/lwjgl/glfw/GLFW");
-    if ((*runtimeJNIEnvPtr)->ExceptionOccurred(runtimeJNIEnvPtr)) {
-        (*runtimeJNIEnvPtr)->ExceptionDescribe(runtimeJNIEnvPtr);
-        (*runtimeJNIEnvPtr)->ExceptionClear(runtimeJNIEnvPtr);
+    logPendingException(runtimeJNIEnvPtr, "JNI_OnLoadGLFW: FindClass(GLFW) threw");
+    if (localGlfwClass == NULL) {
+        // FindClass in JNI_OnLoad resolves against the classloader of whichever
+        // class triggered the library load. MC 26.x's native bootstrap can do that
+        // from a loader that cannot see org.lwjgl, so retry via the system
+        // classloader - the LWJGL jar is always on the launch classpath.
+        NSLog(@"JNI_OnLoadGLFW: FindClass failed, retrying via system classloader");
+        JNIEnv *env = runtimeJNIEnvPtr;
+        jclass clCls = (*env)->FindClass(env, "java/lang/ClassLoader");
+        jclass classCls = (*env)->FindClass(env, "java/lang/Class");
+        if (clCls != NULL && classCls != NULL) {
+            jmethodID mSysCl = (*env)->GetStaticMethodID(env, clCls, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+            jobject sysCl = (*env)->CallStaticObjectMethod(env, clCls, mSysCl);
+            jmethodID mForName = (*env)->GetStaticMethodID(env, classCls, "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+            jstring name = (*env)->NewStringUTF(env, "org.lwjgl.glfw.GLFW");
+            if (mSysCl != NULL && sysCl != NULL && mForName != NULL && name != NULL) {
+                localGlfwClass = (jclass)(*env)->CallStaticObjectMethod(env, classCls, mForName, name, JNI_FALSE, sysCl);
+            }
+            logPendingException(env, "JNI_OnLoadGLFW: system classloader fallback threw");
+        } else {
+            (*env)->ExceptionClear(env);
+        }
     }
     if (localGlfwClass == NULL) {
         NSLog(@"JNI_OnLoadGLFW: FindClass(org/lwjgl/glfw/GLFW) failed, aborting GLFW native init");
