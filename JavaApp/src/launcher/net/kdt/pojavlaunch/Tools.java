@@ -52,7 +52,57 @@ public final class Tools {
     public static final String ASSETS_PATH = DIR_GAME_NEW + "/assets";
     public static final String OBSOLETE_RESOURCES_PATH=DIR_GAME_NEW + "/resources";
 
+    // ANGLE's Metal shader translator cannot compile texelFetch on an
+    // isamplerBuffer, which MC 26.x's clouds shaders require. Install a bundled
+    // resource pack that stubs the clouds vertex shader, and keep it enabled in
+    // options.txt on every launch (older MC versions auto-drop it as
+    // incompatible, so it is harmless there but must be re-added afterwards).
+    private static void setupCloudfixResourcePack() {
+        try {
+            File bundled = new File(DIR_BUNDLE, "cloudfix.zip");
+            if (!bundled.exists()) return;
+            File packDir = new File(DIR_GAME_PROFILE, "resourcepacks");
+            packDir.mkdirs();
+            File dest = new File(packDir, "cloudfix.zip");
+            try (InputStream in = new FileInputStream(bundled);
+                 OutputStream out = new FileOutputStream(dest)) {
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            }
+
+            String entry = "\"file/cloudfix.zip\"";
+            File options = new File(DIR_GAME_PROFILE, "options.txt");
+            String content = options.exists() ? read(options.getAbsolutePath()) : "";
+            if (content.contains(entry)) return;
+
+            StringBuilder sb = new StringBuilder();
+            boolean patched = false;
+            for (String line : content.split("\n", -1)) {
+                if (!patched && line.startsWith("resourcePacks:")) {
+                    int close = line.lastIndexOf(']');
+                    if (close >= 0) {
+                        boolean emptyList = line.substring(0, close).trim().endsWith("[");
+                        line = line.substring(0, close) + (emptyList ? "" : ",") + entry + line.substring(close);
+                        patched = true;
+                    }
+                }
+                sb.append(line).append('\n');
+            }
+            if (!patched) {
+                sb.append("resourcePacks:[\"vanilla\",").append(entry).append("]\n");
+            }
+            try (PrintWriter w = new PrintWriter(new FileWriter(options))) {
+                w.print(sb.toString().replaceAll("\n+$", "\n"));
+            }
+            System.out.println("[CloudFix] enabled cloudfix.zip resource pack");
+        } catch (Throwable t) {
+            System.out.println("[CloudFix] failed to install resource pack: " + t);
+        }
+    }
+
     public static void launchMinecraft(MinecraftAccount profile, final JMinecraftVersionList.Version versionInfo) throws Throwable {
+        setupCloudfixResourcePack();
         String[] launchArgs = getMinecraftArgs(profile, versionInfo);
         // System.out.println("Minecraft Args: " + Arrays.toString(launchArgs));
 
