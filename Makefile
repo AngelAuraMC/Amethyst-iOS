@@ -349,6 +349,9 @@ payload: native dep_mg java jre assets
 	cp $(WORKINGDIR)/*.dylib $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/ || exit 1
 	cp -R $(SOURCEDIR)/JavaApp/libs/others/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	cp $(SOURCEDIR)/JavaApp/build/*.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
+	mkdir -p $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.3.3 $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.4.1
+	mv $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.3.3.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.3.3/lwjgl.jar || exit 1
+	mv $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.4.1.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/lwjgl-3.4.1/lwjgl.jar || exit 1
 	cp -R $(SOURCEDIR)/JavaApp/libs/caciocavallo/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo || exit 1
 	cp -R $(SOURCEDIR)/JavaApp/libs/caciocavallo17/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo17 || exit 1
 	$(call METHOD_DIRCHECK,$(OUTPUTDIR)/Payload)
