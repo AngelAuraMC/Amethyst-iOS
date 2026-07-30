@@ -231,7 +231,11 @@ static void logPendingException(JNIEnv *env, const char *ctx) {
     }
 }
 
-void JNI_OnLoadGLFW() {
+void ensureGLFWBridge() {
+    if (vmGlfwClass != NULL) return;
+    static int attempts = 0;
+    if (attempts >= 8) return;
+    attempts++;
     jclass localGlfwClass = (*runtimeJNIEnvPtr)->FindClass(runtimeJNIEnvPtr, "org/lwjgl/glfw/GLFW");
     logPendingException(runtimeJNIEnvPtr, "JNI_OnLoadGLFW: FindClass(GLFW) threw");
     if (localGlfwClass == NULL) {
@@ -288,7 +292,11 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     registerOpenHandler(env);
     if (!getenv("POJAV_SKIP_JNI_GLFW")) {
         runtimeJNIEnvPtr = env;
-        JNI_OnLoadGLFW();
+        // GLFW bridge setup is deferred to first use (ensureGLFWBridge).
+        // Doing it here can force org.lwjgl.glfw.GLFW.<clinit> while
+        // org.lwjgl.system.MemoryUtil is itself mid-init on this thread
+        // (MC 26.x native bootstrap), leaving MemoryUtil.UNSAFE null and
+        // permanently poisoning the GLFW class.
     }
 
     return JNI_VERSION_1_4;
@@ -322,6 +330,8 @@ ADD_CALLBACK_WWIN(WindowSize)
 void handleFramebufferSizeJava(void* window, int w, int h) {
     if(GLFW_invoke_CursorEnter)GLFW_invoke_CursorEnter(window, 1);
     if(GLFW_invoke_WindowPos)GLFW_invoke_WindowPos(window, 0, 0);
+    ensureGLFWBridge();
+    if (vmGlfwClass == NULL || method_internalWindowSizeChanged == NULL) return;
     (*runtimeJNIEnvPtr)->CallStaticVoidMethod(runtimeJNIEnvPtr, vmGlfwClass, method_internalWindowSizeChanged, (long)window, w, h);
 }
 
@@ -593,7 +603,8 @@ char getKeyModifiers(int key, int action) {
 
 void CallbackBridge_nativeSendKey(int key, int scancode, int action, int mods) {
     if (GLFW_invoke_Key && isInputReady) {
-        keyDownBuffer[MAX(0, key-31)]=(jbyte)action;
+        if (keyDownBuffer == NULL) ensureGLFWBridge();
+        if (keyDownBuffer != NULL) keyDownBuffer[MAX(0, key-31)]=(jbyte)action;
         if (mods == 0) {
             mods = getKeyModifiers(key, action);
         }
