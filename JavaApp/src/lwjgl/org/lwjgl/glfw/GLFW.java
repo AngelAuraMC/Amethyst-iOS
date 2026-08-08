@@ -819,6 +819,21 @@ public class GLFW
         return lastCallback;
     }
 
+    // LWJGL 3.4.1 IME/preedit API (MC 26.x TextInputManager). We keep IME
+    // permanently off (GLFW_IME stays GLFW_FALSE), so these are no-ops - but
+    // they must exist, since this class replaces the vendor GLFW and a caller
+    // that reaches them would otherwise die with NoSuchMethodError.
+    public static void glfwSetPreeditCursorRectangle(@NativeType("GLFWwindow *") long window, int x, int y, int w, int h) {}
+
+    public static void glfwGetPreeditCursorRectangle(@NativeType("GLFWwindow *") long window, @Nullable IntBuffer x, @Nullable IntBuffer y, @Nullable IntBuffer w, @Nullable IntBuffer h) {}
+
+    public static void glfwResetPreeditText(@NativeType("GLFWwindow *") long window) {}
+
+    @Nullable
+    public static IntBuffer glfwGetPreeditCandidate(@NativeType("GLFWwindow *") long window, int index) {
+        return null;
+    }
+
     public static GLFWWindowSizeCallback glfwSetWindowSizeCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWwindowsizefun") GLFWWindowSizeCallbackI cbfun) {
         GLFWWindowSizeCallback lastCallback = mGLFWWindowSizeCallback;
         if (cbfun == null) mGLFWWindowSizeCallback = null;

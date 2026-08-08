@@ -36,11 +36,14 @@ extern bool isUseStackQueueCall;
     for (int i = 0; i < text.length; i++) {
         // Directly convert unichar to jchar since both are in UTF-16 encoding.
         unichar theChar = [text characterAtIndex:i];
+        // Real GLFW fires both the char and charmods callbacks for every
+        // character; the native bridge drops events whose callback is not
+        // registered, so send both (MC <=1.21.x listens on charmods, 26.x+
+        // only on char).
         if (isUseStackQueueCall && self.sendCharMods != nil) {
             self.sendCharMods(theChar, 0);
-        } else {
-            self.sendChar(theChar);
         }
+        self.sendChar(theChar);
     }
 }
 
