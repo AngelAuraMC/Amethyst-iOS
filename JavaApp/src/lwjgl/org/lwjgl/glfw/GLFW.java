@@ -827,6 +827,8 @@ public class GLFW
 
     public static void glfwGetPreeditCursorRectangle(@NativeType("GLFWwindow *") long window, @Nullable IntBuffer x, @Nullable IntBuffer y, @Nullable IntBuffer w, @Nullable IntBuffer h) {}
 
+    public static void glfwGetPreeditCursorRectangle(@NativeType("GLFWwindow *") long window, @Nullable int[] x, @Nullable int[] y, @Nullable int[] w, @Nullable int[] h) {}
+
     public static void glfwResetPreeditText(@NativeType("GLFWwindow *") long window) {}
 
     @Nullable
