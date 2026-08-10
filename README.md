@@ -53,7 +53,7 @@ If you cannot, [AltStore](https://altstore.io) and [SideStore](https://sidestore
 2. Open the package in TrollStore using the share menu.
 
 #### Release build (AltStore/SideStore trusted source)
-These builds will be available soon, stay tuned.
+The source has been added to AltStore and SideStore. You can add it through the trusted repositories page in either app.
 
 #### Nightly builds
 *These builds can contain game-breaking bugs. Use with caution.*
@@ -61,7 +61,7 @@ These builds will be available soon, stay tuned.
 2. Open the downloaded IPA in your sideloading app to install.
 
 #### Nightly builds (AltStore/SideStore trusted sources)
-These builds will be available soon, stay tuned.
+The source has been added to AltStore and SideStore. You can add it through the trusted repositories page in either app.
 
 ### Enabling JIT
 Amethyst makes use of **just-in-time compilation**, or JIT, to provide usable speeds for the end user. JIT is not supported on iOS without the application being debugged, so workarounds are required to enable it. You can use this chart to determine the best solution for you and your setup.
