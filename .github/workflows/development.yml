@@ -1,49 +1,56 @@
 name: Development build
 
 on:
-  pull_request:
-    branches-ignore:
-      - 'l10n_main'
-    types: [opened, reopened]
-  push:
-    branches-ignore:
-      - 'l10n_main'
   workflow_dispatch:
 
 jobs:
   build:
     name: Development build
+    permissions:
+      contents: write
     strategy:
       matrix:
         include:
           - platform: 2
             platform_name: ios
-    
-    runs-on: J316sAP
+
+    runs-on: macos-15
+
     steps:
       - name: Remove work folders
         run: |
-          echo "before"
-          ls -lah ./
           rm -rf ./* || true
           rm -rf ./.??* || true
-          echo "after"
-          ls -lah ./
-          
+
       - name: Checkout repository
         uses: actions/checkout@main
 
       - name: Checkout repository submodules
         run: git submodule update --init --recursive
 
+      - name: Set up Xcode version
+        uses: maxim-lobanov/setup-xcode@master
+        with:
+          xcode-version: '26.1'
+
+      - name: Install build tools
+        run: brew install make ldid temurin@8
+
+      - name: Set up Java 8
+        run: |
+          export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+          echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+          echo "$JAVA_HOME/bin" >> $GITHUB_PATH
+
       - name: Get gl4es latest commit hash
         id: gl4es-sha
-        run: echo "::set-output name=sha::$(echo $(git ls-remote https://github.com/PojavLauncherTeam/gl4es-114-extra refs/heads/master | grep -io '^\S*'))"
         shell: bash
+        run: |
+          echo "sha=$(git ls-remote https://github.com/PojavLauncherTeam/gl4es-114-extra refs/heads/master | grep -io '^\S*')" >> $GITHUB_OUTPUT
 
       - name: Cache gl4es
         uses: actions/cache@main
-        if: false # use gl4es 1.1.5
+        if: false
         id: gl4es-cache
         with:
           path: gl4es/libs
@@ -61,16 +68,15 @@ jobs:
         continue-on-error: true
         run: |
           cd gl4es
-          git config user.email "github-actions@users.noreply.github.com"
-          git config user.name "github-actions"
-          export PATH=/opt/procursus/bin:$PATH
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name "github-actions"
           wget https://github.com/leetal/ios-cmake/raw/master/ios.toolchain.cmake
           cmake -B build -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake -DDEFAULT_ES=2 \
             -DNOX11=ON -DNOEGL=OFF -DSTATICLIB=OFF -DPLATFORM=OS64 \
             -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
           cmake --build build --config RelWithDebInfo --target GL
           cp -R lib/libGL.dylib ../Natives/resources/Frameworks/libgl4es_114.dylib
-          
+
       - name: Push gl4es
         if: false && github.event != 'pull_request' && github.ref_name == 'main' && steps.gl4es-cache.outputs.cache-hit != 'true'
         continue-on-error: true
@@ -84,44 +90,34 @@ jobs:
           export PATH=/opt/homebrew/bin:$PATH
           export SLIMMED=1
           if [ "${{ matrix.platform_name }}" == "ios" ]; then
-            # Build ipa and tipa for iOS
+            gmake -j1 java PLATFORM=${{ matrix.platform }}
             gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=${{ matrix.platform }}
             gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
           elif [ "${{ matrix.platform_name }}" == "tvos" ]; then
-            # Build tipa only for tvOS
+            gmake -j1 java PLATFORM=${{ matrix.platform }}
             gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=${{ matrix.platform }} TROLLSTORE_JIT_ENT=1
           else
-            # Build ipa only for everything else
+            gmake -j1 java PLATFORM=${{ matrix.platform }}
             gmake -j$(sysctl -n hw.ncpu) dsym package PLATFORM=${{ matrix.platform }}
           fi
 
       - name: Upload regular ipa
         uses: actions/upload-artifact@main
         with:
-          name: org.angelauramc.amethyst-${{ matrix.platform_name }}.ipa
-          path: artifacts/org.angelauramc.amethyst-*-${{ matrix.platform_name }}.ipa
-
+          name: com.thenullastris.zenithlauncher-${{ matrix.platform_name }}.ipa
+          path: artifacts/com.thenullastris.zenithlauncher-*-${{ matrix.platform_name }}.ipa
       - name: Upload regular tipa
         uses: actions/upload-artifact@main
         with:
-          name: org.angelauramc.amethyst-${{ matrix.platform_name }}-trollstore.tipa
-          path: artifacts/org.angelauramc.amethyst-*-${{ matrix.platform_name }}-trollstore.tipa
-
+          name: com.thenullastris.zenithlauncher-${{ matrix.platform_name }}-trollstore.tipa
+          path: artifacts/com.thenullastris.zenithlauncher-*-${{ matrix.platform_name }}-trollstore.tipa
       - name: Upload slimmed ipa
         uses: actions/upload-artifact@main
         with:
-          name: org.angelauramc.amethyst.slimmed-${{ matrix.platform_name }}.ipa
-          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ matrix.platform_name }}.ipa
-
+          name: com.thenullastris.zenithlauncher.slimmed-${{ matrix.platform_name }}.ipa
+          path: artifacts/com.thenullastris.zenithlauncher.slimmed-*-${{ matrix.platform_name }}.ipa
       - name: Upload slimmed tipa
         uses: actions/upload-artifact@main
         with:
-          name: org.angelauramc.amethyst.slimmed-${{ matrix.platform_name }}-trollstore.tipa
-          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ matrix.platform_name }}-trollstore.tipa
-
-      - name: Upload PojavLauncher.dSYM
-        uses: actions/upload-artifact@main
-        if: matrix.platform_name == 'ios'
-        with:
-          name: AngelAuraAmethyst.dSYM
-          path: artifacts/AngelAuraAmethyst.dSYM
+          name: com.thenullastris.zenithlauncher.slimmed-${{ matrix.platform_name }}-trollstore.tipa
+          path: artifacts/com.thenullastris.zenithlauncher.slimmed-*-${{ matrix.platform_name }}-trollstore.tipa
