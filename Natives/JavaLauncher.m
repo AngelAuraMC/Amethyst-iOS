@@ -341,7 +341,8 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
     margv[++margc] = cacio_classpath.UTF8String;
 
-    if (!getEntitlementValue(@"com.apple.developer.kernel.extended-virtual-addressing")) {
+    // FIXME: the JVM arg is deprecated; and it is currently broken for Java 25
+    if (!getenv("JVM_KEEP_UseCompressedClassPointers") || !getEntitlementValue(@"com.apple.developer.kernel.extended-virtual-addressing")) {
         // In jailed environment, where extended virtual addressing entitlement isn't
         // present (for free dev account), allocating compressed space fails.
         // FIXME: does extended VA allow allocating compressed class space?
