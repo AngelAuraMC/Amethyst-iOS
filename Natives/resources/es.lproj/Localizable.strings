@@ -35,7 +35,7 @@
 "In game" = "En el juego";
 "In menu" = "En el menú";
 
-"custom_controls.button_edit.forward_lock" = "Soycubo";
+"custom_controls.button_edit.forward_lock" = "Bloqueo adelante";
 "custom_controls.button_edit.name" = "Nombre";
 "custom_controls.button_edit.size" = "Tamaño";
 "custom_controls.button_edit.mapping" = "Mapeado";
@@ -62,7 +62,7 @@
 "custom_controls.control_menu.add_button" = "Añadir botón";
 "custom_controls.control_menu.add_drawer" = "Añadir Cajón";
 "custom_controls.control_menu.add_joystick" = "Añadir joystick";
-"custom_controls.error.incompatible" = "Esta versión de control (código %d) no está implementada en esta compilación del launcher.";
+"custom_controls.error.incompatible" = "Esta versión de control (código %d) no está implementada en esta compilación de lanzador.";
 "custom_controls.hint" = "Mantenga pulsado en cualquier lugar de la pantalla para más opciones";
 
 "init.migrateDir" = "La carpeta de Amethyst ahora está en %@. Todos tus datos han sido movidos a esa nueva ubicación.";
