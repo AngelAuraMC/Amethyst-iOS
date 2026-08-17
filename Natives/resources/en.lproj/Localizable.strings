@@ -314,8 +314,12 @@
 "modpack.error.curseforge_key" = "Installing a CurseForge modpack needs a CurseForge API key. Add one in Settings under “CurseForge API key”, then try again.";
 "modpack.error.curseforge_resolve" = "CurseForge did not return the file list for this modpack: %@";
 "modpack.error.curseforge_unavailable" = "The author of project %@ does not allow it to be downloaded by other apps, so this modpack cannot be installed automatically.";
-"modpack.warning.title" = "Mod loader required";
-"modpack.warning.manual_loader" = "This modpack needs %@, which cannot be installed automatically yet. Install that loader version yourself, then launch the profile that was just created.";
+"modpack.loader.title" = "Mod loader required";
+"modpack.loader.message" = "This modpack needs %1$@ %2$@, which is not installed yet. Run the %1$@ installer now? The app has to be restarted once it finishes.";
+"modpack.loader.install" = "Install";
+"modpack.loader.later" = "Later";
+"modpack.loader.no_launcher" = "The installer could not be started from here. Open the mod installer from the launcher screen and pick the downloaded installer to finish setting up the mod loader.";
+"modpack.loader.running" = "The %@ installer will now run. Restart the app once it finishes, then launch the profile that was just created.";
 
 "controller_configurator.title.current" = "Gamepad configuration file";
 "controller_configurator.title.type.xbox" = "Xbox";

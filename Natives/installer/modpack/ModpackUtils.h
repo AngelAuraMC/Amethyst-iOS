@@ -9,8 +9,9 @@
 // Creates (and selects) the launcher profile for a freshly installed modpack.
 + (void)createProfileNamed:(NSString *)name gameDir:(NSString *)gameDirName versionID:(NSString *)versionID;
 
-// Tells the user that the pack's mod loader has to be installed by hand, since
-// Forge and NeoForge cannot be installed automatically yet.
-+ (void)warnAboutManualLoaderInstall:(NSString *)versionID;
+// Offers to run the vendor's installer for a pack that needs Forge or NeoForge,
+// which have no metadata endpoint to install from directly. No-op when the
+// loader the pack asks for is already installed.
++ (void)installLoaderIfNeeded:(NSDictionary *)depInfo;
 
 @end

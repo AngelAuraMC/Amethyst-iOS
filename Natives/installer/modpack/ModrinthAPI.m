@@ -133,9 +133,8 @@
         NSString *jsonPath = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), depInfo[@"id"]];
         NSURLSessionDownloadTask *task = [downloader createDownloadTask:depInfo[@"json"] size:0 sha:nil altName:nil toPath:jsonPath];
         [task resume];
-    } else if (depInfo[@"needsManualInstall"]) {
-        // TODO: automation for Forge
-        [ModpackUtils warnAboutManualLoaderInstall:depInfo[@"id"]];
+    } else {
+        [ModpackUtils installLoaderIfNeeded:depInfo];
     }
 
     // Create profile

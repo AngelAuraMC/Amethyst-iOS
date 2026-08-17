@@ -151,6 +151,19 @@
 
 @implementation ForgeInstallViewController
 
++ (NSDictionary *)endpoints {
+    return @{
+        @"Forge": @{
+            @"installer": @"https://maven.minecraftforge.net/net/minecraftforge/forge/%1$@/forge-%1$@-installer.jar",
+            @"metadata": @"https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml"
+        },
+        @"NeoForge": @{
+            @"installer": @"https://maven.neoforged.net/releases/net/neoforged/neoforge/%1$@/neoforge-%1$@-installer.jar",
+            @"metadata": @"https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml"
+        }
+    };
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -199,16 +212,7 @@
     self.progressView.resolvedTintColor = self.view.tintColor;
     [self.progressView addTarget:self action:@selector(actionCancelDownload) forControlEvents:UIControlEventTouchUpInside];
 
-    self.endpoints = @{
-        @"Forge": @{
-            @"installer": @"https://maven.minecraftforge.net/net/minecraftforge/forge/%1$@/forge-%1$@-installer.jar",
-            @"metadata": @"https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml"
-        },
-        @"NeoForge": @{
-            @"installer": @"https://maven.neoforged.net/releases/net/neoforged/neoforge/%1$@/neoforge-%1$@-installer.jar",
-            @"metadata": @"https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml"
-        }
-    };
+    self.endpoints = ForgeInstallViewController.endpoints;
     
     self.visibilityList = [NSMutableArray new];
     self.versionList = [NSMutableArray new];
