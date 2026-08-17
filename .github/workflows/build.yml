@@ -1,0 +1,39 @@
+name: Build Amethyst-Flux
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # lets you manually trigger a build from GitHub's UI
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Amethyst likely uses submodules
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build (unsigned)
+        run: |
+          xcodebuild -project YourProject.xcodeproj \
+            -scheme YourScheme \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir Payload
+          cp -r build/Release-iphoneos/YourApp.app Payload/
+          zip -r YourFork.ipa Payload
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YourFork-IPA
+          path: YourFork.ipa
