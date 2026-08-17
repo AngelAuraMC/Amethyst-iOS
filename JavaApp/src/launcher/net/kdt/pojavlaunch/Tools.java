@@ -95,7 +95,12 @@ public final class Tools {
         varArgMap.put("assets_root", Tools.ASSETS_PATH);
         varArgMap.put("assets_index_name", versionInfo.assets);
         varArgMap.put("clientid", profile.clientToken);
-        varArgMap.put("game_assets", Tools.ASSETS_PATH);
+        // Minecraft 1.6.1 - 1.7.2 pass --assetsDir ${game_assets} and expect a
+        // plain directory tree, which the downloader unpacks into assets/virtual.
+        // Newer versions never reference game_assets, so this cannot affect them.
+        File virtualAssets = new File(Tools.ASSETS_PATH, "virtual/" + versionInfo.assets);
+        varArgMap.put("game_assets", virtualAssets.isDirectory()
+            ? virtualAssets.getAbsolutePath() : Tools.ASSETS_PATH);
         varArgMap.put("game_directory", gameDir.getAbsolutePath());
         varArgMap.put("user_properties", "{}");
         varArgMap.put("user_type", "mojang");

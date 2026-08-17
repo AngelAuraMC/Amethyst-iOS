@@ -268,6 +268,20 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     margv[++margc] = "-XX:+UnlockExperimentalVMOptions";
     margv[++margc] = "-XX:+DisablePrimordialThreadGuardPages";
 
+    // Garbage collector. The JVM default (G1) assumes more cores and heap than a
+    // phone gives it, so a simpler collector often pauses less here.
+    NSString *gcType = getPrefObject(@"java.gc_type");
+    if ([gcType isEqualToString:@"serial"]) {
+        margv[++margc] = "-XX:+UseSerialGC";
+    } else if ([gcType isEqualToString:@"parallel"]) {
+        margv[++margc] = "-XX:+UseParallelGC";
+    }
+
+    // Skips LWJGL's per-call argument validation
+    if (getPrefBool(@"java.lwjgl_nochecks")) {
+        margv[++margc] = "-Dorg.lwjgl.util.NoChecks=true";
+    }
+
     // On iOS 26, use mirror mapped JIT by default
     if (@available(iOS 26.0, *)) {
         margv[++margc] = "-XX:+MirrorMappedCodeCache";

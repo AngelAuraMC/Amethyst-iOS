@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setDefaultForKey:(NSString *)key value:(NSString *)value;
 - (nullable NSString *)getValueForKey:(NSString *)key;
 - (void)updateMCGuiScale;
+- (void)applyPerformancePreset;
 - (void)save;
 
 @end

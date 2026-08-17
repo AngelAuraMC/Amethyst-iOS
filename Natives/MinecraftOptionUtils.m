@@ -1,3 +1,4 @@
+#import "LauncherPreferences.h"
 #import "MinecraftOptionUtils.h"
 #import "environ.h"
 
@@ -21,7 +22,48 @@
     [options setDefaultForKey:@"particles" value:@"1"];
     [options setDefaultForKey:@"renderDistance" value:@"2"];
     [options setDefaultForKey:@"simulationDistance" value:@"5"];
+    [options applyPerformancePreset];
     [options save];
+}
+
+/* Unlike the defaults above, a preset is authoritative: it rewrites these video
+ * settings on every launch, so that picking one actually takes effect on a world
+ * that has already been played. "off" leaves the game's own settings alone. */
+- (void)applyPerformancePreset {
+    NSString *preset = getPrefObject(@"video.performance_preset");
+    if (![preset isKindOfClass:NSString.class] || [preset isEqualToString:@"off"]) {
+        return;
+    }
+
+    int renderDistance, simulationDistance, particles, mipmapLevels, biomeBlend;
+    BOOL clouds;
+    if ([preset isEqualToString:@"balanced"]) {
+        renderDistance = 8; simulationDistance = 8; particles = 1;
+        mipmapLevels = 2; biomeBlend = 1; clouds = YES;
+    } else if ([preset isEqualToString:@"performance"]) {
+        renderDistance = 5; simulationDistance = 5; particles = 2;
+        mipmapLevels = 0; biomeBlend = 0; clouds = NO;
+    } else if ([preset isEqualToString:@"minimum"]) {
+        renderDistance = 2; simulationDistance = 5; particles = 2;
+        mipmapLevels = 0; biomeBlend = 0; clouds = NO;
+    } else {
+        NSLog(@"[Options] Unknown performance preset %@", preset);
+        return;
+    }
+
+    NSLog(@"[Options] Applying the %@ performance preset", preset);
+    [self setKey:@"renderDistance" value:@(renderDistance).stringValue];
+    // simulationDistance exists since 1.18, mipmapLevels/biomeBlendRadius since 1.8/1.13
+    [self setKey:@"simulationDistance" value:@(simulationDistance).stringValue];
+    [self setKey:@"particles" value:@(particles).stringValue];
+    [self setKey:@"mipmapLevels" value:@(mipmapLevels).stringValue];
+    [self setKey:@"biomeBlendRadius" value:@(biomeBlend).stringValue];
+    [self setKey:@"clouds" value:clouds ? @"true" : @"false"];
+    [self setKey:@"entityShadows" value:@"false"];
+    // graphicsMode replaced the older fancyGraphics flag in 1.17; both are set so
+    // the preset applies across versions. Minecraft drops the key it does not know.
+    [self setKey:@"graphicsMode" value:@"0"];
+    [self setKey:@"fancyGraphics" value:@"false"];
 }
 
 + (instancetype)sharedInstance {
@@ -49,8 +91,10 @@
         return;
     }
 
-    self.lineList = [contents componentsSeparatedByCharactersInSet:
-                                  [NSCharacterSet newlineCharacterSet]];
+    // mutableCopy: setKey: mutates this in place, and componentsSeparatedBy...
+    // is only documented to return an immutable array
+    self.lineList = [[contents componentsSeparatedByCharactersInSet:
+                                  [NSCharacterSet newlineCharacterSet]] mutableCopy];
 }
 
 - (void)ensureLoaded {

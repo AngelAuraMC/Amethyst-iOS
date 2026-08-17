@@ -25,3 +25,8 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion);
 
 NSArray* getRendererKeys(BOOL containsDefault);
 NSArray* getRendererNames(BOOL containsDefault);
+
+NSArray* getPerformancePresetKeys(void);
+NSArray* getPerformancePresetNames(void);
+NSArray* getGCTypeKeys(void);
+NSArray* getGCTypeNames(void);

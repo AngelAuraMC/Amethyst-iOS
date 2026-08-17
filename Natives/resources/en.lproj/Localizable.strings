@@ -256,6 +256,22 @@
 "preference.title.allocated_memory" = "Memory allocation (MB)";
 "preference.detail.allocated_memory" = "Controls how much memory is given to Minecraft";
 "preference.warn.allocated_memory" = "Due to limitations in the operating system itself, this option may cause instability at this and higher values. Proceed with caution.";
+"preference.title.performance_preset" = "Performance preset";
+"preference.detail.performance_preset" = "Applies video settings tuned for framerate every time the game launches, overwriting those settings in-game. Choose “Off” to manage them yourself.";
+"preference.title.performance_preset.off" = "Off";
+"preference.title.performance_preset.balanced" = "Balanced";
+"preference.title.performance_preset.performance" = "Performance";
+"preference.title.performance_preset.minimum" = "Minimum";
+
+"preference.title.gc_type" = "Garbage collector";
+"preference.detail.gc_type" = "The JVM default is tuned for machines with more cores and memory than a phone. A simpler collector often stutters less, at the cost of slightly lower peak throughput.";
+"preference.title.gc_type.default" = "Default (G1)";
+"preference.title.gc_type.serial" = "Serial";
+"preference.title.gc_type.parallel" = "Parallel";
+
+"preference.title.lwjgl_nochecks" = "Skip LWJGL checks";
+"preference.detail.lwjgl_nochecks" = "Disables LWJGL's validation of every graphics call. Slightly faster, but a buggy mod that would have been caught will crash the game instead.";
+
 "preference.title.curseforge_api_key" = "CurseForge API key";
 "preference.detail.curseforge_api_key" = "Required to install CurseForge modpacks from a file. Create a key at console.curseforge.com and paste it here.";
 "preference.placeholder.curseforge_api_key" = "Paste your API key...";

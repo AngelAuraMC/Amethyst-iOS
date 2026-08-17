@@ -98,6 +98,31 @@ UIEdgeInsets getDefaultSafeArea() {
 
 #pragma mark Java runtime
 
+// Finds a runtime bundled inside the app that satisfies minVersion. Runtimes
+// ship as java_runtimes/java-<major>-openjdk, and the app can carry ones that
+// java_homes does not list, so they are discovered rather than assumed.
+static NSString* findInternalJavaHome(int minVersion) {
+    NSString *internalPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"java_runtimes"];
+    NSArray *runtimes = [NSFileManager.defaultManager contentsOfDirectoryAtPath:internalPath error:nil];
+    NSString *bestPath;
+    int bestVersion = 0;
+    for (NSString *runtime in runtimes) {
+        if (![runtime hasPrefix:@"java-"] || ![runtime hasSuffix:@"-openjdk"]) {
+            continue;
+        }
+        int version = [runtime substringFromIndex:@"java-".length].intValue;
+        // Prefer the oldest runtime that is still new enough
+        if (version >= minVersion && (bestVersion == 0 || version < bestVersion)) {
+            bestVersion = version;
+            bestPath = [internalPath stringByAppendingPathComponent:runtime];
+        }
+    }
+    if (bestPath) {
+        NSLog(@"[JavaRuntime] Falling back to bundled Java %d for requested Java >= %d", bestVersion, minVersion);
+    }
+    return bestPath;
+}
+
 NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     NSDictionary *pref = getPrefObject(@"java.java_homes");
     NSDictionary<NSString *, NSString *> *selected = pref[@"0"];
@@ -105,6 +130,8 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     if (minVersion > selectedVer.intValue) {
         NSArray *sortedVersions = [pref.allKeys valueForKeyPath:@"self.integerValue"];
         sortedVersions = [sortedVersions sortedArrayUsingSelector:@selector(compare:)];
+        // The tag's runtime is too old, so it must not be kept as the fallback
+        selectedVer = nil;
         for (NSNumber *version in sortedVersions) {
             if (version.intValue >= minVersion) {
                 selectedVer = version.stringValue;
@@ -112,6 +139,12 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
             }
         }
         if (!selectedVer) {
+            // A runtime shipped with the app may still satisfy the request even
+            // when it is absent from java_homes
+            NSString *internalDir = findInternalJavaHome(minVersion);
+            if (internalDir) {
+                return internalDir;
+            }
             NSLog(@"Error: requested Java >= %d was not installed!", minVersion);
             return nil;
         }
@@ -165,4 +198,31 @@ NSArray* getRendererNames(BOOL containsDefault) {
     }
 
     return array;
+}
+
+#pragma mark Performance
+
+NSArray* getPerformancePresetKeys(void) {
+    return @[@"off", @"balanced", @"performance", @"minimum"];
+}
+
+NSArray* getPerformancePresetNames(void) {
+    return @[
+        localize(@"preference.title.performance_preset.off", nil),
+        localize(@"preference.title.performance_preset.balanced", nil),
+        localize(@"preference.title.performance_preset.performance", nil),
+        localize(@"preference.title.performance_preset.minimum", nil)
+    ];
+}
+
+NSArray* getGCTypeKeys(void) {
+    return @[@"default", @"serial", @"parallel"];
+}
+
+NSArray* getGCTypeNames(void) {
+    return @[
+        localize(@"preference.title.gc_type.default", nil),
+        localize(@"preference.title.gc_type.serial", nil),
+        localize(@"preference.title.gc_type.parallel", nil)
+    ];
 }

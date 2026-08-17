@@ -20,6 +20,7 @@
         }.mutableCopy,
         @"video": @{ // Video & Audio
             @"renderer": @"auto",
+            @"performance_preset": @"off",
             @"resolution": @(100),
             @"max_framerate": @YES,
             @"performance_hud": @NO,
@@ -57,10 +58,13 @@
                 }.mutableCopy,
                 @"8": @"internal",
                 @"17": @"internal",
-                @"21": @"internal"
+                @"21": @"internal",
+                @"25": @"internal"
             }.mutableCopy,
             @"java_args": @"",
             @"env_variables": @"",
+            @"gc_type": @"default",
+            @"lwjgl_nochecks": @NO,
             @"auto_ram": @(!getEntitlementValue(@"com.apple.private.memorystatus")),
             @"allocated_memory": [NSNumber numberWithFloat:roundf((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.25)]
         }.mutableCopy,

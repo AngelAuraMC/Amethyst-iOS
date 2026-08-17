@@ -215,6 +215,11 @@
         NSString *path;
         if ([assets[@"map_to_resources"] boolValue]) {
             path = [NSString stringWithFormat:@"%s/resources/%@", getenv("POJAV_GAME_DIR"), name];
+        } else if ([assets[@"virtual"] boolValue]) {
+            /* Minecraft 1.6.1 - 1.7.2 read assets from a plain directory tree
+             * passed as --assetsDir, instead of the hashed object store. */
+            path = [NSString stringWithFormat:@"%s/assets/virtual/%@/%@",
+                getenv("POJAV_GAME_DIR"), self.metadata[@"assetIndex"][@"id"], name];
         } else {
             path = [NSString stringWithFormat:@"%s/assets/objects/%@", getenv("POJAV_GAME_DIR"), pathname];
         }

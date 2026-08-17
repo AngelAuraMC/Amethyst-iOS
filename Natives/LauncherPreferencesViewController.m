@@ -170,6 +170,14 @@
               @"pickKeys": self.rendererKeys,
               @"pickList": self.rendererList
             },
+            @{@"key": @"performance_preset",
+              @"hasDetail": @YES,
+              @"icon": @"speedometer",
+              @"type": self.typePickField,
+              @"enableCondition": whenNotInGame,
+              @"pickKeys": getPerformancePresetKeys(),
+              @"pickList": getPerformancePresetNames()
+            },
             @{@"key": @"resolution",
               @"hasDetail": @YES,
               @"icon": @"viewfinder",
@@ -336,6 +344,20 @@
                 @"hasDetail": @YES,
                 @"icon": @"slider.vertical.3",
                 @"type": self.typeTextField,
+                @"enableCondition": whenNotInGame
+            },
+            @{@"key": @"gc_type",
+                @"hasDetail": @YES,
+                @"icon": @"trash.circle",
+                @"type": self.typePickField,
+                @"enableCondition": whenNotInGame,
+                @"pickKeys": getGCTypeKeys(),
+                @"pickList": getGCTypeNames()
+            },
+            @{@"key": @"lwjgl_nochecks",
+                @"hasDetail": @YES,
+                @"icon": @"bolt",
+                @"type": self.typeSwitch,
                 @"enableCondition": whenNotInGame
             },
             @{@"key": @"env_variables",
