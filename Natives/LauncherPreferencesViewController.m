@@ -68,6 +68,12 @@
               @"type": self.typeSwitch,
               @"enableCondition": whenNotInGame
             },
+            @{@"key": @"curseforge_api_key",
+              @"hasDetail": @YES,
+              @"icon": @"key",
+              @"type": self.typeTextField,
+              @"enableCondition": whenNotInGame
+            },
             @{@"key": @"debug_logging",
               @"hasDetail": @YES,
               @"icon": @"doc.badge.gearshape",

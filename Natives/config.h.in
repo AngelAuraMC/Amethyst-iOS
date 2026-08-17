@@ -17,7 +17,9 @@
 
 #cmakedefine CONFIG_CURSEFORGE_API_KEY "@CONFIG_CURSEFORGE_API_KEY@"
 
-#ifndef CONFIG_CURSEFORGE_API_KEY 
-# define CONFIG_CURSEFORGE_API_KEY nil
+// Empty when the build was not configured with a key. The launcher falls back to
+// the key stored in preferences, so an empty value is not an error.
+#ifndef CONFIG_CURSEFORGE_API_KEY
+# define CONFIG_CURSEFORGE_API_KEY ""
 #endif
 

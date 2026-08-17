@@ -15,6 +15,7 @@
         @"general": @{
             @"check_sha": @YES,
             @"cosmetica": @YES,
+            @"curseforge_api_key": @"",
             @"debug_logging": @(!CONFIG_RELEASE),
         }.mutableCopy,
         @"video": @{ // Video & Audio

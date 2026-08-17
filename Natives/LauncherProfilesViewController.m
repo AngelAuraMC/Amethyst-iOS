@@ -15,15 +15,17 @@
 #import "installer/FabricInstallViewController.h"
 #import "installer/ForgeInstallViewController.h"
 #import "installer/ModpackInstallViewController.h"
+#import "installer/modpack/ModpackImporter.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
     kInstances,
     kProfiles
 };
 
-@interface LauncherProfilesViewController () //<UIContextMenuInteractionDelegate>
+@interface LauncherProfilesViewController () <UIDocumentPickerDelegate> //<UIContextMenuInteractionDelegate>
 
 @property(nonatomic) UIBarButtonItem *createButtonItem;
 @end
@@ -73,6 +75,11 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
             actionWithTitle:@"Modpack" image:nil
             identifier:@"modpack" handler:^(UIAction *action) {
                 [self actionCreateModpackProfile];
+            }],
+        [UIAction
+            actionWithTitle:localize(@"profile.title.import_modpack", nil) image:nil
+            identifier:@"modpack_file" handler:^(UIAction *action) {
+                [self actionImportModpackFile];
             }]
     ]];
     self.createButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd menu:createMenu];
@@ -116,6 +123,26 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
 - (void)actionCreateModpackProfile {
     ModpackInstallViewController *vc = [ModpackInstallViewController new];
     [self presentNavigatedViewController:vc];
+}
+
+- (void)actionImportModpackFile {
+    // Modrinth packs use .mrpack, CurseForge exports are plain .zip
+    NSMutableArray<UTType *> *contentTypes = [NSMutableArray new];
+    UTType *mrpackType = [UTType typeWithFilenameExtension:@"mrpack"];
+    if (mrpackType) {
+        [contentTypes addObject:mrpackType];
+    }
+    [contentTypes addObject:UTTypeZIP];
+
+    UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc]
+        initForOpeningContentTypes:contentTypes asCopy:YES];
+    documentPicker.delegate = self;
+    documentPicker.modalPresentationStyle = UIModalPresentationFormSheet;
+    [self presentViewController:documentPicker animated:YES completion:nil];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url {
+    [ModpackImporter importModpackAtURL:url];
 }
 
 - (void)actionEditProfile:(NSDictionary *)profile {

@@ -256,6 +256,9 @@
 "preference.title.allocated_memory" = "Memory allocation (MB)";
 "preference.detail.allocated_memory" = "Controls how much memory is given to Minecraft";
 "preference.warn.allocated_memory" = "Due to limitations in the operating system itself, this option may cause instability at this and higher values. Proceed with caution.";
+"preference.title.curseforge_api_key" = "CurseForge API key";
+"preference.detail.curseforge_api_key" = "Required to install CurseForge modpacks from a file. Create a key at console.curseforge.com and paste it here.";
+"preference.placeholder.curseforge_api_key" = "Paste your API key...";
 "preference.title.custom_env" = "Environment variables";
 "preference.detail.custom_env" = "This option is under construction. Create and edit custom_env.txt in the meantime.";
 
@@ -283,9 +286,20 @@
 "profile.section.instance" = "Game Instance settings";
 "profile.section.profiles" = "Profiles in this instance";
 "profile.title.create" = "Create new profile";
+"profile.title.import_modpack" = "Import modpack file…";
 "profile.title.separate_preference" = "Isolate settings";
 "profile.detail.separate_preference" = "Enable this option to isolate any changes made in settings. Doing a Reset will restore to global settings instead of default settings.";
 "profile.title.install_fabric_quilt" = "Install Fabric/Quilt";
+
+// Importing a modpack from a file
+"modpack.error.open_failed" = "Could not read the modpack file: %@";
+"modpack.error.unsupported" = "This file is not a modpack the launcher recognizes. Modrinth (.mrpack) and CurseForge (.zip) modpacks are supported.";
+"modpack.error.unsupported_manifest" = "This CurseForge archive is not a modpack export.";
+"modpack.error.curseforge_key" = "Installing a CurseForge modpack needs a CurseForge API key. Add one in Settings under “CurseForge API key”, then try again.";
+"modpack.error.curseforge_resolve" = "CurseForge did not return the file list for this modpack: %@";
+"modpack.error.curseforge_unavailable" = "The author of project %@ does not allow it to be downloaded by other apps, so this modpack cannot be installed automatically.";
+"modpack.warning.title" = "Mod loader required";
+"modpack.warning.manual_loader" = "This modpack needs %@, which cannot be installed automatically yet. Install that loader version yourself, then launch the profile that was just created.";
 
 "controller_configurator.title.current" = "Gamepad configuration file";
 "controller_configurator.title.type.xbox" = "Xbox";

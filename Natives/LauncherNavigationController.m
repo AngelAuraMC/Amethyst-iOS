@@ -10,6 +10,7 @@
 #import "LauncherPreferences.h"
 #import "MinecraftResourceDownloadTask.h"
 #import "MinecraftResourceUtils.h"
+#import "installer/modpack/ModpackImporter.h"
 #import "PickTextField.h"
 #import "PLPickerView.h"
 #import "PLProfiles.h"
@@ -128,9 +129,11 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
     [self fetchRemoteVersionList];
     [NSNotificationCenter.defaultCenter addObserver:self
-        selector:@selector(receiveNotification:) 
+        selector:@selector(receiveNotification:)
         name:@"InstallModpack"
         object:nil];
+    // A modpack opened from another app may have been waiting for this observer
+    [ModpackImporter flushPendingImport];
 
     if ([BaseAuthenticator.current isKindOfClass:MicrosoftAuthenticator.class]) {
         // Perform token refreshment on startup
@@ -411,7 +414,12 @@ static void *ProgressObserverContext = &ProgressObserverContext;
                 weakSelf.progressVC = nil;
             });
         };
-        [self.task downloadModpackFromAPI:notification.object detail:userInfo[@"detail"] atIndex:[userInfo[@"index"] unsignedLongValue]];
+        if (userInfo[@"packagePath"]) {
+            // Imported from a file instead of the modpack browser
+            [self.task installModpackFromPackage:userInfo[@"packagePath"] api:notification.object];
+        } else {
+            [self.task downloadModpackFromAPI:notification.object detail:userInfo[@"detail"] atIndex:[userInfo[@"index"] unsignedLongValue]];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             self.progressViewMain.observedProgress = self.task.progress;
             [self.task.progress addObserver:self

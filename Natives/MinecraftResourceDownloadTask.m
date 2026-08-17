@@ -282,6 +282,22 @@
     [task resume];
 }
 
+// Installs a pack the launcher already has on disk, skipping the download step
+// that downloadModpackFromAPI: performs.
+- (void)installModpackFromPackage:(NSString *)packagePath api:(ModpackAPI *)api {
+    [self prepareForDownload];
+
+    NSString *name = [packagePath.lastPathComponent.stringByDeletingPathExtension.lowercaseString
+        stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
+    name = [name stringByReplacingOccurrencesOfString:@" " withString:@"_"];
+    if (name.length == 0) {
+        name = @"modpack";
+    }
+
+    NSString *path = [NSString stringWithFormat:@"%s/custom_gamedir/%@", getenv("POJAV_GAME_DIR"), name];
+    [api downloader:self submitDownloadTasksFromPackage:packagePath toPath:path];
+}
+
 #pragma mark - Utilities
 
 - (void)prepareForDownload {

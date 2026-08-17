@@ -47,10 +47,15 @@ jobs:
           # No TEAMID/PROVISIONING is passed, so the Makefile skips codesigning and
           # pseudo-signs with ldid, producing a sideloadable unsigned IPA.
           # Set RELEASE=1 for a release-configured build once the pipeline is proven.
+          # CURSEFORGE_API_KEY is optional: without it, CurseForge modpack
+          # installs fall back to the key entered in the launcher's settings.
           gmake -j"$(sysctl -n hw.ncpu)" dsym package \
             PLATFORM=2 \
             SLIMMED=1 \
-            BOOTJDK="${JAVA_HOME}/bin"
+            BOOTJDK="${JAVA_HOME}/bin" \
+            CURSEFORGE_API_KEY="${CURSEFORGE_API_KEY}"
+        env:
+          CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
 
       - name: List build output
         run: ls -lh artifacts

@@ -1,4 +1,5 @@
 #import "SceneDelegate.h"
+#import "installer/modpack/ModpackImporter.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
@@ -18,6 +19,23 @@ extern UIWindow *mainWindow;
     mainWindow = self.window;
     launchInitialViewController(self.window);
     [self.window makeKeyAndVisible];
+    [self handleURLContexts:connectionOptions.URLContexts];
+}
+
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts {
+    [self handleURLContexts:URLContexts];
+}
+
+// Handles modpack files handed to the launcher by other apps, e.g. "Open in" or
+// "Share" from Files, Safari downloads and AirDrop.
+- (void)handleURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts {
+    for (UIOpenURLContext *context in URLContexts) {
+        if (!context.URL.isFileURL) {
+            continue;
+        }
+        NSLog(@"[SceneDelegate] Received file %@", context.URL.lastPathComponent);
+        [ModpackImporter importModpackAtURL:context.URL];
+    }
 }
 
 

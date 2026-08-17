@@ -10,6 +10,33 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>Amethyst</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Modrinth modpack</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.modrinth.mrpack</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Modpack archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>AngelAuraAmethyst</string>
 	<key>CFBundleIcons</key>
@@ -199,5 +226,25 @@
 	<true/>
 	<key>UIWhitePointAdaptivityStyle</key>
 	<string>UIWhitePointAdaptivityStyleGame</string>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Modrinth modpack</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.modrinth.mrpack</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>mrpack</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

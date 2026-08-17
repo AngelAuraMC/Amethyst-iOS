@@ -133,20 +133,13 @@
         NSString *jsonPath = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), depInfo[@"id"]];
         NSURLSessionDownloadTask *task = [downloader createDownloadTask:depInfo[@"json"] size:0 sha:nil altName:nil toPath:jsonPath];
         [task resume];
+    } else if (depInfo[@"needsManualInstall"]) {
+        // TODO: automation for Forge
+        [ModpackUtils warnAboutManualLoaderInstall:depInfo[@"id"]];
     }
-    // TODO: automation for Forge
 
     // Create profile
-    NSString *tmpIconPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"icon.png"];
-    PLProfiles.current.profiles[indexDict[@"name"]] = @{
-        @"gameDir": [NSString stringWithFormat:@"./custom_gamedir/%@", destPath.lastPathComponent],
-        @"name": indexDict[@"name"],
-        @"lastVersionId": depInfo[@"id"],
-        @"icon": [NSString stringWithFormat:@"data:image/png;base64,%@",
-            [[NSData dataWithContentsOfFile:tmpIconPath]
-            base64EncodedStringWithOptions:0]]
-    }.mutableCopy;
-    PLProfiles.current.selectedProfileName = indexDict[@"name"];
+    [ModpackUtils createProfileNamed:indexDict[@"name"] gameDir:destPath.lastPathComponent versionID:depInfo[@"id"]];
 }
 
 @end

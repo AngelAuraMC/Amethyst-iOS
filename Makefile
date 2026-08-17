@@ -20,6 +20,10 @@ RELEASE ?= 0
 # Check if running on github runner
 RUNNER ?= 0
 
+# Optional CurseForge API key, compiled in so CurseForge modpacks can be
+# installed without pasting a key into the launcher's settings
+CURSEFORGE_API_KEY ?=
+
 # Check if slimmed should be built
 SLIMMED ?= 0
 
@@ -271,6 +275,7 @@ native: dep_mg
 		-DCONFIG_BRANCH="$(BRANCH)" \
 		-DCONFIG_COMMIT="$(COMMIT)" \
 		-DCONFIG_RELEASE=$(RELEASE) \
+		-DCONFIG_CURSEFORGE_API_KEY="$(CURSEFORGE_API_KEY)" \
 		..
 
 	cmake --build $(WORKINGDIR) --config $(CMAKE_BUILD_TYPE) -j$(JOBS)
