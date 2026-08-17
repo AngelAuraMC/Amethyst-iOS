@@ -5,35 +5,73 @@ on:
     branches: [ main ]
   workflow_dispatch:  # lets you manually trigger a build from GitHub's UI
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: Build (unsigned)
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          submodules: recursive  # Amethyst likely uses submodules
+          submodules: recursive  # Natives/external/* are git submodules
+          fetch-depth: 0         # Makefile reads git branch/commit for the build stamp
 
       - name: Select Xcode version
         run: sudo xcode-select -s /Applications/Xcode.app
 
+      # The build is driven by the Makefile, not xcodebuild. It needs GNU make
+      # (macOS ships make 3.81, too old for this Makefile), cmake, ldid and wget.
+      - name: Install build dependencies
+        run: |
+          brew install make ldid
+          for tool in cmake wget; do
+            command -v "$tool" >/dev/null || brew install "$tool"
+          done
+
+      # JavaApp/ is compiled with a JDK 8 bootstrap compiler. Zulu is used because
+      # it is the distribution that publishes a macOS arm64 build of JDK 8.
+      - name: Set up JDK 8 (bootstrap compiler for JavaApp)
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '8'
+
       - name: Build (unsigned)
         run: |
-          xcodebuild -project YourProject.xcodeproj \
-            -scheme YourScheme \
-            -configuration Release \
-            -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO \
-            build
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          # PLATFORM=2 -> iOS. SLIMMED=1 also emits an IPA without the bundled JREs.
+          # No TEAMID/PROVISIONING is passed, so the Makefile skips codesigning and
+          # pseudo-signs with ldid, producing a sideloadable unsigned IPA.
+          # Set RELEASE=1 for a release-configured build once the pipeline is proven.
+          gmake -j"$(sysctl -n hw.ncpu)" dsym package \
+            PLATFORM=2 \
+            SLIMMED=1 \
+            BOOTJDK="${JAVA_HOME}/bin"
 
-      - name: Package IPA
-        run: |
-          mkdir Payload
-          cp -r build/Release-iphoneos/YourApp.app Payload/
-          zip -r YourFork.ipa Payload
+      - name: List build output
+        run: ls -lh artifacts
 
-      - name: Upload build artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: YourFork-IPA
-          path: YourFork.ipa
+          name: Amethyst-Flux-ios-ipa
+          path: artifacts/org.angelauramc.amethyst-*-ios.ipa
+          if-no-files-found: error
+
+      - name: Upload slimmed IPA (no bundled JREs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Amethyst-Flux-ios-slimmed-ipa
+          path: artifacts/org.angelauramc.amethyst.slimmed-*-ios.ipa
+          if-no-files-found: error
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: Amethyst-Flux-dSYM
+          path: artifacts/AngelAuraAmethyst.dSYM
+          if-no-files-found: warn
