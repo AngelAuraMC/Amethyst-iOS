@@ -3,54 +3,408 @@
   StringLocalization
 */
 
-"game.menu.force_close" = "บังคับปิด";
-"game.menu.log_output" = "ประวัติที่บันทึกไว้";
-"game.menu.custom_controls" = "การควบคุมกำหนดเอง";
+"game.menu.force_close" = "บังคับปิดเกม";
+"game.menu.confirm.force_close" = "แน่ใจนะว่าต้องการบังคับปิดเกม?";
+"game.menu.log_output" = "ดูล็อก (Log)";
+"game.menu.custom_controls" = "ปุ่มควบคุมกำหนดเอง";
+
+"game.note.airplay" = "แสดง Minecraft แบบเต็มจอบน AirPlay";
+
+"game.title.exit_code" = "เกมปิดตัวลงด้วยรหัส %d";
 
 // The play button
 "Play" = "เล่น";
-"Snapshot" = "ภาพรวม";
-"Old-beta" = "เบตาเก่า";
-"Old-alpha" = "Old-alpha";
-"Edit" = "แก้ไข";
-"Remove" = "ถอดออก";
+"Details" = "รายละเอียด";
 
+// Version categories
+"Installed" = "ติดตั้งแล้ว";
+"Snapshot" = "สแนปช็อต";
+"Releases" = "เวอร์ชันเสถียร";
+"Unstable" = "เวอร์ชันไม่เสถียร";
+"Old-beta" = "เบต้าเก่า";
+"Old-alpha" = "อัลฟาเก่า";
+
+// Custom controls
+"Copy" = "คัดลอก";
+"Edit" = "แก้ไข";
+"Move" = "ย้าย";
+"Remove" = "ลบ";
+"Resize" = "ปรับขนาด";
+// Visibility
+"Always" = "เสมอ";
+"In game" = "ขณะอยู่ในเกม";
+"In menu" = "ขณะอยู่ในเมนู";
+
+"custom_controls.button_edit.forward_lock" = "ล็อกทิศเดินหน้า";
 "custom_controls.button_edit.name" = "ชื่อ";
 "custom_controls.button_edit.size" = "ขนาด";
-"custom_controls.button_edit.mapping" = "ปุ่มที่ให้กด";
-"custom_controls.button_edit.orientation" = "ทิคทางการหัน";
-"custom_controls.button_edit.toggleable" = "ค้างไว้";
-"custom_controls.button_edit.swipeable" = "ลากได้";
+"custom_controls.button_edit.mapping" = "การกำหนดปุ่ม";
+"custom_controls.button_edit.orientation" = "ทิศทางการวาง";
+"custom_controls.button_edit.toggleable" = "กดสลับเปิด/ปิด";
+"custom_controls.button_edit.mouse_pass" = "ส่งผ่านเมาส์";
+"custom_controls.button_edit.swipeable" = "ปัดนิ้วได้";
 "custom_controls.button_edit.bg_color" = "สีพื้นหลัง";
-"custom_controls.button_edit.stroke_color" = "สีของเส้นขึด";
+"custom_controls.button_edit.stroke_width" = "ความหนาขอบ (dp)";
+"custom_controls.button_edit.stroke_color" = "สีขอบ";
+"custom_controls.button_edit.corner_radius" = "ความโค้งมุม (%)";
+"custom_controls.button_edit.opacity" = "ความทึบแสง (%)";
+"custom_controls.button_edit.visibility" = "การแสดงผล";
 
-"custom_controls.button_menu.add_subbutton" = "เพื่มปุ่มรอง";
+"custom_controls.button_menu.add_subbutton" = "เพิ่มปุ่มย่อย";
+"custom_controls.control_menu.discard_changes" = "ยกเลิกการเปลี่ยนแปลง";
 "custom_controls.control_menu.exit" = "ออก";
+"custom_controls.control_menu.exit.warn" = "คุณกำลังจะออกโดยไม่บันทึกการเปลี่ยนแปลง";
 "custom_controls.control_menu.save" = "บันทึก";
+"custom_controls.control_menu.save.error.json" = "ข้อผิดพลาด JSON";
+"custom_controls.control_menu.save.error.write" = "บันทึกไฟล์ไม่สำเร็จ";
 "custom_controls.control_menu.load" = "โหลด";
+"custom_controls.control_menu.make_default" = "ตั้งเป็นค่าเริ่มต้น";
+"custom_controls.control_menu.safe_area" = "พื้นที่ปลอดภัย (Safe area)";
 "custom_controls.control_menu.add_button" = "เพิ่มปุ่ม";
+"custom_controls.control_menu.add_drawer" = "เพิ่มลิ้นชักแถบปุ่ม";
+"custom_controls.control_menu.add_joystick" = "เพิ่มจอยสติ๊ก";
+"custom_controls.error.incompatible" = "ปุ่มควบคุมชุดนี้ (รหัส %d) ยังใช้กับตัวรันเชอร์เวอร์ชันนี้ไม่ได้";
+"custom_controls.hint" = "แตะค้างตรงไหนก็ได้บนหน้าจอเพื่อดูตัวเลือกเพิ่มเติม";
 
-"launcher.menu.custom_controls" = "การควบคุมกำหนดเอง";
-"launcher.menu.install_jar" = "ติดตั้ง .jar";
+"init.migrateDir" = "ไดเรกทอรีข้อมูลของ Amethyst ย้ายไปที่ %@ แล้ว ข้อมูลเดิมของคุณทั้งหมดถูกย้ายไปยังตำแหน่งใหม่เรียบร้อย";
+
+"java.error.missing_main_class" = "%@ ไม่มี Main class ถ้านี่คือม็อด ให้ย้ายไปไว้ในโฟลเดอร์ “mods” ของอินสแตนซ์ที่เลือกอยู่";
+"java.error.missing_runtime" = "%@ ต้องใช้ Java %d ขึ้นไปถึงจะรันได้ โปรดติดตั้งแล้วเลือกใน จัดการ Runtime (Manage Runtimes)";
+
+"launcher.mcl.downloading_file" = "กำลังดาวน์โหลด %@";
+"launcher.mcl.error_download" = "ดาวน์โหลด %@ ไม่สำเร็จ: %@";
+
+"launcher.menu.custom_controls" = "ปุ่มควบคุมกำหนดเอง";
+"launcher.menu.execute_jar" = "เรียกใช้ไฟล์ .jar";
+
+"launcher.wait_jit.title" = "กำลังรอ JIT";
+"launcher.wait_jit.message" = "Amethyst จำเป็นต้องใช้ JIT (Just-in-time) เพื่อให้ Java ทำงานได้เต็มประสิทธิภาพ";
+"launcher.wait_jit_trollstore.message" = "ถ้ายังเห็นข้อความนี้อยู่ ให้ลองเปิดใช้งาน URL Scheme ใน TrollStore ดู";
+
+"login.error.username.outOfRange" = "ชื่อผู้ใช้ต้องยาวอย่างน้อย 3 ตัวอักษร และไม่เกิน 16 ตัวอักษร";
+
+"login.alert.field.username" = "ชื่อผู้ใช้";
+
+"login.jit.checking" = "กำลังตรวจสอบ JIT";
+"login.jit.enabled" = "เปิดใช้งาน JIT แล้ว";
+"login.jit.fail" = "เปิดใช้งาน JIT ไม่สำเร็จ";
+"login.jit.fail.title" = "เปิดใช้งาน JIT บนอุปกรณ์นี้ไม่ได้";
+"login.jit.fail.description" = "เชื่อมต่ออัตโนมัติเพื่อเปิด JIT บนอุปกรณ์นี้ไม่ได้ ต้องเปิดใช้งานด้วยตัวเองแทน ข้อผิดพลาดถูกบันทึกไว้ใน latestlog.txt แล้ว";
+"login.jit.fail.description_unsupported" = "ตรวจพบวิธีติดตั้งที่ไม่รองรับ โปรดติดตั้งใหม่ด้วยวิธีที่รองรับ";
+
+// Login buttons
+"login.menu.sendlogs" = "ส่งไฟล์ Log";
 "login.option.add" = "เพิ่มบัญชี";
 "login.option.select" = "เลือกบัญชี";
+"login.option.demo" = "บัญชีทดลองเล่น (Demo)";
+"login.option.microsoft" = "บัญชี Microsoft";
+"login.option.local" = "บัญชีภายในเครื่อง (Local)";
+
+"login.warn.title.legacy_device" = "Amethyst เวอร์ชันถัดไปจะเลิกรองรับอุปกรณ์นี้";
+"login.warn.message.legacy_device" = "การอัปเดตหลักครั้งถัดไปต้องใช้อุปกรณ์ที่รัน iOS 14 ขึ้นไปได้";
+"login.warn.title.legacy_ios" = "Amethyst เวอร์ชันถัดไปต้องอัปเดต iOS ก่อน";
+"login.warn.message.legacy_ios" = "การอัปเดตหลักครั้งถัดไปต้องใช้อุปกรณ์ที่รัน iOS 14 หรือใหม่กว่า";
+"login.warn.title.limited_ram" = "อุปกรณ์นี้มี RAM จำกัด";
+"login.warn.message.limited_ram" = "แนะนำให้เปิดใช้งานการจัดการ RAM อัตโนมัติไว้ เพื่อลดปัญหาเกมค้างหรือหลุด";
+"login.warn.title.ios19_jitdead" = "Amethyst ไม่รองรับ iOS 26 ขึ้นไป";
+"login.warn.message.ios19_jitdead" = "เนื่องจาก iOS มีการเปลี่ยนแปลงที่บล็อกการเปิดใช้งาน JIT ทำให้ Amethyst ใช้งานไม่ได้ในตอนนี้ และต้องใช้เวลาศึกษาเพิ่มเติมเพื่อหาทางแก้\n\nกด ตกลง เพื่อปิดแอป";
+
+"login.warn.title.demomode" = "บัญชีของคุณอยู่ในโหมด Demo";
+"login.warn.message.demomode" = "โหมด Demo มาแทนที่โหมดออฟไลน์และโหมด Local เดิม ช่วยให้คุณล็อกอินด้วยบัญชี Microsoft ที่ไม่มีเกมได้ และเล่นเดโมของ Java Edition (ตั้งแต่เวอร์ชัน 1.3.1 ขึ้นไป) ส่วนเวอร์ชันเก่ากว่านั้นจะเล่นได้แบบเต็ม เพราะตัวรันเชอร์ทางการไม่ได้จำกัดไว้ ดูรายละเอียดเพิ่มเติมเกี่ยวกับการเปลี่ยนผ่านจากโหมดออฟไลน์ได้ที่เว็บไซต์ของเรา";
+
+"login.warn.title.localmode" = "โหมดออฟไลน์เปลี่ยนเป็นโหมด Local แล้ว";
+"login.warn.message.localmode" = "คุณยังเล่นเวอร์ชันที่ติดตั้งไว้แล้วได้ปกติ แต่จะดาวน์โหลด Minecraft เพิ่มไม่ได้ถ้าไม่มีบัญชีที่ซื้อเกมแล้ว และเราจะไม่ซัพพอร์ตปัญหาที่เกิดจากบัญชี Local หรือการได้เกม Minecraft มาด้วยวิธีอื่น";
+
+"login.msa.error.xsts.noxboxacc" = "บัญชี Microsoft นี้ยังไม่ได้สร้างโปรไฟล์ Xbox โปรดสร้างโปรไฟล์ Xbox ให้เรียบร้อยก่อน\nรหัสข้อผิดพลาด: 2148916233";
+"login.msa.error.xsts.noxbox" = "บริการ Xbox Live ยังไม่เปิดให้ใช้งานในประเทศของคุณ\nรหัสข้อผิดพลาด: 2148916235";
+"login.msa.error.xsts.krverify" = "บัญชีนี้ต้องได้รับการยืนยันจากผู้ปกครองก่อนถึงจะใช้งานต่อได้\nรหัสข้อผิดพลาด: 2148916236 หรือ 2148916237";
+"login.msa.error.xsts.underage" = "บัญชีนี้ต้องเชื่อมโยงกับบัญชีผู้ปกครองก่อนถึงจะใช้งานต่อได้\nรหัสข้อผิดพลาด: 2148916238";
+
+"login.msa.progress.acquireAccessToken" = "(1/5) กำลังขอ Access token";
+"login.msa.progress.acquireXBLToken" = "(2/5) กำลังขอ Xbox Live token";
+"login.msa.progress.acquireXSTS" = "กำลังขอ XSTS";
+"login.msa.progress.acquireXboxProfile" = "(3/5) กำลังดึงโปรไฟล์ Xbox";
+"login.msa.progress.acquireMCToken" = "(4/5) กำลังขอ Minecraft token";
+"login.msa.progress.checkMCProfile" = "(5/5) กำลังตรวจสอบโปรไฟล์ Minecraft";
 
 "News" = "ข่าวสาร";
-"Settings" = "การตั้งค่า";
-"preference.section.control" = "ปรับเเต่งการควบคุม";
+"Profiles" = "โปรไฟล์";
+"Settings" = "ตั้งค่า";
+
+"preference.section.general" = "ทั่วไป";
+"preference.section.video" = "ภาพและเสียง";
+"preference.section.footer.video" = "โหมดเรนเดอร์อัตโนมัติจะเลือกตัวเลือกที่เหมาะสมที่สุดตามเวอร์ชัน Minecraft ให้เอง ส่วนการลดความละเอียดจะช่วยลดภาระ GPU ทำให้เล่นลื่นขึ้น";
+"preference.section.control" = "ปุ่มควบคุม";
+"preference.section.debug" = "ตั้งค่าดีบัก UI";
+"preference.section.footer.debug" = "อาจต้องรีสตาร์ทตัวรันเชอร์เพื่อให้การเปลี่ยนแปลงมีผล";
 //"preference.section.footer.control" = "";
-"preference.section.java" = "จาวาทวิก";
+"preference.section.java" = "ตั้งค่า Java";
+//"preference.section.footer.java" = "";
 
-"preference.title.game_directory" = "ตำเเห่งโฟรเดอร์เกม";
-"preference.title.cosmetica" = "ผ้าคลุมที่มีภาพ";
+"preference.title.confirm" = "แน่ใจนะ?";
 
-"preference.title.renderer" = "การแสดงผล";
+"preference.title.game_directory" = "ไดเรกทอรีเกม";
+"preference.title.confirm.delete_game_directory" = "อินสแตนซ์ %@ จะถูกลบถาวรและกู้คืนไม่ได้";
+"preference.multidir.add_directory" = "เพิ่มไดเรกทอรีเกม";
 
-"preference.title.gyroscope_enable" = "เปิดใช้งานการควบคุมไจโรสโคป";
-"preference.title.gyroscope_sensitivity" = "ความรวดเร็วในการควบคุมไจโร";
-"preference.detail.gyroscope_sensitivity" = "ปรับความไวของการควบคุมไจโรสโคป";
-"preference.title.java_args" = "JVM Launch arguments";
-"preference.title.auto_ram" = "RAM อัตโนมัติ";
+"preference.title.check_sha" = "ตรวจสอบไฟล์หลังดาวน์โหลด";
+"preference.detail.check_sha" = "บังคับให้ตัวรันเชอร์ตรวจแฮชของไฟล์ (ถ้ามี) ช่วยป้องกันไฟล์ที่ดาวน์โหลดมาเสียหาย";
+"preference.title.cosmetica" = "ผ้าคลุม Cosmetica";
+"preference.detail.cosmetica" = "เปิดใช้งานผ้าคลุมจาก Cosmetica (เดิมชื่อ Arc) ดูข้อมูลเพิ่มเติมได้ที่ https://cosmetica.cc (ต้องมี OptiFine)";
+"preference.title.debug_logging" = "บันทึก Log ดีบัก";
+"preference.detail.debug_logging" = "บันทึกการตั้งค่าและการทำงานภายในลงใน latestlog.txt ช่วยให้นักพัฒนาไล่หาปัญหาได้ง่ายขึ้น แต่อาจทำให้เกมช้าลงเพราะเขียนไฟล์ log บ่อยขึ้น";
+"preference.title.appicon" = "ไอคอนแอป";
+"preference.detail.appicon" = "เลือกไอคอนหน้าโฮมของ Amethyst ได้หลายแบบ";
+"preference.title.appicon-default" = "Amethyst สว่าง (ดั้งเดิม)";
+"preference.title.appicon-dark" = "Amethyst มืด (ดั้งเดิม)";
+"preference.title.appicon-development" = "ภาพร่างสำหรับการพัฒนา";
+"preference.title.hidden_sidebar" = "ซ่อนแถบข้างเมนูหลักโดยค่าเริ่มต้น";
+"preference.detail.hidden_sidebar" = "ซ่อนแถบข้างของเมนูหลักไว้เป็นค่าเริ่มต้น รวมถึงตอนหมุนหน้าจอด้วย";
+
+"preference.title.reset_warnings" = "รีเซ็ตคำเตือนทั้งหมด";
+"preference.title.done.reset_warnings" = "รีเซ็ตคำเตือนทั้งหมดแล้ว";
+
+"preference.title.reset_settings" = "รีเซ็ตการตั้งค่าทั้งหมด";
+"preference.title.confirm.reset_settings" = "การดำเนินการนี้จะลบการตั้งค่ากำหนดเองทั้งหมด รวมถึงความละเอียด ขนาดปุ่ม และพารามิเตอร์ Java";
+"preference.title.done.reset_settings" = "คืนค่าเริ่มต้นทั้งหมดแล้ว";
+
+"preference.title.erase_demo_data" = "ลบข้อมูลเกม Demo";
+"preference.title.confirm.erase_demo_data" = "การดำเนินการนี้จะลบเวอร์ชันเกมและข้อมูลทั้งหมดของบัญชี Demo";
+"preference.title.done.erase_demo_data" = "ลบข้อมูลเกม Demo เรียบร้อยแล้ว";
+
+"preference.section.mobileglues" = "ตั้งค่า MobileGlues";
+"preference.section.footer.mobileglues" = "การตั้งค่านี้มีผลเฉพาะตอนเลือกใช้ตัวเรนเดอร์ MobileGlues เท่านั้น และจะมีผลหลังเปิดเกมใหม่";
+
+"preference.title.enable_angle" = "ไดรเวอร์ ANGLE ES";
+"preference.detail.enable_angle" = "ใช้ ANGLE แทนไดรเวอร์ OpenGL ES ของระบบ อาจช่วยให้เข้ากันได้ดีขึ้นบางอุปกรณ์";
+"preference.title.enable_no_error" = "ข้ามข้อผิดพลาด Shader";
+"preference.detail.enable_no_error" = "กำหนดวิธีจัดการข้อผิดพลาดตอนคอมไพล์ Shader";
+"preference.title.mg_enable_no_error-0" = "ปิด (รายงานข้อผิดพลาด)";
+"preference.title.mg_enable_no_error-1" = "เปิด (ข้ามข้อผิดพลาด)";
+"preference.title.mg_enable_no_error-2" = "เปิด + บันทึก (ข้ามและบันทึกข้อผิดพลาด)";
+"preference.title.enable_ext_timer_query" = "ส่วนขยาย Timer Query";
+"preference.detail.enable_ext_timer_query" = "เปิดใช้งาน GL_EXT_timer_query สำหรับจับเวลาคำสั่ง GPU ช่วยวัดประสิทธิภาพได้แม่นยำขึ้น";
+"preference.title.enable_ext_compute_shader" = "ส่วนขยาย Compute Shader";
+"preference.detail.enable_ext_compute_shader" = "เปิดใช้งาน GL_ARB_compute_shader สำหรับประมวลผลบน GPU จำเป็นสำหรับแพ็ก Shader บางตัว";
+"preference.title.enable_ext_direct_state_access" = "Direct State Access";
+"preference.detail.enable_ext_direct_state_access" = "เปิดใช้งาน GL_ARB_direct_state_access เพื่อจัดการ Object แบบ OpenGL สมัยใหม่ ช่วยเพิ่มประสิทธิภาพ";
+"preference.title.max_glsl_cache_size" = "ขนาดแคช GLSL (MB)";
+"preference.detail.max_glsl_cache_size" = "ขนาดสูงสุดของแคช Shader GLSL เป็นเมกะไบต์ ยิ่งแคชใหญ่ Shader ยิ่งโหลดเร็วขึ้น ตั้งเป็น 0 เพื่อปิดการแคช";
+"preference.title.multidraw_mode" = "โหมด Multidraw";
+"preference.detail.multidraw_mode" = "โหมดเรนเดอร์แบบ Multi-draw indirect ช่วยเพิ่มประสิทธิภาพการเรียก Draw call";
+"preference.title.mg_multidraw_mode-0" = "อัตโนมัติ";
+"preference.title.mg_multidraw_mode-1" = "Indirect";
+"preference.title.mg_multidraw_mode-2" = "จำลอง (Emulated)";
+"preference.title.angle_depth_clear_fix_mode" = "แก้ปัญหา ANGLE Depth Clear";
+"preference.detail.angle_depth_clear_fix_mode" = "วิธีแก้ปัญหาชั่วคราวสำหรับอาการ Depth buffer เคลียร์ผิดปกติตอนใช้ไดรเวอร์ ANGLE ES";
+"preference.title.custom_gl_version" = "เวอร์ชัน OpenGL กำหนดเอง";
+"preference.detail.custom_gl_version" = "บังคับเวอร์ชัน OpenGL ที่รายงานออกไป มีประโยชน์เวลาใช้ม็อดที่ต้องการเวอร์ชัน GL เฉพาะ";
+"preference.title.mg_custom_gl_version-0" = "ค่าเริ่มต้น";
+"preference.title.mg_custom_gl_version-4.0" = "OpenGL 4.0";
+"preference.title.mg_custom_gl_version-4.1" = "OpenGL 4.1";
+"preference.title.mg_custom_gl_version-4.2" = "OpenGL 4.2";
+"preference.title.mg_custom_gl_version-4.3" = "OpenGL 4.3";
+"preference.title.mg_custom_gl_version-4.4" = "OpenGL 4.4";
+"preference.title.mg_custom_gl_version-4.5" = "OpenGL 4.5";
+"preference.title.mg_custom_gl_version-4.6" = "OpenGL 4.6";
+"preference.title.fsr1_setting" = "อัปสเกล FSR 1.0";
+"preference.detail.fsr1_setting" = "คุณภาพการอัปสเกลของ AMD FidelityFX Super Resolution 1.0 ช่วยเพิ่มเฟรมเรตตอนเล่นที่ความละเอียดต่ำ";
+"preference.title.mg_fsr1_setting-0" = "ปิด";
+"preference.title.mg_fsr1_setting-1" = "คุณภาพสูงสุด (Ultra Quality)";
+"preference.title.mg_fsr1_setting-2" = "เน้นคุณภาพ (Quality)";
+"preference.title.mg_fsr1_setting-3" = "เน้นประสิทธิภาพ (Performance)";
+
+"preference.title.renderer" = "เอนจินเรนเดอร์ (Renderer)";
+
+"preference.title.renderer.release.auto" = "อัตโนมัติ";
+"preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.mg" = "MobileGlues";
+"preference.title.renderer.release.zink" = "Zink";
+"preference.title.renderer.release.ltw" = "LTW";
+
+"preference.title.renderer.debug.auto" = "อัตโนมัติ: gl4es หรือ ANGLE";
+"preference.title.renderer.debug.gl4es" = "holy gl4es - ส่งออก OpenGL 2.1";
+"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - ส่งออก OpenGL 3.2 (Core Profile แบบจำกัด)";
+"preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - ส่งออก OpenGL 4.0 ยังทดลองอยู่";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 25) - ส่งออก OpenGL 4.1 ผ่าน MoltenVK";
+"preference.title.renderer.debug.vulkan" = "MoltenVK - Vulkan แท้ผ่าน Metal (เฉพาะสแนปช็อต 1.21.6+)";
+"preference.title.renderer.debug.ltw" = "LTW (1.17+) - OpenGL 3.3 ผ่าน OpenGL ES/Metal ยังทดลองอยู่";
+
+"Device Info" = "ข้อมูลอุปกรณ์";
+
+"preference.title.zink_gl_override" = "บังคับเวอร์ชัน GL";
+"preference.detail.zink_gl_override" = "บังคับเวอร์ชัน OpenGL ที่ Zink รายงานออกไป เวอร์ชันต่ำกว่าจะช่วยให้เข้ากันได้กับ GPU รุ่นเก่ามากขึ้น 0 = อัตโนมัติตามระดับการปรับแต่ง";
+"preference.title.zink_gl_override-0" = "อัตโนมัติ (ตามระดับการปรับแต่ง)";
+"preference.title.zink_gl_override-3.3" = "OpenGL 3.3 (รองรับสูงสุด)";
+"preference.title.zink_gl_override-4.0" = "OpenGL 4.0";
+"preference.title.zink_gl_override-4.1" = "OpenGL 4.1 (ทดลองใช้งาน)";
+
+"preference.title.zink_enable_gl_thread" = "ประมวลผล GL แบบ Multi-thread";
+"preference.detail.zink_enable_gl_thread" = "เปิด Mesa GL threading เพื่อใช้ประสิทธิภาพ Multi-core ได้เต็มที่ขึ้น ปิดถ้าเจอภาพเพี้ยนหรือเกมหลุด";
+"preference.title.zink_glsl_cache_size" = "ขนาดแคช GLSL (MB)";
+"preference.detail.zink_glsl_cache_size" = "ขนาดสูงสุดของแคช Shader GLSL แคชยิ่งใหญ่ยิ่งช่วยลดเวลาคอมไพล์ Shader";
+"preference.title.zink_api_features" = "ชุดคุณสมบัติ API";
+"preference.detail.zink_api_features" = "กำหนดว่าส่วนขยาย OpenGL ตัวไหนใช้งานได้บ้าง ชุดคุณสมบัติแบบจำกัดจะช่วยให้อุปกรณ์รุ่นเก่าลื่นขึ้น";
+"preference.title.zink_api_features-0" = "ขั้นต่ำ (ไม่มีส่วนขยาย เฉพาะพื้นฐาน)";
+"preference.title.zink_api_features-1" = "พื้นฐาน (เฉพาะแกนหลักของ GL)";
+"preference.title.zink_api_features-2" = "มาตรฐาน (ส่วนขยายทั่วไป)";
+"preference.title.zink_api_features-3" = "เต็มรูปแบบ (ส่วนขยายทั้งหมดที่รองรับ)";
+
+"preference.title.debug_server_enabled" = "เซิร์ฟเวอร์ HTTP ดีบัก";
+"preference.detail.debug_server_enabled" = "เปิดหน้าเว็บควบคุมที่พอร์ต 9090 ไว้ดู Log เปิดไฟล์ และควบคุมเกม มี Token ป้องกันอยู่ เปิดใช้งานเพื่อดู URL";
+"preference.title.debug_server_localhost_only" = "จำกัดเฉพาะ Localhost";
+"preference.detail.debug_server_localhost_only" = "เมื่อเปิดใช้งาน เซิร์ฟเวอร์ดีบักจะรับการเชื่อมต่อจากในเครื่องเท่านั้น (เข้าผ่าน LAN ไม่ได้) ปิดถ้าต้องการเชื่อมต่อจากคอมพิวเตอร์ในวง WiFi เดียวกัน";
+
+"preference.detail.renderer" = "เปลี่ยนเอนจินเรนเดอร์ OpenGL ที่ใช้งาน";
+
+"preference.title.resolution" = "ความละเอียด (%)";
+"preference.detail.resolution" = "ลดความละเอียดของเกมลงได้";
+"preference.title.max_framerate" = "เฟรมเรตสูงสุด";
+"preference.detail.max_framerate" = "จำกัดเฟรมเรตของเกมไว้ที่ 60 FPS บนหน้าจอ ProMotion";
+
+"preference.title.performance_hud" = "แสดง HUD ประสิทธิภาพ";
+"preference.detail.performance_hud" = "แสดงแถบตรวจสอบประสิทธิภาพเมื่อเปิดใช้งาน";
+
+"preference.title.fullscreen_airplay" = "AirPlay แบบเต็มจอ";
+"preference.detail.fullscreen_airplay" = "แสดงหน้าต่างเกมแบบเต็มจอบนจอภายนอก แทนที่จะสะท้อนหน้าจอทั้งหมด";
+"preference.title.silence_other_audio" = "หยุดเสียงแอปอื่นตอนเปิดเกม";
+"preference.detail.silence_other_audio" = "เปิดใช้งานเพื่อให้ Amethyst หยุดเสียงจากแอปอื่นชั่วคราว เช่น แอปเพลง ตอนเปิดเกม";
+"preference.title.silence_with_switch" = "ปิดเสียงตามสวิตช์ Silent Mode";
+"preference.detail.silence_with_switch" = "เปิดใช้งานเพื่อปิดเสียงเกมเมื่อเปิดโหมด Silent Mode ไม่กระทบหูฟังและลำโพงภายนอก";
+"preference.title.allow_microphone" = "อนุญาตใช้ไมโครโฟน";
+"preference.detail.allow_microphone" = "เปิดเฉพาะตอนใช้ม็อดแชทเสียงเท่านั้น สวิตช์ปิดเสียงจะถูกข้าม และคุณภาพเสียงจากแอปอื่นอาจได้รับผลกระทบ";
+"preference.title.microphone_source" = "เลือกไมโครโฟน";
+"preference.detail.microphone_source" = "ลำดับอัตโนมัติ: ด้านหน้า → ด้านล่าง → ด้านหลัง ถ้าตัวไหนใช้ไม่ได้จะลองตัวถัดไปให้เอง";
+"preference.title.microphone_source-auto" = "อัตโนมัติ (แนะนำ)";
+"preference.title.microphone_source-front" = "ไมโครโฟนด้านหน้า";
+"preference.title.microphone_source-bottom" = "ไมโครโฟนด้านล่าง";
+"preference.title.microphone_source-back" = "ไมโครโฟนด้านหลัง";
+"preference.title.default_gamepad_ctrl" = "ตั้งค่าจอยเกม";
+"preference.title.hardware_hide" = "ซ่อนปุ่มควบคุมเมื่อต่ออุปกรณ์เสริม";
+"preference.detail.hardware_hide" = "ซ่อนปุ่มควบคุมบนหน้าจอโดยอัตโนมัติเมื่อเชื่อมต่อเมาส์หรือจอยเกม";
+"preference.title.recording_hide" = "ซ่อนปุ่มควบคุมตอนบันทึกหน้าจอ";
+"preference.detail.recording_hide" = "ซ่อนปุ่มควบคุมจากภาพหน้าจอและวิดีโอบันทึกหน้าจอ แต่ยังมองเห็นบนหน้าจอจริงตามปกติ";
+"preference.title.gesture_mouse" = "ท่าทางเมาส์ (Mouse gestures)";
+"preference.detail.gesture_mouse" = "เปิดใช้งานท่าทาง เช่น แตะเพื่อวางบล็อก กดค้างเพื่อทำลายบล็อก ปัด 2 นิ้ว";
+"preference.title.gesture_hotbar" = "ท่าทางแถบไอเท็ม (Hotbar gestures)";
+"preference.detail.gesture_hotbar" = "เปิดใช้งานท่าทาง เช่น แตะช่องแถบไอเท็ม สลับไอเท็มระหว่างมือ โยนไอเท็ม";
+"preference.title.disable_haptics" = "ปิดการสั่นตอบสนอง";
+"preference.title.press_duration" = "ระยะเวลากดค้าง (ms)";
+"preference.detail.press_duration" = "ระยะเวลาที่ใช้กดค้างเพื่อทำลายบล็อกและทิ้งไอเท็ม";
+"preference.title.button_scale" = "ขนาดปุ่มบนหน้าจอ (%)";
+"preference.detail.button_scale" = "ขยายปุ่มให้ใหญ่ขึ้นถ้ารู้สึกว่าเล็กไป ผู้ใช้ iPad มักต้องปรับตรงนี้";
+"preference.title.mouse_scale" = "ขนาดเมาส์ (%)";
+"preference.detail.mouse_scale" = "ปรับขนาดของเมาส์เสมือน";
+"preference.title.mouse_speed" = "ความเร็วเมาส์ (%)";
+"preference.detail.mouse_speed" = "ปรับความเร็วของเมาส์เสมือน";
+"preference.title.virtmouse_enable" = "เมาส์เสมือน";
+"preference.detail.virtmouse_enable" = "เปิดใช้งานเพื่อให้เมาส์เสมือนเปิดทันทีตอนเริ่มเกม";
+"preference.title.slideable_hotbar" = "แถบไอเท็มเลื่อนได้";
+"preference.detail.slideable_hotbar" = "ทำให้แถบไอเท็มปัดเลื่อนได้เหมือนลูกกลิ้งเมาส์";
+
+"preference.title.gyroscope_enable" = "ควบคุมด้วยไจโรสโคป";
+"preference.detail.gyroscope_enable" = "เปิดใช้งานเพื่อหันมุมมองในเกมได้โดยเอียงอุปกรณ์";
+"preference.title.gyroscope_invert_x_axis" = "สลับแกนซ้าย-ขวาของไจโรสโคป";
+"preference.detail.gyroscope_invert_x_axis" = "สลับแกน X ของไจโรสโคป";
+"preference.title.gyroscope_sensitivity" = "ความไวไจโรสโคป";
+"preference.detail.gyroscope_sensitivity" = "ปรับความไวของการควบคุมด้วยไจโรสโคป";
+
+"preference.title.manage_runtime" = "จัดการ Runtime";
+"preference.title.confirm.delete_runtime" = "%@ จะถูกลบ";
+"preference.manage_runtime.header.default" = "เวอร์ชัน Java ที่ต้องการ";
+"preference.manage_runtime.default.1165" = "1.16.5 และเก่ากว่า";
+"preference.manage_runtime.default.117" = "1.17 และใหม่กว่า";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 และรุ่นเก่ากว่าอาจรันบน Java เวอร์ชันใหม่กว่าได้ แต่ไม่รับประกันว่าม็อดจะเข้ากันได้ Runtime ภายนอกวางไว้ในโฟลเดอร์ “java_runtimes” ได้ การเปลี่ยนเวอร์ชัน Java สำหรับ “เรียกใช้ .jar” จะมีผลก็ต่อเมื่อตัวติดตั้งไม่ได้ระบุเวอร์ชัน Java ที่ใหม่กว่าไว้";
+"preference.manage_runtime.footer.java8" = "นี่คือเวอร์ชันเริ่มต้นสำหรับ Minecraft 1.16.5 และรุ่นเก่ากว่า";
+"preference.manage_runtime.footer.java17" = "นี่คือเวอร์ชันเริ่มต้นสำหรับ Minecraft 1.17 และรุ่นใหม่กว่า";
+"preference.manage_runtime.header.invalid" = "Runtime ที่ใช้งานไม่ได้";
+
+"preference.title.java_args" = "พารามิเตอร์เริ่มทำงาน JVM (Java Launch Arguments)";
+"preference.detail.java_args" = "ส่งพารามิเตอร์ให้ Java ตอนเปิด Minecraft ควรระวัง เพราะตั้งค่าผิดอาจทำให้เกมหลุดได้";
+"preference.placeholder.java_args" = "ระบุพารามิเตอร์...";
+"preference.title.env_variables" = "ตัวแปรสภาพแวดล้อม (Environment variables)";
+"preference.detail.env_variables" = "ตั้งค่าตัวแปรสภาพแวดล้อมกำหนดเองตอนเปิด Minecraft ควรระวัง เพราะตั้งค่าผิดอาจทำให้เกมหลุดได้";
+"preference.placeholder.env_variables" = "ระบุตัวแปร...";
+"preference.title.auto_ram" = "ปรับ RAM อัตโนมัติ";
 "preference.detail.auto_ram" = "เปิดใช้งานตัวปรับ RAM อัตโนมัติ";
-"preference.detail.allocated_memory" = "ควบคุมเเรมที่จะให้กับเกมมายคราฟ";
-"controller_configurator.playstation.title.named_back" = "เลือก";
+"preference.warn.auto_ram" = "ถ้าปิดตัวเลือกนี้บนอุปกรณ์ที่ไม่ได้ Jailbreak แล้วไปแก้ค่าเอง อาจทำให้เกมไม่เสถียรได้ โปรดระวัง";
+"preference.title.allocated_memory" = "หน่วยความจำที่จัดสรร (MB)";
+"preference.detail.allocated_memory" = "กำหนดปริมาณ RAM ที่จะให้ Minecraft ใช้";
+"preference.warn.allocated_memory" = "เนื่องจากข้อจำกัดของ iOS การตั้งค่าเท่านี้หรือสูงกว่าอาจทำให้เกมไม่เสถียร โปรดระวัง";
+"preference.title.custom_env" = "ตัวแปรสภาพแวดล้อม";
+"preference.detail.custom_env" = "ตัวเลือกนี้ยังอยู่ระหว่างพัฒนา ระหว่างนี้ให้สร้างและแก้ไขไฟล์ custom_env.txt แทนไปก่อน";
+
+"preference.title.debug_always_attached_jit" = "เชื่อมต่อ StikDebug ตลอดเวลา";
+"preference.detail.debug_always_attached_jit" = "เปิดใช้งานถ้าม็อดของคุณต้องโหลดไฟล์ .dylib ระหว่างเล่น เมื่อเปิดตัวเลือกนี้ อย่าปิดหน้าต่าง PiP ของ StikDebug ระหว่างเล่นเกม";
+"preference.title.debug_skip_wait_jit" = "ข้ามหน้าจอ \"กำลังรอ JIT\"";
+"preference.detail.debug_skip_wait_jit" = "ตัวเลือกนี้ไม่ได้ทำให้เปิดเกมได้โดยไม่มี JIT แต่จะข้ามการตรวจสอบตัวดีบักไป เพราะขั้นตอนตรวจสอบอาจล้มเหลวบนเครื่องแหกคุกบางแบบ";
+"preference.title.debug_ipad_ui" = "ปลดล็อก UI สไตล์ iPadOS";
+"preference.detail.debug_ipad_ui" = "ถ้าเปิด จะใช้ UI เฉพาะของ iPad (แถบเตือน คีย์บอร์ด ฯลฯ) ถ้าปิด จะใช้ UI แบบ iPhone แทน";
+"preference.title.debug_auto_correction" = "แก้คำอัตโนมัติ";
+"preference.detail.debug_auto_correction" = "เปิดใช้งานการแก้คำอัตโนมัติตอนพิมพ์ข้อความในเกม";
+"preference.title.debug_hide_home_indicator" = "ซ่อนแถบโฮม (Home indicator)";
+"preference.detail.debug_hide_home_indicator" = "ตัวเลือกนี้จะปิดการล็อกแถบโฮม ต้องใช้ Guided Access ร่วมด้วยถึงจะซ่อนและล็อกแถบโฮมพร้อมกันได้";
+
+"preference.profile.title.name" = "ชื่อ";
+"preference.profile.title.loader_type" = "ประเภทตัวโหลดม็อด (Loader type)";
+"preference.profile.title.loader_vendor" = "ผู้พัฒนาตัวโหลดม็อด";
+"preference.profile.title.loader_version" = "เวอร์ชันตัวโหลดม็อด";
+"preference.profile.title.version" = "เวอร์ชัน";
+"preference.profile.title.version_type" = "ประเภทเวอร์ชัน";
+"preference.profile.title.default_touch_control" = "ปุ่มควบคุมแบบสัมผัส";
+"preference.profile.title.default_gamepad_control" = "การควบคุมด้วยจอยเกม";
+
+"profile.error.name_exists" = "มีโปรไฟล์ชื่อนี้อยู่แล้ว ลองใช้ชื่ออื่นดู";
+"profile.section.instance" = "ตั้งค่าอินสแตนซ์เกม";
+"profile.section.profiles" = "โปรไฟล์ในอินสแตนซ์นี้";
+"profile.title.create" = "สร้างโปรไฟล์ใหม่";
+"profile.title.separate_preference" = "แยกการตั้งค่าเฉพาะโปรไฟล์นี้";
+"profile.detail.separate_preference" = "เปิดใช้งานเพื่อแยกการตั้งค่าของโปรไฟล์นี้ออกจากส่วนกลาง การรีเซ็ตจะคืนกลับไปใช้ค่าจากส่วนกลางแทนค่าเริ่มต้นของระบบ";
+"profile.title.install_fabric_quilt" = "ติดตั้ง Fabric/Quilt";
+
+"controller_configurator.title.current" = "ไฟล์ตั้งค่าจอยเกม";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "Bumper ซ้าย (LB)";
+"controller_configurator.xbox.title.bumper_right" = "Bumper ขวา (RB)";
+"controller_configurator.xbox.title.trigger_left" = "Trigger ซ้าย (LT)";
+"controller_configurator.xbox.title.trigger_right" = "Trigger ขวา (RT)";
+"controller_configurator.xbox.title.named_back" = "Guide";
+"controller_configurator.xbox.title.named_start" = "Menu";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "ปุ่มทิศทาง ขึ้น";
+"controller_configurator.xbox.title.dpad_down" = "ปุ่มทิศทาง ลง";
+"controller_configurator.xbox.title.dpad_left" = "ปุ่มทิศทาง ซ้าย";
+"controller_configurator.xbox.title.dpad_right" = "ปุ่มทิศทาง ขวา";
+"controller_configurator.xbox.title.thumb_left" = "กดอนาล็อกซ้าย (LS)";
+"controller_configurator.xbox.title.thumb_right" = "กดอนาล็อกขวา (RS)";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
+"controller_configurator.playstation.title.named_back" = "Select";
+"controller_configurator.playstation.title.named_start" = "Start";
+"controller_configurator.playstation.title.named_a" = "Cross (กากบาท)";
+"controller_configurator.playstation.title.named_b" = "Circle (วงกลม)";
+"controller_configurator.playstation.title.named_x" = "Square (สี่เหลี่ยม)";
+"controller_configurator.playstation.title.named_y" = "Triangle (สามเหลี่ยม)";
+"controller_configurator.playstation.title.dpad_up" = "ปุ่มทิศทาง ขึ้น";
+"controller_configurator.playstation.title.dpad_down" = "ปุ่มทิศทาง ลง";
+"controller_configurator.playstation.title.dpad_left" = "ปุ่มทิศทาง ซ้าย";
+"controller_configurator.playstation.title.dpad_right" = "ปุ่มทิศทาง ขวา";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "ไฟล์ตั้งค่าปัจจุบัน";
+"controller_configurator.section.game_mappings" = "การกำหนดปุ่มขณะเล่นเกม";
+"controller_configurator.section.footer.game_mappings" = "ตั้งค่าปุ่มตอนเมาส์ถูกล็อกอยู่ในเกม";
+"controller_configurator.section.menu_mappings" = "การกำหนดปุ่มในเมนู";
+"controller_configurator.section.footer.menu_mappings" = "ตั้งค่าปุ่มตอนเมาส์ไม่ได้ถูกล็อก เช่น หน้าจอหลักหรือเมนูหยุดเกม";
+"controller_configurator.section.controller_style" = "ประเภทจอยเกม";
+"controller_configurator.section.footer.controller_style" = "แสดงชื่อปุ่มของจอยเกมแต่ละแบบในหน้าตั้งค่านี้";
