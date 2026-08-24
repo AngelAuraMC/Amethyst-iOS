@@ -105,6 +105,8 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     if (minVersion > selectedVer.intValue) {
         NSArray *sortedVersions = [pref.allKeys valueForKeyPath:@"self.integerValue"];
         sortedVersions = [sortedVersions sortedArrayUsingSelector:@selector(compare:)];
+        // Discard the too-old default: otherwise no match below silently keeps it
+        selectedVer = nil;
         for (NSNumber *version in sortedVersions) {
             if (version.intValue >= minVersion) {
                 selectedVer = version.stringValue;

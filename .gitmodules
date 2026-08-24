@@ -10,5 +10,5 @@
 	url = https://github.com/AFNetworking/AFNetworking
 [submodule "Natives/external/MobileGlues"]
 	path = Natives/external/MobileGlues
-	url = https://github.com/MobileGL-Dev/MobileGlues
-	branch = main
+	url = https://github.com/ryanmurf/MobileGlues
+	branch = fix-depth32
