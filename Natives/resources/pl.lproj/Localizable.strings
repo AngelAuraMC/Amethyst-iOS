@@ -239,16 +239,16 @@
 "preference.manage_runtime.header.default" = "Preferowana wersja Java";
 "preference.manage_runtime.default.1165" = "1.16.5 i starsze";
 "preference.manage_runtime.default.117" = "1.17 i nowsze";
-"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 i starsze mogą działać na nowszych wersjach Java, jednakże kompatybilność z modami nie jest gwarantowana. Zewnętrzne środowiska uruchomieniowe mogą być dodawane do folderu \"java_runtimes\". Zmiana wersji Java dla opcji \"Uruchom plik .jar\" działa tylko wtedy gdy instalator nie spodziewa się nowszej wersji Javy.";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 i starsze mogą działać na nowszych wersjach Java, jednakże kompatybilność z modyfikacjami nie jest gwarantowana. Zewnętrzne środowiska uruchomieniowe mogą być dodawane do folderu „java_runtimes”. Zmiana wersji Java dla opcji „Uruchom plik .jar” działa tylko wtedy, gdy instalator nie spodziewa się nowszej wersji Javy.";
 "preference.manage_runtime.footer.java8" = "To jest domyślna wersja dla Minecrafta 1.16.5 i starszych.";
 "preference.manage_runtime.footer.java17" = "To jest domyślna wersja dla Minecrafta 1.17 i nowszych.";
 "preference.manage_runtime.header.invalid" = "Nieprawidłowe środowisko uruchomieniowe";
 
 "preference.title.java_args" = "Argumenty uruchomienia JVM";
-"preference.detail.java_args" = "Podawaj argumenty Javie, gdy uruchamiasz Minecrafta. Bądź ostrożny, to może spowodować crashe gry, jeżeli jest zmodyfikowane nieprawidłowo.";
+"preference.detail.java_args" = "Podawaj argumenty Javie, gdy uruchamiasz Minecrafta. Zachowaj ostrożność, to może spowodować błędy gry, jeżeli jest zmodyfikowane nieprawidłowo.";
 "preference.placeholder.java_args" = "Określ argumenty...";
 "preference.title.env_variables" = "Zmienne środowiskowe";
-"preference.detail.env_variables" = "Ustaw własne zmienne środowiskowe, gdy uruchamiasz Minecrafta. Bądź ostrożny, to może spowodować crashe gry, jeżeli zostało zmodyfikowane nieprawidłowo.";
+"preference.detail.env_variables" = "Ustaw własne zmienne środowiskowe, gdy uruchamiasz Minecrafta. Zachowaj ostrożność, to może spowodować błędy gry, jeżeli zostało zmodyfikowane nieprawidłowo.";
 "preference.placeholder.env_variables" = "Podaj zmienne środowiskowe...";
 "preference.title.auto_ram" = "Automatyczny RAM";
 "preference.detail.auto_ram" = "Włącza automatyczny przydział pamięci RAM";
