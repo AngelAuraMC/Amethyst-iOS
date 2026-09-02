@@ -9,12 +9,10 @@
 
 // The play button
 "Play" = "Hrať";
-"Snapshot" = "Snapshot";
 "Old-beta" = "Stará beta";
 "Old-alpha" = "Stará alfa";
 "Edit" = "Upraviť";
 "Remove" = "Odstrániť";
-
 "custom_controls.button_edit.name" = "Názov";
 "custom_controls.button_edit.size" = "Veľkosť";
 "custom_controls.button_edit.mapping" = "Priradenie ku klávese (bind)";
@@ -31,7 +29,6 @@
 "custom_controls.control_menu.add_button" = "Pridať tlačidlo";
 
 "launcher.menu.custom_controls" = "Vlastné ovládacie prvky";
-"launcher.menu.install_jar" = "Inštalovať .jar";
 "login.option.add" = "Pridať účet";
 "login.option.select" = "Vybrať účet";
 
@@ -44,8 +41,8 @@
 "preference.title.game_directory" = "Zložka hry";
 "preference.title.cosmetica" = "Cosmetica Capeky";
 
-"preference.title.renderer" = "Renderer";
 "preference.title.java_args" = "Spúštacie argumenty pre JVM";
-"preference.title.auto_ram" = "Auto RAM";
 "preference.detail.auto_ram" = "Automaticky bude meniť množstvo RAM";
 "preference.detail.allocated_memory" = "Určite, koľko pamäti bude mať Minecraft";
+
+"preference.profile.title.name" = "Názov";

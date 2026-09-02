@@ -14,6 +14,7 @@
 
 // The play button
 "Play" = "إبدأ اللعب";
+"Details" = "Yyyy638";
 
 // Version categories
 "Installed" = "مثبت";
@@ -28,7 +29,6 @@
 "Move" = "نقل";
 "Remove" = "إزالة";
 "Resize" = "تغییر الحجم";
-
 "custom_controls.button_edit.name" = "الاسم";
 "custom_controls.button_edit.size" = "الحجم";
 "custom_controls.button_edit.mapping" = "تخطيط الأزرار";
@@ -47,7 +47,6 @@
 "custom_controls.control_menu.exit" = "خروج";
 "custom_controls.control_menu.exit.warn" = "أنت على وشك الخروج من دون حفظ التغييرات.";
 "custom_controls.control_menu.save" = "حفظ";
-"custom_controls.control_menu.save.error.default" = "لا يمكن أن يكون اسم التحكم \"افتراضي\" لأنه سيتم الكتابة فوقه.";
 "custom_controls.control_menu.save.error.json" = "خطأ JSON";
 "custom_controls.control_menu.save.error.write" = "خطأ في حفظ الملف.";
 "custom_controls.control_menu.load" = "تحميل";
@@ -64,7 +63,6 @@
 "launcher.mcl.error_download" = "فشل التنزيل %@: %@";
 
 "launcher.menu.custom_controls" = "تخصيص التحكم";
-"launcher.menu.install_jar" = "تثبيت ملف .jar";
 
 "launcher.wait_jit.title" = "انتظر JIT";
 "launcher.wait_jit.message" = "يعتمد Amethyst على تجميع Just-in-time لـ Java للعمل بأقصى قدر من الأداء.";
@@ -133,14 +131,9 @@
 
 "preference.title.check_sha" = "التحقق من الملفات بعد التحميل";
 "preference.detail.check_sha" = "هذا الخيار يجبر المشغل على التحقق من تجزئة الملف إذا كان متاحاً. يمنع التنزيلات المعطلة.";
-"preference.title.cosmetica" = "Cosmetica Capes";
 "preference.detail.cosmetica" = "تمكين الأوشحة من Cosmetica, (المعروفة مسبقًا ب Arc). لمزيد من المعلومات، يرجى زيارة https://cosmetica.cc, يتطلب Optifine لكي يعمل";
 "preference.title.debug_logging" = "تصحيح التسجيل";
 "preference.detail.debug_logging" = "تسجيل الإعدادات الداخلية والإجراءات إلى latestlog.txt. هذا يساعد المطورين على العثور على المشكلات أسهل، ولكن Minecraft قد تعمل بشكل أبطأ حيث سيتم كتابة السجلات بشكل أكثر تواترا.";
-"preference.title.jitstreamer_server" = "عنوان خادم JitStreamer: %@";
-"preference.detail.jitstreamer_server" = "يسمح لك بالتغيير إلى عنوان IP لخادم JitStreamer مخصص، على سبيل المثال للحالات التي تستضيف نفسها. يمكن ترك هذا الخيار لوحده إذا كنت تستخدم خوادم JitStreamer الافتراضية.";
-"preference.title.enable_altkit" = "تمكين تكامل AltKit";
-"preference.detail.enable_altkit" = "عند التمكين، سيحاول Amethyst الاتصال بAltServers المحلية لتمكين JIT.";
 "preference.title.appicon" = "تعيين أيقونة التطبيق";
 "preference.detail.appicon" = "يسمح لك بالاختيار بين أيقونات الشاشة الرئيسية المختلفة لـ Amethyst.";
 "preference.title.appicon-default" = "مضيء Amethyst المألوف";
@@ -163,14 +156,9 @@
 "preference.title.renderer" = "العارض";
 
 "preference.title.renderer.release.auto" = "تلقائي";
-"preference.title.renderer.release.gl4es" = "holy gl4es";
-"preference.title.renderer.release.angle" = "ANGLE";
-"preference.title.renderer.release.zink" = "Zink";
 
 "preference.title.renderer.debug.auto" = "تلقائياً: gl4es أو ANGLE";
-"preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - الصادرات OpenGL 3.2 (موجز أساسي محدود)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
 
 "preference.detail.renderer" = "تغيير محرك عرض OpenGL للاستخدام. يتم تعطيل الزنك مؤقتاً على iOS 16 وفيما بعد لتشخيص المشكلات.";
 
@@ -212,8 +200,6 @@
 "preference.title.gyroscope_sensitivity" = "حساسية التحكم في الغيروسكوب";
 "preference.detail.gyroscope_sensitivity" = "ضبط حساسية أجهزة التحكم الجيبروسكوب";
 
-"preference.title.java_home" = "استخدم جافا 17 لماينكرافت < 1.17";
-"preference.detail.java_home" = "يتم استخدام Java 8 بشكل افتراضي لهذه الإصدارات. تمكين هذا الخيار لإجبار استخدام Java 17، ولكن التوافق مع الموديل غير مضمون.";
 "preference.title.java_args" = "حجج إطلاق JVM";
 "preference.detail.java_args" = "مرر الحجج إلى جافا عند بدء Minecraft. كن حذرا، هذا يمكن أن يجعل عطل اللعبة إذا تم تعديله بشكل غير صحيح.";
 "preference.placeholder.java_args" = "حدد الدفعات...";
@@ -223,9 +209,7 @@
 "preference.title.allocated_memory" = "تخصيص الذاكرة (MB)";
 "preference.detail.allocated_memory" = "يتحكم في كمية الذاكرة المعطاة لـ Minecraft";
 "preference.warn.allocated_memory" = "وبسبب القيود في نظام التشغيل نفسه، قد يؤدي هذا الخيار إلى عدم الاستقرار في هذه القيم وفي القيم الأعلى.";
-"preference.title.custom_env" = "متغيرات البيئة";
 "preference.detail.custom_env" = "هذا الخيار قيد الإنشاء. قم بإنشاء وتحرير مخصص_env.txt في غضون ذلك.";
-
 "preference.title.debug_skip_wait_jit" = "تخطي مربع حوار \"في انتظار JIT\"";
 "preference.detail.debug_skip_wait_jit" = "هذا لا يسمح لك بتشغيل دون JIT، بدلاً من ذلك تخطي فحص تصحيح الأخطاء هذا، لأن التحقق أخفق بعض حالات توقف الجلبريك.";
 "preference.title.debug_ipad_ui" = "تشغيل واجهة الايباد";
@@ -234,10 +218,8 @@
 "preference.detail.debug_auto_correction" = "تمكين التصحيح التلقائي عند كتابة النص في اللعبة.";
 "preference.title.debug_hide_home_indicator" = "إخفاء مؤشر الصفحة الرئيسية";
 "preference.detail.debug_hide_home_indicator" = "سيؤدي هذا إلى تعطيل تأمين مؤشر المنزل. سوف تحتاج إلى استخدام الوصول الموجه للإخفاء وقفل مؤشر المنزل في نفس الوقت.";
-"preference.title.debug_show_layout_bounds" = "عرض حدود التخطيط";
-"preference.detail.debug_show_layout_bounds" = "عرض حدود وهوامش المقطع وما إلى ذلك";
-"preference.title.debug_show_layout_overlap" = "إظهار تداخل التخطيط";
-"preference.detail.debug_show_layout_overlap" = "تجاوز كل وجهة نظر مع لون شفاف للكشف عن وجهات نظر متداخلة.";
+
+"preference.profile.title.name" = "الاسم";
 
 "controller_configurator.title.current" = "ملف تكوين لوحة اللعبة";
 "controller_configurator.title.type.xbox" = "إكس بوكس";
@@ -247,25 +229,13 @@
 "controller_configurator.xbox.title.bumper_right" = "RB";
 "controller_configurator.xbox.title.trigger_left" = "LT";
 "controller_configurator.xbox.title.trigger_right" = "RT";
-"controller_configurator.xbox.title.named_back" = "Guide";
-"controller_configurator.xbox.title.named_start" = "Menu";
-"controller_configurator.xbox.title.named_a" = "A";
-"controller_configurator.xbox.title.named_b" = "B";
-"controller_configurator.xbox.title.named_x" = "X";
-"controller_configurator.xbox.title.named_y" = "Y";
 "controller_configurator.xbox.title.dpad_up" = "الأعلى";
 "controller_configurator.xbox.title.dpad_down" = "الأسفل";
 "controller_configurator.xbox.title.dpad_left" = "الأيسر";
 "controller_configurator.xbox.title.dpad_right" = "الأيمن";
 "controller_configurator.xbox.title.thumb_left" = "انقر فوق عصا الأصبع الأيسر";
 "controller_configurator.xbox.title.thumb_right" = "انقر فوق عصا الأصبع الأيمن";
-
-"controller_configurator.playstation.title.bumper_left" = "L1";
-"controller_configurator.playstation.title.bumper_right" = "R1";
-"controller_configurator.playstation.title.trigger_left" = "L2";
-"controller_configurator.playstation.title.trigger_right" = "R2";
 "controller_configurator.playstation.title.named_back" = "اختر";
-"controller_configurator.playstation.title.named_start" = "Start";
 "controller_configurator.playstation.title.named_a" = "أكس";
 "controller_configurator.playstation.title.named_b" = "دائرة";
 "controller_configurator.playstation.title.named_x" = "مربع";
@@ -274,8 +244,6 @@
 "controller_configurator.playstation.title.dpad_down" = "الأسفل";
 "controller_configurator.playstation.title.dpad_left" = "الأيسر";
 "controller_configurator.playstation.title.dpad_right" = "الأيمن";
-"controller_configurator.playstation.title.thumb_left" = "L3";
-"controller_configurator.playstation.title.thumb_right" = "R3";
 
 "controller_configurator.section.config_files" = "ملف التكوين الحالي";
 "controller_configurator.section.game_mappings" = "تعيينات اللعبة";

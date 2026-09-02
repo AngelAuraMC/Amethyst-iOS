@@ -4,53 +4,330 @@
 */
 
 "game.menu.force_close" = "Paksa tutup";
-"game.menu.log_output" = "Log output";
-"game.menu.custom_controls" = "Kawalan custom";
+"game.menu.confirm.force_close" = "Adakah anda mahu paksa tutup aplikasi?";
+"game.menu.log_output" = "Output log";
+"game.menu.custom_controls" = "Kawalan tersuai";
+
+"game.note.airplay" = "Minecraft sedang dipaparkan dalam paparan cerminan AirPlay";
+
+"game.title.exit_code" = "Permainan keluar dengan kod %d";
 
 // The play button
 "Play" = "Main";
+"Details" = "Butiran";
+
+// Version categories
+"Installed" = "Dipasang";
 "Snapshot" = "Petikan";
+"Releases" = "Terbitan";
+"Unstable" = "Tidak stabil";
 "Old-beta" = "Beta-lama";
 "Old-alpha" = "Alfa-lama";
-"Edit" = "Sunting";
-"Remove" = "Hapus";
 
+// Custom controls
+"Copy" = "Salin";
+"Edit" = "Sunting";
+"Move" = "Gerak";
+"Remove" = "Hapus";
+"Resize" = "Ubah saiz";
+// Visibility
+"Always" = "Sentiasa";
+"In game" = "Dalam permainan";
+"In menu" = "Dalam menu";
+
+"custom_controls.button_edit.forward_lock" = "Kunci ke hadapan";
 "custom_controls.button_edit.name" = "Nama";
 "custom_controls.button_edit.size" = "Saiz";
 "custom_controls.button_edit.mapping" = "Pemetaan";
 "custom_controls.button_edit.orientation" = "Orientasi";
-"custom_controls.button_edit.toggleable" = "Boleh Ditukar";
+"custom_controls.button_edit.toggleable" = "Boleh ditogol";
+"custom_controls.button_edit.mouse_pass" = "Pass tetikus";
+"custom_controls.button_edit.swipeable" = "Boleh dileret";
 "custom_controls.button_edit.bg_color" = "Warna Latar Belakang";
-"custom_controls.control_menu.exit" = "Keluar";
-"custom_controls.control_menu.save" = "Simpan";
-"custom_controls.control_menu.load" = "Memuat";
-"custom_controls.control_menu.add_button" = "Tambah butang";
+"custom_controls.button_edit.stroke_width" = "Lebar garisan (dp)";
+"custom_controls.button_edit.stroke_color" = "Warna garisan";
+"custom_controls.button_edit.corner_radius" = "Radius sudut (%)";
+"custom_controls.button_edit.opacity" = "Kelegapan (%)";
+"custom_controls.button_edit.visibility" = "Keterlihatan";
 
-"launcher.menu.custom_controls" = "Kawalan custom";
-"launcher.menu.install_jar" = "Pasang .jar";
+"custom_controls.button_menu.add_subbutton" = "Tambah sub butang";
+"custom_controls.control_menu.discard_changes" = "Buang perubahan";
+"custom_controls.control_menu.exit" = "Keluar";
+"custom_controls.control_menu.exit.warn" = "Anda akan keluar tanpa menyimpan perubahan.";
+"custom_controls.control_menu.save" = "Simpan";
+"custom_controls.control_menu.save.error.json" = "Ralat JSON";
+"custom_controls.control_menu.save.error.write" = "Ralat menyimpan fail";
+"custom_controls.control_menu.load" = "Muat";
+"custom_controls.control_menu.make_default" = "Jadikan lalai";
+"custom_controls.control_menu.safe_area" = "Kawasan selamat";
+"custom_controls.control_menu.add_button" = "Tambah butang";
+"custom_controls.control_menu.add_drawer" = "Tambah drawer";
+"custom_controls.control_menu.add_joystick" = "Tambah kayu bedik";
+"custom_controls.error.incompatible" = "Versi kawalan ini (kod %d) tidak dilaksanakan dalam binaan pelancar ini.";
+"custom_controls.hint" = "Tekan lama pada mana-mana tempat pada skrin untuk mendapatkan lebih banyak pilihan";
+
+"init.migrateDir" = "Direktori data Amethyst kini berada di %@. Semua data sedia ada anda telah dialihkan ke lokasi baharu itu.";
+
+"java.error.missing_main_class" = "%@ tidak mempunyai atribut kelas utama. Jika ini ialah sebuah mod, masukkannya ke dalam folder \"mods\" pada instance pilihan anda.";
+"java.error.missing_runtime" = "%@ memerlukan Java %d atau lebih baharu untuk dijalankan. Sila pasangnya terlebih dahulu dan nyatakannya di dalam Urus Masa Jalan.";
+
+"launcher.mcl.downloading_file" = "Memuat turun %@";
+"launcher.mcl.error_download" = "Gagal memuat turun %@: %@";
+
+"launcher.menu.custom_controls" = "Kawalan tersuai";
+"launcher.menu.execute_jar" = "Laksanakan .jar";
+
+"launcher.wait_jit.title" = "Menunggu JIT";
+"launcher.wait_jit.message" = "Amethyst bergantung pada kompilasi Just-in-time untuk Java berfungsi pada prestasi maksimum.";
+"launcher.wait_jit_trollstore.message" = "Jika anda masih melihat mesej ini, sila dayakan URL Scheme di dalam TrollStore.";
+
+"login.error.username.outOfRange" = "Nama pengguna mestilah sekurang-kurangnya 3 aksara dan selebih-lebihnya 16 aksara";
+
+"login.alert.field.username" = "Nama pengguna";
+
+"login.jit.checking" = "Menyemak JIT";
+"login.jit.enabled" = "JIT telah didayakan";
+"login.jit.fail" = "JIT tidak dapat didayakan.";
+"login.jit.fail.title" = "JIT tidak dapat didayakan pada peranti anda.";
+"login.jit.fail.description" = "Tiada penyepaduan yang boleh digunakan untuk mendayakan JIT secara automatik pada peranti anda, dan ia kini mesti didayakan secara manual. Ralat telah dilog ke latestlog.txt.";
+"login.jit.fail.description_unsupported" = "Kaedah pemasangan yang tidak disokong telah dikesan. Sila pasang semula menggunakan salah satu kaedah yang disokong.";
+
+// Login buttons
+"login.menu.sendlogs" = "Hantar log anda";
+"login.option.add" = "Tambah akaun";
 "login.option.select" = "Pilih akaun";
+"login.option.demo" = "Akaun Demo";
+"login.option.microsoft" = "Akaun Microsoft";
+"login.option.local" = "Akaun tempatan";
+
+"login.warn.title.legacy_device" = "Terbitan Amethyst yang seterusnya tidak akan serasi dengan peranti ini.";
+"login.warn.message.legacy_device" = "Untuk menjalankan terbitan utama seterusnya, peranti yang mampu menjalankan iOS 14 diperlukan.";
+"login.warn.title.legacy_ios" = "Terbitan Amethyst yang seterusnya memerlukan kemas kini sistem.";
+"login.warn.message.legacy_ios" = "Untuk menjalankan terbitan utama seterusnya, peranti ini perlu menjalankan iOS 14 atau lebih baru.";
+"login.warn.title.limited_ram" = "Peranti ini mempunyai jumlah ingatan yang terhad.";
+"login.warn.message.limited_ram" = "Kami mengesyorkan agar RAM automatik didayakan untuk mengelakkan masalah ketidakstabilan dan prestasi.";
+"login.warn.title.ios19_jitdead" = "Amethyst tidak disokong pada iOS 26 atau lebih baru.";
+"login.warn.message.ios19_jitdead" = "Disebabkan oleh perubahan dalam iOS yang menghalang keupayaan untuk mendayakan JIT, Amethyst tidak boleh berfungsi dalam keadaan semasa dan memerlukan penyelidikan yang berat untuk mencari laluan baharu ke hadapan.\n\nMenekan OK akan menutup aplikasi.";
+
+"login.warn.title.demomode" = "Akaun anda ialah Demo";
+"login.warn.message.demomode" = "Sebagai pengganti kepada mod luar talian dan tempatan, mod demo akan membolehkan anda melog masuk ke akaun Microsoft yang tidak memiliki permainan dan bermain versi percubaan Edisi Java, yang diperkenalkan dalam versi 1.3.1 dan lebih baharu. Versi lama mengandungi permainan penuh, kerana pelancar rasmi tidak meletakkan sekatan ini. Lihat laman sesawang kami untuk mengetahui lebih lanjut tentang peralihan daripada mod luar talian ini.";
+
+"login.warn.title.localmode" = "Mod luar talian kini menjadi mod Tempatan.";
+"login.warn.message.localmode" = "Anda boleh terus memainkan versi yang dipasang, tetapi anda tidak lagi boleh memuat turun Minecraft tanpa akaun berbayar. Tiada sokongan akan diberikan untuk isu dengan akaun tempatan, atau cara lain untuk memperoleh Minecraft.";
+
+"login.msa.error.xsts.noxboxacc" = "Profil Xbox tidak didaftarkan untuk akaun Microsoft ini. Sila pastikan anda telah membuat profil Xbox.\nKod ralat: 2148916233";
+"login.msa.error.xsts.noxbox" = "Xbox Live tidak tersedia di negara anda pada masa ini.\nKod ralat: 2148916235";
+"login.msa.error.xsts.krverify" = "Akaun anda perlu disahkan oleh ibu bapa anda sebelum anda boleh meneruskan.\nKod ralat: 2148916236 atau 2148916237.";
+"login.msa.error.xsts.underage" = "Akaun anda perlu dipautkan ke akaun ibu bapa sebelum anda boleh meneruskan.\nKod ralat: 2148916238";
+
+"login.msa.progress.acquireAccessToken" = "(1/5) Memperoleh token Akses";
+"login.msa.progress.acquireXBLToken" = "(2/5) Memperoleh token Xbox Live";
+"login.msa.progress.acquireXSTS" = "Memperoleh XSTS";
+"login.msa.progress.acquireXboxProfile" = "(3/5) Memperoleh profil Xbox";
+"login.msa.progress.acquireMCToken" = "(4/5) Memperoleh token Minecraft";
+"login.msa.progress.checkMCProfile" = "(5/5) Menyemak profil Minecraft";
 
 "News" = "Berita";
+"Profiles" = "Profil";
 "Settings" = "Tetapan";
 
 "preference.section.general" = "Tetapan Umum";
-"preference.section.video" = "Tetapan Video";
-"preference.section.debug" = "Tetapan UI Penyahpepijat";
-"preference.section.footer.debug" = "Selain daripada nyahpepijat, tetapan ini mungkin berguna untuk kawalan tersuai. Anda mungkin perlu memulakan semula pelancar untuk perubahan berkuat kuasa.";
+"preference.section.video" = "Tetapan Video dan Audio";
+"preference.section.footer.video" = "Pemaparan automatik membolehkan Amethyst memilih pilihan terbaik berdasarkan versi Minecraft. Menurunkan resolusi akan mengurangkan beban kerja GPU untuk prestasi yang lebih baik.";
+"preference.section.control" = "Penyesuaian kawalan";
+"preference.section.debug" = "Tetapan UI Penyahpepijatan";
+"preference.section.footer.debug" = "Anda mungkin perlu memulakan semula pelancar agar perubahan dapat berkuat kuasa.";
+//"preference.section.footer.control" = "";
+"preference.section.java" = "Pengubahsuaian Java";
 //"preference.section.footer.java" = "";
 
 "preference.title.confirm" = "Adakah anda pasti?";
 
 "preference.title.game_directory" = "Direktori permainan";
+"preference.title.confirm.delete_game_directory" = "Instance %@ akan dihapus buat selama-lamanya dan tidak boleh dipulihkan.";
+"preference.multidir.add_directory" = "tambah direktori permainan";
+
+"preference.title.check_sha" = "Semak fail selepas memuat turun";
+"preference.detail.check_sha" = "Pilihan ini memaksa pelancar menyemak hash fail jika ia tersedia. Dapat menghalang muat turun yang rosak.";
 "preference.title.cosmetica" = "Mantel Cosmetica";
-"preference.detail.debug_logging" = "Mengelog tetapan dan tindakan dalaman ke latestlog.txt. Ini membantu pembangun mencari isu dengan lebih mudah, tetapi Minecraft mungkin berjalan lebih perlahan kerana log akan ditulis dengan lebih kerap.";
+"preference.detail.cosmetica" = "Mendayakan mantel daripada Cosmetica (sebelum ini Arc). Untuk maklumat lanjut sila layari https://cosmetica.cc. Memerlukan OptiFine";
+"preference.title.debug_logging" = "Pengelogan nyahpepijat";
+"preference.detail.debug_logging" = "Melog tetapan dan tindakan dalaman ke latestlog.txt. Ini membantu pembangun mencari isu dengan lebih mudah, tetapi Minecraft mungkin berjalan lebih perlahan kerana log akan ditulis dengan lebih kerap.";
+"preference.title.appicon" = "Tetapkan ikon aplikasi";
+"preference.detail.appicon" = "Membolehkan anda memilih ikon Skrin Utama yang berbeza untuk Amethyst.";
+"preference.title.appicon-default" = "Amethyst cerah lalai";
+"preference.title.appicon-dark" = "Amethyst gelap lalai";
+"preference.title.appicon-development" = "Ikon Pembangunan";
+"preference.title.hidden_sidebar" = "Sembunyikan palang sisi menu utama secara lalai";
+"preference.detail.hidden_sidebar" = "Membolehkan anda menyembunyikan palang sisi pada menu utama secara lalai dan apabila memutar.";
+
+"preference.title.reset_warnings" = "Tetapkan semula semua amaran";
+"preference.title.done.reset_warnings" = "Semua amaran telah ditetapkan semula.";
 
 "preference.title.reset_settings" = "Tetapkan semula semua tetapan";
 "preference.title.confirm.reset_settings" = "Ini akan mengalih keluar semua pilihan tersuai anda, termasuk resolusi, saiz butang dan argumen Java.";
 "preference.title.done.reset_settings" = "Semua tetapan lalai telah dipulihkan.";
 
-"preference.title.renderer" = "Renderer";
-"preference.title.java_args" = "JVM Launch arguments";
-"preference.title.auto_ram" = "Auto RAM";
+"preference.title.erase_demo_data" = "Padam data permainan Demo";
+"preference.title.confirm.erase_demo_data" = "Ini akan memadamkan semua versi permainan Demo dan data yang digunakan untuk akaun Demo.";
+"preference.title.done.erase_demo_data" = "Semua data permainan Demo telah dipadamkan.";
+
+"preference.title.renderer" = "Pemapar";
+
+"preference.title.renderer.release.auto" = "Automatik";
+"preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.mg" = "MobileGlues";
+"preference.title.renderer.release.zink" = "Zink";
+
+"preference.title.renderer.debug.auto" = "Auto: gl4es atau ANGLE";
+"preference.title.renderer.debug.gl4es" = "holy gl4es - mengeksport OpenGL 2.1";
+"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - mengeksport OpenGL 3.2 (Profil Teras, terhad)";
+"preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - mengeksport OpenGL 4.0, UJI KAJI";
+"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - mengeksport OpenGL 4.1";
+
+"preference.detail.renderer" = "Ubah enjin pemapar OpenGL yang digunakan. Zink dinyahdayakan buat sementara waktu pada iOS 16 dan lebih baru untuk mendiagnosis isu.";
+
+"preference.title.resolution" = "Resolusi (%)";
+"preference.detail.resolution" = "Membolehkan anda menurunkan resolusi permainan.";
+"preference.title.max_framerate" = "Kadar bingkai maksimum";
+"preference.detail.max_framerate" = "Membolehkan anda mengehadkan kadar bingkai permainan kepada 60BPS pada paparan ProMotion.";
+
+"preference.title.performance_hud" = "Tunjukkan HUD Prestasi";
+"preference.detail.performance_hud" = "Apabila tersedia, tunjukkan tindanan pemantauan prestasi.";
+
+"preference.title.fullscreen_airplay" = "AirPlay skrin penuh";
+"preference.detail.fullscreen_airplay" = "Membenarkan mempersembahkan tetingkap permainan skrin penuh pada paparan luaran dan bukannya mencerminkan segala-galanya pada skrin.";
+"preference.title.silence_other_audio" = "Jeda audio apabila permainan dibuka";
+"preference.detail.silence_other_audio" = "Dayakan untuk membenarkan Amethyst menjeda audio daripada aplikasi lain, seperti Muzik, semasa melancarkan permainan.";
+"preference.title.silence_with_switch" = "Nyahdayakan audio dengan suis senyap";
+"preference.detail.silence_with_switch" = "Dayakan untuk menyahdayakan audio apabila Mod Senyap dihidupkan. Fon kepala dan pembesar suara luaran tidak terjejas.";
+"preference.title.allow_microphone" = "Benarkan input mikrofon";
+"preference.detail.allow_microphone" = "Dayakan ini hanya jika anda menggunakan mod sembang suara. Pilihan suis senyap akan diabaikan dan kualiti audio daripada aplikasi lain akan terjejas.";
+"preference.title.default_gamepad_ctrl" = "Konfigurasi pengawal";
+"preference.title.hardware_hide" = "Sembunyikan kawalan apabila perkakasan disambungkan";
+"preference.detail.hardware_hide" = "Mendayakan tingkah laku menyahdayakan tindanan kawalan pada skrin secara automatik apabila tetikus atau pengawal permainan disambungkan.";
+"preference.title.recording_hide" = "Sembunyikan kawalan daripada rakaman skrin";
+"preference.detail.recording_hide" = "Menyembunyikan kawalan daripada tangkapan dan rakaman skrin semasa ia kekal kelihatan pada skrin.";
+"preference.title.gesture_mouse" = "Gerakan isyarat tetikus";
+"preference.detail.gesture_mouse" = "Mendayakan gerakan isyarat, seperti ketik untuk meletakkan blok, tahan untuk menghancurkan blok, menatal dengan 2 jari";
+"preference.title.gesture_hotbar" = "Gerakan isyarat palang utama";
+"preference.detail.gesture_hotbar" = "Mendayakan gerakan isyarat, seperti menyentuh slot palang utama, tukar item antara tangan, melempar item";
+"preference.title.disable_haptics" = "Nyahdayakan haptik pada skrin";
+"preference.title.press_duration" = "Tempoh tekan lama (ms)";
+"preference.detail.press_duration" = "Kelewatan pencetus tekan lama untuk menghancurkan blok dan menjatuhkan item.";
+"preference.title.button_scale" = "Skala butang pada skrin (%)";
+"preference.detail.button_scale" = "Tingkatkan skala mereka jika butang terlalu kecil, biasanya diperlukan untuk pengguna iPad.";
+"preference.title.mouse_scale" = "Penskalaan tetikus (%)";
+"preference.detail.mouse_scale" = "Mengubah saiz tetikus maya";
+"preference.title.mouse_speed" = "Kecepatan tetikus (%)";
+"preference.detail.mouse_speed" = "Mengubah kelajuan tetikus maya";
+"preference.title.virtmouse_enable" = "Tetikus maya";
+"preference.detail.virtmouse_enable" = "Dayakan pilihan ini untuk bermula dengan tetikus maya dihidupkan";
+"preference.title.slideable_hotbar" = "Palang utama boleh digelongsor";
+"preference.detail.slideable_hotbar" = "Jadikan palang boleh digelongsor seperti roda tetikus";
+
+"preference.title.gyroscope_enable" = "Dayakan kawalan giroskop";
+"preference.detail.gyroscope_enable" = "Mendayakan ini membolehkan anda berputar dalam permainan dengan memusing peranti anda";
+"preference.title.gyroscope_invert_x_axis" = "Songsangkan pergerakan kiri dan kanan giroskop";
+"preference.detail.gyroscope_invert_x_axis" = "Songsangkan paksi X giroskop";
+"preference.title.gyroscope_sensitivity" = "Sensitiviti kawalan giroskop";
+"preference.detail.gyroscope_sensitivity" = "Laraskan sensitiviti kawalan giroskop";
+
+"preference.title.manage_runtime" = "Urus masa jalan";
+"preference.title.confirm.delete_runtime" = "%@ akan dihapus";
+"preference.manage_runtime.header.default" = "Versi Java pilihan";
+"preference.manage_runtime.default.1165" = "1.16.5 dan lebih lama";
+"preference.manage_runtime.default.117" = "1.17 dan lebih baharu";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 dan lebih lama mungkin boleh dijalankan dengan versi Java yang lebih baharu, namun keserasian dengan mod tidak dijamin. Masa jalan luaran boleh diletakkan di dalam folder \"java_runtimes\". Menukar versi Java untuk \"Melaksanakan .jar\" hanya berkuat kuasa jika pemasang tidak mengharapkan versi Java yang lebih baharu.";
+"preference.manage_runtime.footer.java8" = "Ini ialah versi lalai untuk Minecraft 1.16.5 dan lebih lama.";
+"preference.manage_runtime.footer.java17" = "Ini ialah versi lalai untuk Minecraft 1.17 dan lebih baharu.";
+"preference.manage_runtime.header.invalid" = "Masa jalan tidak sah";
+
+"preference.title.java_args" = "Argumen Pelancaran JVM";
+"preference.detail.java_args" = "Menghantar argumen kepada Java semasa melancarkan Minecraft. Berhati-hati, ini boleh menyebabkan permainan ranap jika diubah suai secara tidak betul.";
+"preference.placeholder.java_args" = "Nyatakan argumen...";
+"preference.title.env_variables" = "Pembolehubah persekitaran";
+"preference.detail.env_variables" = "Tetapkan pembolehubah persekitaran tersuai semasa melancarkan Minecraft. Berhati-hati, ini boleh menyebabkan permainan ranap jika diubah suai secara tidak betul.";
+"preference.placeholder.env_variables" = "Nyatakan pembolehubah...";
+"preference.title.auto_ram" = "RAM Automatik";
 "preference.detail.auto_ram" = "Membenarkan pelaras RAM automatik";
-"preference.detail.allocated_memory" = "Mengawal berapa banyak memori yang diberikan kepada Minecraft";
+"preference.warn.auto_ram" = "Menyahdayakan pilihan ini pada peranti yang tidak dijailbreak boleh mewujudkan ketidakstabilan jika diubah. Teruskan dengan berhati-hati.";
+"preference.title.allocated_memory" = "Peruntukan ingatan (MB)";
+"preference.detail.allocated_memory" = "Mengawal berapa banyak ingatan yang diberikan kepada Minecraft";
+"preference.warn.allocated_memory" = "Disebabkan oleh pengehadan dalam sistem pengendalian itu sendiri, pilihan ini boleh menyebabkan ketidakstabilan pada nilai ini dan yang lebih tinggi. Teruskan dengan berhati-hati.";
+"preference.title.custom_env" = "Pembolehubah persekitaran";
+"preference.detail.custom_env" = "Pilihan ini sedang dalam pembinaan. Cipta dan sunting custom_env.txt buat sementara ini.";
+
+"preference.title.debug_always_attached_jit" = "Kekalkan terpasang pada StikDebug";
+"preference.title.debug_skip_wait_jit" = "Langkau dialog \"Menunggu JIT\"";
+"preference.detail.debug_skip_wait_jit" = "Ini tidak membenarkan anda melancarkan tanpa JIT, sebaliknya ini melangkau semakan penyahpepijat, kerana semakan ini gagal pada jailbreak tertentu.";
+"preference.title.debug_ipad_ui" = "Buka kunci UI iPadOS";
+"preference.detail.debug_ipad_ui" = "Buka kunci UI eksklusif iPad (makluman, papan kekunci, dll.) jika didayakan atau UI iPhone jika dinyahdayakan.";
+"preference.title.debug_auto_correction" = "Pembetulan automatik";
+"preference.detail.debug_auto_correction" = "Dayakan pembetulan automatik apabila menaip teks dalam permainan.";
+"preference.title.debug_hide_home_indicator" = "Sembunyikan penunjuk rumah";
+"preference.detail.debug_hide_home_indicator" = "Ini akan menyahdayakan penguncian penunjuk rumah. Anda perlu menggunakan Akses Berpandu untuk menyembunyikan dan mengunci penunjuk rumah pada masa yang sama.";
+
+"preference.profile.title.name" = "Nama";
+"preference.profile.title.loader_type" = "Jenis pemuat";
+"preference.profile.title.loader_vendor" = "Vendor pemuat";
+"preference.profile.title.loader_version" = "Versi pemuat";
+"preference.profile.title.version" = "Versi";
+"preference.profile.title.version_type" = "Jenis versi";
+"preference.profile.title.default_touch_control" = "Kawalan sentuhan";
+"preference.profile.title.default_gamepad_control" = "Kawalan pad permainan";
+
+"profile.error.name_exists" = "Profil dengan nama itu sudah wujud. Sila gunakan nama lain.";
+"profile.section.instance" = "Tetapan Instance Permainan";
+"profile.section.profiles" = "Profil dalam instance ini";
+"profile.title.create" = "Cipta profail baharu";
+"profile.title.separate_preference" = "Asingkan tetapan";
+"profile.detail.separate_preference" = "Dayakan pilihan ini untuk mengasingkan sebarang perubahan yang dibuat dalam tetapan. Melakukan Tetap Semula akan memulihkan kepada tetapan global dan bukannya tetapan lalai.";
+"profile.title.install_fabric_quilt" = "Pasang Fabric/Quilt";
+
+"controller_configurator.title.current" = "Fail konfigurasi pad permainan";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "Bumper kiri";
+"controller_configurator.xbox.title.bumper_right" = "Bahu kanan";
+"controller_configurator.xbox.title.trigger_left" = "Picu kiri";
+"controller_configurator.xbox.title.trigger_right" = "Picu kanan";
+"controller_configurator.xbox.title.named_back" = "Panduan";
+"controller_configurator.xbox.title.named_start" = "Menu";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "Up";
+"controller_configurator.xbox.title.dpad_down" = "Bawah";
+"controller_configurator.xbox.title.dpad_left" = "Kiri";
+"controller_configurator.xbox.title.dpad_right" = "Kanan";
+"controller_configurator.xbox.title.thumb_left" = "Kayu bedik kiri di klik";
+"controller_configurator.xbox.title.thumb_right" = "Kayu bedik kanan di klik";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
+"controller_configurator.playstation.title.named_back" = "Pilih";
+"controller_configurator.playstation.title.named_start" = "Mula";
+"controller_configurator.playstation.title.named_a" = "Silang";
+"controller_configurator.playstation.title.named_b" = "Bulat";
+"controller_configurator.playstation.title.named_x" = "Petak";
+"controller_configurator.playstation.title.named_y" = "Segi Tiga";
+"controller_configurator.playstation.title.dpad_up" = "Up";
+"controller_configurator.playstation.title.dpad_down" = "Bawah";
+"controller_configurator.playstation.title.dpad_left" = "Kiri";
+"controller_configurator.playstation.title.dpad_right" = "Kanan";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "Fail konfigurasi semasa";
+"controller_configurator.section.game_mappings" = "Pemetaan permainan";
+"controller_configurator.section.footer.game_mappings" = "Ikatan apabila tetikus dikunci di dalam permainan.";
+"controller_configurator.section.menu_mappings" = "Pemetaan menu";
+"controller_configurator.section.footer.menu_mappings" = "Ikatan apabila tetikus tidak dikunci, seperti pada skrin utama atau dalam menu jeda.";
+"controller_configurator.section.controller_style" = "Jenis pengawal";
+"controller_configurator.section.footer.controller_style" = "Tunjukkan nama butang pengawal yang berbeza dalam penetapan konfigurasi ini.";

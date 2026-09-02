@@ -4,190 +4,331 @@
 */
 
 "game.menu.force_close" = "強制關閉";
-"game.menu.confirm.force_close" = "你是否肯定想強制關閉？";
-"game.menu.log_output" = "日誌輸出";
+"game.menu.confirm.force_close" = "你確定強制關閉嗎？";
+"game.menu.log_output" = "記錄檔輸出";
 "game.menu.custom_controls" = "自訂控制鍵";
 
-"game.note.airplay" = "我的世界正在AirPlay鏡像顯示器中顯示";
+"game.note.airplay" = "Minecraft 正 AirPlay 至其他裝置顯示";
 
-"game.title.exit_code" = "遊戲以代碼%d退出";
+"game.title.exit_code" = "遊戲以代碼 %d 結束";
 
 // The play button
 "Play" = "啟動遊戲";
+"Details" = "詳細資訊";
 
 // Version categories
 "Installed" = "已安裝";
-"Snapshot" = "快照";
-"Releases" = "發行";
-"Old-beta" = "遠古beta版";
-"Old-alpha" = "遠古alpha版";
+"Snapshot" = "快照版";
+"Releases" = "正式版";
+"Unstable" = "不穩定";
+"Old-beta" = "遠古 Beta 版";
+"Old-alpha" = "遠古 Alpha 版";
 
 // Custom controls
 "Copy" = "複製";
-"Edit" = "修改";
+"Edit" = "編輯";
 "Move" = "移動";
 "Remove" = "移除";
 "Resize" = "調整大小";
+// Visibility
+"Always" = "永遠顯示";
+"In game" = "遊戲內";
+"In menu" = "選單內";
 
+"custom_controls.button_edit.forward_lock" = "前進鎖定";
 "custom_controls.button_edit.name" = "名稱";
 "custom_controls.button_edit.size" = "大小";
-"custom_controls.button_edit.mapping" = "對映";
+"custom_controls.button_edit.mapping" = "映射";
 "custom_controls.button_edit.orientation" = "方向";
-"custom_controls.button_edit.toggleable" = "可切換";
-"custom_controls.button_edit.mouse_pass" = "滑鼠傳入";
-"custom_controls.button_edit.swipeable" = "可滑動";
+"custom_controls.button_edit.toggleable" = "切換觸發";
+"custom_controls.button_edit.mouse_pass" = "滑鼠穿透";
+"custom_controls.button_edit.swipeable" = "滑動點擊";
 "custom_controls.button_edit.bg_color" = "背景顏色";
-"custom_controls.button_edit.stroke_width" = "邊框寬度 (px)：";
-"custom_controls.button_edit.stroke_color" = "邊框顏色";
+"custom_controls.button_edit.stroke_width" = "邊框寬度 (dp)";
+"custom_controls.button_edit.stroke_color" = "描邊顏色";
 "custom_controls.button_edit.corner_radius" = "圓角半徑 (%)";
-"custom_controls.button_edit.opacity" = "不透明度（%）";
+"custom_controls.button_edit.opacity" = "不透明度 (%)";
+"custom_controls.button_edit.visibility" = "可見度";
 
-"custom_controls.button_menu.add_subbutton" = "添加子按鈕";
-"custom_controls.control_menu.discard_changes" = "放棄變更";
-"custom_controls.control_menu.exit" = "退出";
-"custom_controls.control_menu.exit.warn" = "你將要在尚未儲存更改的情況下退出";
+"custom_controls.button_menu.add_subbutton" = "新增子按鈕";
+"custom_controls.control_menu.discard_changes" = "捨棄變更";
+"custom_controls.control_menu.exit" = "離開";
+"custom_controls.control_menu.exit.warn" = "你即將在未儲存變更的情況下離開。";
 "custom_controls.control_menu.save" = "儲存";
-"custom_controls.control_menu.save.error.default" = "控制鍵的名稱不能為「default」，因為它會被覆寫。";
 "custom_controls.control_menu.save.error.json" = "JSON 錯誤";
 "custom_controls.control_menu.save.error.write" = "儲存檔案時發生錯誤";
 "custom_controls.control_menu.load" = "載入";
 "custom_controls.control_menu.make_default" = "設為預設植";
-"custom_controls.control_menu.safe_area" = "安全區";
-"custom_controls.control_menu.add_button" = "添加按鈕";
-"custom_controls.control_menu.add_drawer" = "增加清單";
-"custom_controls.error.incompatible" = "此控制版本（號碼 %d）在這個啟動器構建中沒有實現。";
-"custom_controls.hint" = "長按螢幕上的任何位置以顯示更多選項";
+"custom_controls.control_menu.safe_area" = "安全區域";
+"custom_controls.control_menu.add_button" = "新增按鈕";
+"custom_controls.control_menu.add_drawer" = "新增組合鍵";
+"custom_controls.control_menu.add_joystick" = "新增搖桿";
+"custom_controls.error.incompatible" = "此控制鍵版本（代碼 %d）在當前啟動器構建中尚未實現。";
+"custom_controls.hint" = "長按螢幕任意位置以取得更多選項";
 
-"init.migrateDir" = "Amethyst數據資料夾現為%@。你的所有已有資料已被移動到新位置。";
+"init.migrateDir" = "Amethyst 資料目錄現為 %@。你所有現有的資料都已移動到新的位置。";
+
+"java.error.missing_main_class" = "%@ 缺少主類屬性。如果這是一個模組，請將其放入所選實例的「mods」資料夾中。";
+"java.error.missing_runtime" = "%@ 需要 Java %d 以上版本才能執行。請先安裝該版本，然後在「管理執行環境」中進行指定。";
+
+"launcher.mcl.downloading_file" = "正在下載 %@";
+"launcher.mcl.error_download" = "%@ 下載失敗：%@";
 
 "launcher.menu.custom_controls" = "自訂控制鍵";
-"launcher.menu.install_jar" = "安裝 .jar";
+"launcher.menu.execute_jar" = "執行 .jar";
 
-"launcher.wait_jit.title" = "正在等待JIT";
-"launcher.wait_jit.message" = "Amethyst依賴即時編譯令Java以最大性能執行。";
+"launcher.wait_jit.title" = "請等待應用獲取到 JIT 權限";
+"launcher.wait_jit.message" = "Amethyst 啟動器需要 JIT（即時編譯）權限，才能以最佳效能表現運行。";
+"launcher.wait_jit_trollstore.message" = "如果您仍然看到此訊息，請在 TrollStore 中啟用 URL Scheme。";
 
-"login.error.username.outOfRange" = "用戶名必須是在3至16個字元之間。";
+"login.error.username.outOfRange" = "用戶名必須在 3 至 16 個字符之間";
 
 "login.alert.field.username" = "用戶名";
 
-"login.jit.checking" = "正在檢查即時編譯";
-"login.jit.enabled" = "即時編譯已啟動";
+"login.jit.checking" = "正在檢查是否開啟 JIT 權限";
+"login.jit.enabled" = "JIT 權限已啟用";
+"login.jit.fail" = "無法啟用 JIT 權限。";
+"login.jit.fail.title" = "無法在您的裝置上啟用 JIT 權限。";
+"login.jit.fail.description" = "沒有集成可在您的裝置上自動啟用 JIT 權限，現在需要手動啟用。錯誤已記錄到 latestlog.txt。";
+"login.jit.fail.description_unsupported" = "檢測到了不受支援的安裝方法。請使用受支援的方法重新安裝。";
 
 // Login buttons
-"login.menu.sendlogs" = "發送你的日誌";
+"login.menu.sendlogs" = "傳送記錄檔";
 "login.option.add" = "新增帳號";
 "login.option.select" = "選擇帳號";
-"login.option.microsoft" = "微軟帳戶";
-"login.option.local" = "本地帳戶";
+"login.option.demo" = "試玩帳號";
+"login.option.microsoft" = "Mircosoft 帳號";
+"login.option.local" = "本機帳號";
 
-"login.warn.title.demomode" = "你的帳戶是一個示範帳戶";
-"login.warn.message.demomode" = "作為離線和本地模式的代替，示範模式會允許你用一個不擁有遊戲的微軟帳戶來登入，並遊玩在版本1.3.1引入的Java版試玩版。由於官方的啟動器沒有加入限制，更舊的版本將含有完整的遊戲。要了解更多關於從離線模式過渡到示範模式的資訊，請瀏覽我們的網頁。";
+"login.warn.title.legacy_device" = "Amethyst 的下一个版本將與此裝置不兼容。";
+"login.warn.message.legacy_device" = "執行下一個主要版本，需要一台能夠運行 iOS 14 的裝置。";
+"login.warn.title.legacy_ios" = "Amethyst 的下一個版本將需要系統更新。";
+"login.warn.message.legacy_ios" = "執行下一個主要版本，需要一台能夠運行 iOS 14 或更高版本的裝置。";
+"login.warn.title.limited_ram" = "該裝置的可用 RAM 有限。";
+"login.warn.message.limited_ram" = "我們建議啟用「自動分配 RAM 大小」選項，以防止不穩定和效能問題。";
+"login.warn.title.ios19_jitdead" = "Amethyst 不支援 iOS 26 及更高版本。";
+"login.warn.message.ios19_jitdead" = "由於 iOS 的變更，JIT 權限無法正常開啟，而 Amethyst 不能在當前狀態工作。尚需大量研究才能解決此問題。\n\n點擊「好」將關閉應用。";
 
-"login.warn.title.localmode" = "離線模式現為本地模式。";
+"login.warn.title.demomode" = "你正在使用試玩帳號";
+"login.warn.message.demomode" = "試玩模式，是離線和本地模式的替代，可以讓您登錄到尚未購買遊戲的 Microsoft 帳號中，並能試玩 Java 版，這一機制在 1.3.1 及以上版本中引入。因為官方啟動器沒有設限，較舊版本會包含完整的遊戲內容。詳情請參閱我們的網站，瞭解更多關於離線模式的過渡。";
 
-"login.msa.error.xsts.noxboxacc" = "這個微軟帳戶沒有註冊的Xbox用戶檔案。請確定你已經註冊Xbox用戶檔案。\n錯誤代碼：2148916233";
-"login.msa.error.xsts.noxbox" = "Xbox Live不適用於你的國家。\n錯誤代碼：2148916235";
-"login.msa.error.xsts.krverify" = "你的帳戶必須由你的家長認證，方可繼續。\n錯誤代碼：2148916236或2148916237。";
-"login.msa.error.xsts.underage" = "你的帳戶必須要連結到一個家長帳戶，方可繼續。\n錯誤代碼：2148916238";
+"login.warn.title.localmode" = "離線模式已更名為本機模式。";
+"login.warn.message.localmode" = "你可以繼續遊玩已經安裝的版本，但是如果沒有正版帳號，您將無法繼續下載其他版本。若提出問題有關本地帳號，或是如何獲取其他 Minecraft 版本，將不會受到支援。";
 
-"login.msa.progress.acquireAccessToken" = "(1/5) 正在取得取用金鑰";
-"login.msa.progress.acquireXBLToken" = "(2/5) 正在取得Xbox Live金鑰";
-"login.msa.progress.acquireXSTS" = "正在取得XSTS";
-"login.msa.progress.acquireXboxProfile" = "(3/5) 正在取得Xbox用戶檔案";
-"login.msa.progress.acquireMCToken" = "(4/5) 正在取得我的世界金鑰";
-"login.msa.progress.checkMCProfile" = "(5/5) 正在檢查我的世界用戶檔案";
+"login.msa.error.xsts.noxboxacc" = "此 Mircosoft 帳號未註冊 Xbox 玩家檔案。請確保您已創建 Xbox 用戶檔案。\n錯誤代碼：2148916233";
+"login.msa.error.xsts.noxbox" = "Xbox Live 目前在您的國家/地區不可用。\n錯誤代碼：2148916235";
+"login.msa.error.xsts.krverify" = "您的帳戶必須通過您父母同意方可通過驗證。\n錯誤代碼：2148916236 或 2148916237。";
+"login.msa.error.xsts.underage" = "您的帳戶需要綁定家長帳戶才能進行下一部。\n錯誤代碼：2148916238";
 
-"News" = "新聞";
+"login.msa.progress.acquireAccessToken" = "(1/5) 正在取得存取權杖";
+"login.msa.progress.acquireXBLToken" = "(2/5) 正在取得 Xbox Live 權杖";
+"login.msa.progress.acquireXSTS" = "正在取得 XSTS";
+"login.msa.progress.acquireXboxProfile" = "(3/5) 正在取得 Xbox 玩家檔案";
+"login.msa.progress.acquireMCToken" = "(4/5) 正在取得 Minecraft 權杖";
+"login.msa.progress.checkMCProfile" = "(5/5) 正在檢查 Minecraft 玩家檔案";
+
+"News" = "資訊";
+"Profiles" = "檔案";
 "Settings" = "設定";
 
 "preference.section.general" = "一般設定";
-"preference.section.video" = "動畫設定";
-"preference.section.control" = "自定控制鍵";
-"preference.section.debug" = "用戶界面除錯選項";
-"preference.section.footer.debug" = "除了除錯外，這些選項可能對自定義控制鍵有用。你可能需要重新啟動啟動器來讓更變生效。";
+"preference.section.video" = "顯示與音訊設定";
+"preference.section.footer.video" = "自動渲染器允許 Amethyst 根據 Minecraft 版本選擇最佳選項。降低解析度可以減少 GPU 負載，從而取得更佳效能。";
+"preference.section.control" = "自訂控制鍵";
+"preference.section.debug" = "UI 除錯設定";
+"preference.section.footer.debug" = "您可能需要重新啟動啟動器才能使更改生效。";
 //"preference.section.footer.control" = "";
-"preference.section.java" = "Java 選項";
+"preference.section.java" = "Java 調整";
 //"preference.section.footer.java" = "";
 
-"preference.title.confirm" = "你確定嗎？";
+"preference.title.confirm" = "您確定嗎？";
 
 "preference.title.game_directory" = "遊戲資料夾";
-"preference.title.confirm.delete_game_directory" = "實例%@會被永久刪除，且不能回復。";
-"preference.multidir.add_directory" = "新增遊戲目錄";
+"preference.title.confirm.delete_game_directory" = "實例 %@ 將被永久刪除，並且無法恢復。";
+"preference.multidir.add_directory" = "新增遊戲資料夾";
 
-"preference.title.check_sha" = "在下載後檢查檔案";
-"preference.detail.check_sha" = "這個選項強制啟動器在可用的情況下檢查檔案的雜湊值。這樣做能夠防止有問題的下載。";
-"preference.title.cosmetica" = "Cosmetica披風";
-"preference.detail.cosmetica" = "啟用來自Cosmetica（先前是Arc）的披風。要查看更多資訊請到 https://cosmetica.cc 。需要OptiFine。";
-"preference.title.debug_logging" = "除錯日誌";
-"preference.detail.debug_logging" = "把內部設定和動作記錄到lateslog.txt。這能幫助開發者更容易地找到問題，但由於日誌寫入的次數會增多，我的世界的運行速度可能會減慢。";
-"preference.title.jitstreamer_server" = "JitStreamer伺服器地址";
-"preference.detail.jitstreamer_server" = "這個選項允許你設定一個自定義JitStreamer IP地址，例如一個自托管的伺服器。如果你使用預設的JitStreamer伺服器，你可以忽略這個選項。";
-"preference.title.appicon" = "設定應用程式圖示";
-"preference.detail.appicon" = "讓你能選擇Amethyst在主畫面上的圖示。";
-"preference.title.appicon-default" = "熟悉的明亮Amethyst";
-"preference.title.appicon-dark" = "熟悉的暗黑Amethyst";
-"preference.title.hidden_sidebar" = "預設隱藏主選單的側邊欄";
+"preference.title.check_sha" = "檢查遊戲完整性";
+"preference.detail.check_sha" = "此選項將強制啟動器在雜湊值可用時檢查下載檔案以防止下載錯誤。";
+"preference.title.cosmetica" = "Cosmetica 披風";
+"preference.detail.cosmetica" = "啟用來自 Cosmetica（前身是 Arc）的披風。欲了解更多資訊，請訪問 https://cosmetica.cc。需要 OptiFine";
+"preference.title.debug_logging" = "除錯記錄檔";
+"preference.detail.debug_logging" = "將內部設定和操作記錄到 lateslog.txt。有助於開發者更輕鬆的發現問題，但由於記錄檔寫入頻率更高，Minecraft 的執行速度可能會變慢。";
+"preference.title.appicon" = "設定應用圖示";
+"preference.detail.appicon" = "允許您為 Amethyst 選擇不同的主熒幕圖示。";
+"preference.title.appicon-default" = "設定 Amethyst 圖示為淺色";
+"preference.title.appicon-dark" = "設定 Amethyst 圖示為深色";
+"preference.title.appicon-development" = "已封裝開發";
+"preference.title.hidden_sidebar" = "預設隱藏主選單側邊欄";
+"preference.detail.hidden_sidebar" = "允許您預設或在旋轉時隱藏主選單的側邊欄。";
 
 "preference.title.reset_warnings" = "重設所有警告";
-"preference.title.done.reset_warnings" = "所有警告已被重設。";
+"preference.title.done.reset_warnings" = "所有警告均已重設。";
 
 "preference.title.reset_settings" = "重設所有設定";
-"preference.title.confirm.reset_settings" = "這會移除你所有的自定義偏好設定，包括解像度、按鈕大小和Java參數。";
-"preference.title.done.reset_settings" = "所有的預設設定已被回復。";
+"preference.title.confirm.reset_settings" = "這將移除您的所有自訂偏好設定，包括解析度、按鈕大小和 Java 引數。";
+"preference.title.done.reset_settings" = "已重設所有設定。";
+
+"preference.title.erase_demo_data" = "清除試玩遊戲數據";
+"preference.title.confirm.erase_demo_data" = "進行此操作將清除試玩帳號使用的所有試玩版本和數據。";
+"preference.title.done.erase_demo_data" = "所有試玩遊戲數據已被清除。";
 
 "preference.title.renderer" = "渲染器";
 
-"preference.title.renderer.debug.auto" = "自動：gl4es或ANGLE";
-"preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 － 輸出OpenGL 2.1";
-"preference.title.renderer.debug.angle" = "ANGLE（1.17+）— 輸出OpenGL 3.2（核心，有限）";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) － 輸出OpenGL 4.1";
+"preference.title.renderer.release.auto" = "自動";
+"preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.mg" = "MobileGlues";
+"preference.title.renderer.release.zink" = "Zink";
 
-"preference.detail.renderer" = "改變要使用的OpenGL渲染引擎";
+"preference.title.renderer.debug.auto" = "自動：gl4es 或 ANGLE";
+"preference.title.renderer.debug.gl4es" = "holy gl4es—輸出 OpenGL 2.1";
+"preference.title.renderer.debug.angle" = "ANGLE（僅支持 1.17+）—輸出 OpenGL 3.2（核心檔案，有限制）";
+"preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - 匯出 OpenGL 4.0，實驗性";
+"preference.title.renderer.debug.zink" = "Zink（Mesa 21.0）—輸出 OpenGL4.1";
 
-"preference.title.resolution" = "解像度（%）";
-"preference.detail.resolution" = "允許你降低遊戲的解像度。";
+"preference.detail.renderer" = "更改使用 OpenGL 渲染引擎。Zink 在 iOS 16 上暫時禁用，將在之後診斷問題。";
+
+"preference.title.resolution" = "解析度（%）";
+"preference.detail.resolution" = "允許您降低遊戲解析度。";
+"preference.title.max_framerate" = "最大 FPS";
+"preference.detail.max_framerate" = "允許您在 ProMotion 顯示器上將遊戲 FPS 限制為 60。";
+
+"preference.title.performance_hud" = "顯示效能 HUD";
+"preference.detail.performance_hud" = "可用時，顯示效能監控疊加層。";
 
 "preference.title.fullscreen_airplay" = "全螢幕隔空投放";
-"preference.detail.fullscreen_airplay" = "允許在外部顯示器上展示全螢幕遊戲畫面，而不是影射螢幕上的內容。";
-"preference.title.press_duration" = "長按時間（毫秒）";
-"preference.detail.press_duration" = "觸發破壞方塊及釋出物件的按壓時間。";
-"preference.title.button_scale" = "螢幕按鈕比例（%）";
-"preference.detail.button_scale" = "如果按鈕太小的話，就增加比例，iPad用戶通常都需要這個選項。";
-"preference.title.mouse_scale" = "滑鼠比例（%）";
-"preference.detail.mouse_scale" = "改變虛擬鼠標的大小";
+"preference.detail.fullscreen_airplay" = "允許在外部顯示器上全熒幕顯示遊戲，而不是直接鏡像顯示。";
+"preference.title.silence_other_audio" = "遊戲打開時暫停音效";
+"preference.detail.silence_other_audio" = "啟用後將允許 Amethyst 在啟動遊戲時暫停其他應用的音效。";
+"preference.title.silence_with_switch" = "使用靜音開關禁用音效";
+"preference.detail.silence_with_switch" = "啟用時，可以使用靜音模式禁用音效，耳機和外部揚聲器不受此影響。";
+"preference.title.allow_microphone" = "允許麥克風輸入";
+"preference.detail.allow_microphone" = "請僅在使用語音聊天模組時啟用此功能。靜音開關選項將被忽略，並且其他應用的音效質量將受到影響。";
+"preference.title.default_gamepad_ctrl" = "手柄配置";
+"preference.title.hardware_hide" = "硬體連接時隱藏控製鍵";
+"preference.detail.hardware_hide" = "啟用後，連接滑鼠或手柄後，自動禁用熒幕控製鍵疊加層。";
+"preference.title.recording_hide" = "從熒幕錄製中隱藏控製鍵";
+"preference.detail.recording_hide" = "在熒幕截圖和熒幕錄製中，隱藏控製鍵，但其仍然在熒幕上可見。";
+"preference.title.gesture_mouse" = "滑鼠手勢";
+"preference.detail.gesture_mouse" = "啟用手勢，例如點擊放置方塊、按住破壞方塊、用兩根手指轉動視角";
+"preference.title.gesture_hotbar" = "快捷欄手勢";
+"preference.detail.gesture_hotbar" = "啟用手勢，例如點擊快捷欄物品槽、雙手交換物品、丟棄物品";
+"preference.title.disable_haptics" = "禁用熒幕觸覺反饋";
+"preference.title.press_duration" = "長按延遲（毫秒）";
+"preference.detail.press_duration" = "修改長按摧毀方塊、丟棄物品的觸發時長。";
+"preference.title.button_scale" = "螢幕按鈕縮放（%）";
+"preference.detail.button_scale" = "如果按鈕過小則放大按鈕，通常 iPad 用戶需要更改此選項。";
+"preference.title.mouse_scale" = "滑鼠縮放（%）";
+"preference.detail.mouse_scale" = "修改虛擬滑鼠的大小";
 "preference.title.mouse_speed" = "滑鼠速度（%）";
-"preference.detail.mouse_speed" = "改變虛擬滑鼠的速度";
+"preference.detail.mouse_speed" = "修改虛擬滑鼠的速度";
 "preference.title.virtmouse_enable" = "虛擬滑鼠";
-"preference.detail.virtmouse_enable" = "啟用這個選項以在啟動時啟動虛擬鼠標。";
-"preference.title.slideable_hotbar" = "可捲動快捷欄";
-"preference.detail.slideable_hotbar" = "令快捷欄能夠以像滑鼠輪一般地捲動";
+"preference.detail.virtmouse_enable" = "啟用此選項以在遊戲啟動時顯示虛擬滑鼠";
+"preference.title.slideable_hotbar" = "可滑動快捷欄";
+"preference.detail.slideable_hotbar" = "是快捷欄像滑鼠輪一樣可滑動";
 
 "preference.title.gyroscope_enable" = "啟用陀螺儀控制";
+"preference.detail.gyroscope_enable" = "啟用此功能會允許您通過轉動裝置來在遊戲中轉動視角";
+"preference.title.gyroscope_invert_x_axis" = "左右反轉陀螺儀";
+"preference.detail.gyroscope_invert_x_axis" = "反轉陀螺儀的 X 軸";
 "preference.title.gyroscope_sensitivity" = "陀螺儀控制靈敏度";
 "preference.detail.gyroscope_sensitivity" = "調整陀螺儀控制的靈敏度";
 
-"preference.title.java_home" = "對於我的世界 < 1.17，使用Java 17";
-"preference.title.java_args" = "JVM 啟動引數";
-"preference.placeholder.java_args" = "提供選項......";
-"preference.title.auto_ram" = "自動調節RAM";
-"preference.detail.auto_ram" = "啟用 RAM 自動調節";
-"preference.warn.auto_ram" = "在沒有越獄的裝置上收據這個選項能夠導致不穩定。請小心繼續。";
-"preference.title.allocated_memory" = "記憶體分配（MB）";
-"preference.detail.allocated_memory" = "分配多少記憶體給Minecraft";
-"preference.warn.allocated_memory" = "由於系統限制，在這個數值或以上時，這個選項可能會導致不穩定。";
-"preference.title.custom_env" = "環境變量";
+"preference.title.manage_runtime" = "管理執行環境";
+"preference.title.confirm.delete_runtime" = "%@ 將被刪除";
+"preference.manage_runtime.header.default" = "首選 Java 版本";
+"preference.manage_runtime.default.1165" = "1.16.5 及以下";
+"preference.manage_runtime.default.117" = "1.17 及以上";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 及更早版本可以執行較新的 Java 版本，但無法保證與模組的兼容性。外部執行環境可以放在「java_runtimes」資料夾中。僅當安裝程式不需要較新的 Java 版本時，「執行 .jar」的 Java 版本更改才會生效。";
+"preference.manage_runtime.footer.java8" = "這是 Minecraft 1.16.5 及更早版本的預設版本。";
+"preference.manage_runtime.footer.java17" = "這是 Minecraft 1.17 及更新版本的預設版本。";
+"preference.manage_runtime.header.invalid" = "執行環境無效";
 
-"preference.title.debug_skip_wait_jit" = "跳過「正在等待即時編譯」對話方塊。";
-"preference.detail.debug_skip_wait_jit" = "這不會允許你在沒有即時編譯的情況下啟動，而只會跳過除錯器檢測，因為這個檢測在部份越獄中無法正常運作。";
-"preference.title.debug_ipad_ui" = "解鎖iPadOS用戶介面";
-"preference.detail.debug_ipad_ui" = "當啟動時或當iPhone用戶介面被禁用時，解鎖iPad專屬用戶介面（提示、鍵盤等）";
+"preference.title.java_args" = "JVM 啟動引數";
+"preference.detail.java_args" = "啟動Minecraft 時，將引數傳給 Java，請注意，若修改失當，遊戲可能崩潰。";
+"preference.placeholder.java_args" = "自訂引數……";
+"preference.title.env_variables" = "環境變數";
+"preference.detail.env_variables" = "設定啟動 Minecraft 時的自訂環境變量，請注意，若修改失當，遊戲可能崩潰。";
+"preference.placeholder.env_variables" = "指定變數……";
+"preference.title.auto_ram" = "自動設定 RAM 大小";
+"preference.detail.auto_ram" = "啟用 RAM 自動調節";
+"preference.warn.auto_ram" = "在未越獄的裝置禁用此選項可能會導致應用不穩定。請小心繼續。";
+"preference.title.allocated_memory" = "記憶體分配（MB）";
+"preference.detail.allocated_memory" = "控制給 Minecraft 分配多少記憶體";
+"preference.warn.allocated_memory" = "由於操作系統本身的限制，此選項在此值及更高值下可能會導致不穩定。請謹慎操作。";
+"preference.title.custom_env" = "環境變數";
+"preference.detail.custom_env" = "此選項正在構建中。請在此期間建立並編輯 custom_env.txt 檔案。";
+
+"preference.title.debug_always_attached_jit" = "保持連接到 StikDebug";
+"preference.detail.debug_always_attached_jit" = "如果你的模組需要在執行時載入 .dylib 檔案，請啟用此選項。啟用後，遊戲過程中請勿關閉 StikDebug 的畫中畫 (PiP) 功能。";
+"preference.title.debug_skip_wait_jit" = "跳過「請等待應用獲取到 JIT 權限」對話框";
+"preference.detail.debug_skip_wait_jit" = "這並不是讓您在沒有 JIT 權限的情況下啟動，而是跳過除錯器檢查，因為在某些越獄裝置上會檢查失敗。";
+"preference.title.debug_ipad_ui" = "解鎖 iPadOS 介面";
+"preference.detail.debug_ipad_ui" = "若啟用，則解鎖 iPad 專屬介面（警告、鍵盤等）；若禁用，則解鎖 iPhone 介面。";
 "preference.title.debug_auto_correction" = "自動校正";
-"preference.detail.debug_auto_correction" = "當在遊戲中輸入文字時，啟用自動校正。";
+"preference.detail.debug_auto_correction" = "在遊戲中輸入文本時啟用自動校正。";
 "preference.title.debug_hide_home_indicator" = "隱藏主畫面指示器";
-"preference.detail.debug_hide_home_indicator" = "這會禁用主畫面指示器鎖定。你必須使用指導模式來同時隱藏和鎖定主畫面顯示器。";
-"preference.title.debug_show_layout_bounds" = "顯示佈局界線";
-"preference.detail.debug_show_layout_bounds" = "顯示剪輯範圍、邊界";
-"preference.title.debug_show_layout_overlap" = "顯示重複的佈局";
-"preference.detail.debug_show_layout_overlap" = "通過用透明顏色來覆蓋所有視圖，來顯示重複的視圖";
+"preference.detail.debug_hide_home_indicator" = "這將禁用主畫面指示器鎖定。您需要使用引導使用模式來同時隱藏和鎖定主畫面指示器。";
+
+"preference.profile.title.name" = "名稱";
+"preference.profile.title.loader_type" = "載入器類型";
+"preference.profile.title.loader_vendor" = "載入器供應商";
+"preference.profile.title.loader_version" = "載入器版本";
+"preference.profile.title.version" = "版本";
+"preference.profile.title.version_type" = "版本類型";
+"preference.profile.title.default_touch_control" = "觸摸屏控制";
+"preference.profile.title.default_gamepad_control" = "遊戲鍵盤控制";
+
+"profile.error.name_exists" = "同名的檔案已存在。請使用其他名稱。";
+"profile.section.instance" = "遊戲示例設置";
+"profile.section.profiles" = "此實例中的檔案";
+"profile.title.create" = "創建新的檔案";
+"profile.title.separate_preference" = "隔離設定";
+"profile.detail.separate_preference" = "啟用此選項來隔離設定中的任何更改。重設將恢復全域設定，而非預設設定。";
+"profile.title.install_fabric_quilt" = "安裝 Fabric/Quilt";
+
+"controller_configurator.title.current" = "遊戲鍵盤配置檔案";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "左前按鈕（LB）";
+"controller_configurator.xbox.title.bumper_right" = "右前按鈕（RB）";
+"controller_configurator.xbox.title.trigger_left" = "左扳機（LT）";
+"controller_configurator.xbox.title.trigger_right" = "右扳機（RT）";
+"controller_configurator.xbox.title.named_back" = "Guide";
+"controller_configurator.xbox.title.named_start" = "選單";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "上";
+"controller_configurator.xbox.title.dpad_down" = "下";
+"controller_configurator.xbox.title.dpad_left" = "左";
+"controller_configurator.xbox.title.dpad_right" = "右";
+"controller_configurator.xbox.title.thumb_left" = "左控制桿單擊";
+"controller_configurator.xbox.title.thumb_right" = "右控製桿單擊";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
 "controller_configurator.playstation.title.named_back" = "選擇";
+"controller_configurator.playstation.title.named_start" = "开始";
+"controller_configurator.playstation.title.named_a" = "叉";
+"controller_configurator.playstation.title.named_b" = "圓";
+"controller_configurator.playstation.title.named_x" = "方";
+"controller_configurator.playstation.title.named_y" = "三角";
+"controller_configurator.playstation.title.dpad_up" = "上";
+"controller_configurator.playstation.title.dpad_down" = "下";
+"controller_configurator.playstation.title.dpad_left" = "左";
+"controller_configurator.playstation.title.dpad_right" = "右";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "當前配置檔案";
+"controller_configurator.section.game_mappings" = "遊戲映射";
+"controller_configurator.section.footer.game_mappings" = "當滑鼠在游戲中被鎖定時綁定。";
+"controller_configurator.section.menu_mappings" = "選單映射";
+"controller_configurator.section.footer.menu_mappings" = "當滑鼠未被鎖定時，如在標題畫面或暫停選單中時綁定。";
+"controller_configurator.section.controller_style" = "手柄類型";
+"controller_configurator.section.footer.controller_style" = "在此配置器中顯示不同的手柄按鈕名稱。";

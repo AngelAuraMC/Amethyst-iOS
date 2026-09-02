@@ -14,11 +14,13 @@
 
 // The play button
 "Play" = "Maglaro";
+"Details" = "Detalyo";
 
 // Version categories
 "Installed" = "Naka-Install";
 "Snapshot" = "Snapshot";
 "Releases" = "Pagpapalabas";
+"Unstable" = "Hindi-maayos";
 "Old-beta" = "Lumang-beta";
 "Old-alpha" = "Lumang-alpha";
 
@@ -28,7 +30,12 @@
 "Move" = "Ilipat";
 "Remove" = "Tanggalin";
 "Resize" = "Baguhin ang sukat";
+// Visibility
+"Always" = "Palagi";
+"In game" = "Sa laro";
+"In menu" = "Sa menu";
 
+"custom_controls.button_edit.forward_lock" = "Pa-diretsong lock";
 "custom_controls.button_edit.name" = "Pangalan";
 "custom_controls.button_edit.size" = "Sukat";
 "custom_controls.button_edit.mapping" = "Pag mapa";
@@ -39,36 +46,36 @@
 "custom_controls.button_edit.bg_color" = "Kulay ng likuran";
 "custom_controls.button_edit.stroke_width" = "Lapad ng stroke (%)";
 "custom_controls.button_edit.stroke_color" = "Kulay ng stroke";
-"custom_controls.button_edit.corner_radius" = "Corner radius (%)";
+"custom_controls.button_edit.corner_radius" = "Pagka-bilog (%)";
 "custom_controls.button_edit.opacity" = "Opacidad (%)";
+"custom_controls.button_edit.visibility" = "Pagkakakita";
 
 "custom_controls.button_menu.add_subbutton" = "Lagyan ng sub-button";
 "custom_controls.control_menu.discard_changes" = "Baliwalain ang mga pagbabago";
 "custom_controls.control_menu.exit" = "Umalis";
 "custom_controls.control_menu.exit.warn" = "Lalabas ka nang hindi nase-save ng mga pagbabago.";
 "custom_controls.control_menu.save" = "I-Save";
-"custom_controls.control_menu.save.error.default" = "Hindi masave bilang \"default\" ang skema sapagkat ma-overwrite ito.";
-"custom_controls.control_menu.save.error.json" = "JSON error";
-"custom_controls.control_menu.save.error.write" = "Error saving file";
+"custom_controls.control_menu.save.error.json" = "Error sa JSON";
+"custom_controls.control_menu.save.error.write" = "Error sa pagtabi ng file";
 "custom_controls.control_menu.load" = "Ikarga";
 "custom_controls.control_menu.make_default" = "Gawing default";
-"custom_controls.control_menu.safe_area" = "Safe area";
+"custom_controls.control_menu.safe_area" = "Ligtas na area";
 "custom_controls.control_menu.add_button" = "Magdagdag ng pindutan";
-"custom_controls.control_menu.add_drawer" = "Add drawer";
-"custom_controls.error.incompatible" = "This control version (code %d) is not implemented in this launcher build.";
-"custom_controls.hint" = "Long-press anywhere on screen for more options";
+"custom_controls.control_menu.add_drawer" = "Lumagay ng drawer";
+"custom_controls.control_menu.add_joystick" = "Lumagay ng joystick";
+"custom_controls.error.incompatible" = "Itong control version (code %d) ay wala pa sa launcher build na ito.";
+"custom_controls.hint" = "Mag-longpress kahit saan sa screen para sa iba pang options";
 
 "init.migrateDir" = "Ang direktoryo ng data ng Amethyst ay %@ na ngayon. Ang lahat ng iyong umiiral na data ay inilipat sa bagong lokasyon.";
 
+"java.error.missing_main_class" = "Ang %@ ay nawawalan ng main class attribute. Kung ito ay isang mod, pakilagay nito sa iyong “mods” folder.";
+
 "launcher.menu.custom_controls" = "Pasadyang mga kontrol";
-"launcher.menu.install_jar" = "Install .jar";
 
 "launcher.wait_jit.title" = "Naghihintay ng JIT";
 "launcher.wait_jit.message" = "Umaasa ang Amethyst sa Just-in-time na compilation para gumana ang Java sa maximum na performance.";
 
 "login.error.username.outOfRange" = "Dapat ang username ay may 3 na characters na hindi dapat lalampas sa 16 na characters";
-
-"login.alert.field.username" = "Username";
 
 "login.jit.checking" = "Nagche-check para sa JIT";
 "login.jit.enabled" = "Na-enable na ang JIT";
@@ -76,17 +83,13 @@
 // Login buttons
 "login.menu.sendlogs" = "I-send ang iyong logs";
 "login.option.select" = "Piliin ng account";
-"login.option.microsoft" = "Microsoft account";
 "login.option.local" = "Lokal na account";
-
-"login.warn.title.demomode" = "Your account is Demo";
 "login.warn.message.demomode" = "Bilang kapalit sa offline at lokal na mode, magbibigay-daan sa iyo ang demo mode na mag-sign in sa isang Microsoft account na hindi nagmamay-ari ng laro at laruin ang pagsubok ng Java Edition, na ipinakilala sa 1.3.1 at mas bagong mga bersyon.";
 
 "login.warn.title.localmode" = "Ang offline mode ngayon nay' Local mode.";
 
 "login.msa.error.xsts.noxboxacc" = "Ang isang Xbox profile ay hindi nakarehistro para sa Microsoft account na ito. Pakitiyak na nakagawa ka ng Xbox profile.\nError code: 2148916233";
 "login.msa.error.xsts.noxbox" = "Kasalukuyang hindi available ang Xbox Live sa iyong bansa.\nError code: 2148916235";
-"login.msa.error.xsts.krverify" = "Your account needs to be verified by your parents before you can continue.\nError code: 2148916236 or 2148916237.";
 "login.msa.error.xsts.underage" = "Kailangang ma-link ang iyong account sa isang account ng magulang bago magpatuloy.\nError code: 2148916238";
 
 "login.msa.progress.acquireAccessToken" = "(1/5) Pagkuha ng Access token";
@@ -120,13 +123,6 @@
 "preference.detail.cosmetica" = "Paganahin ang mga kapa mula sa Cosmetica (dating Arc). Para sa karagdagang impormasyon mangyaring bisitahin ang https://cosmetica.cc. Nangangailangan ng OptiFine";
 "preference.title.debug_logging" = "Pag-log sa pag-debug";
 "preference.detail.debug_logging" = "Nagla-log ng mga panloob na setting at pagkilos sa latestlog.txt. Nakakatulong ito sa mga developer na mas madaling mahanap ang mga isyu, ngunit ang Minecraft ay maaaring tumakbo nang mas mabagal dahil mas madalas na isusulat ang mga log.";
-"preference.title.jitstreamer_server" = "JitStreamer error: %@";
-"preference.detail.jitstreamer_server" = "Binibigyang-daan kang lumipat sa isang custom na JitStreamer server IP, tulad ng para sa mga self-host na pagkakataon. Maaaring iwanang mag-isa ang opsyong ito kung gagamitin mo ang mga default na server ng JitStreamer.";
-"preference.title.appicon" = "Set app icon";
-"preference.detail.appicon" = "Allows you to choose between different Home Screen icons for Amethyst.";
-"preference.title.appicon-default" = "Familiar Amethyst light";
-"preference.title.appicon-dark" = "Familiar Amethyst dark";
-"preference.title.hidden_sidebar" = "Hide main menu sidebar by default";
 
 "preference.title.reset_warnings" = "I-reset ang lahat ng mga babala";
 "preference.title.done.reset_warnings" = "Ang lahat ng mga babala ay na-reset.";
@@ -134,10 +130,6 @@
 "preference.title.reset_settings" = "I-reset lahat ng mga setting";
 "preference.title.confirm.reset_settings" = "Aalisin nito ang lahat ng iyong custom na kagustuhan, kabilang ang resolution, laki ng button, at Java arguments.";
 "preference.title.done.reset_settings" = "Ang lahat ng mga default na setting ay naibalik.";
-
-"preference.title.renderer" = "Renderer";
-
-"preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - ini-export ang OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "tinygl4angle (1.17+) - ini-export ang OpenGL 3.2 (Core Profile, limitado)";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - ini-export ang OpenGL 4.1";
@@ -146,24 +138,16 @@
 
 "preference.title.resolution" = "Resolusyon (%)";
 "preference.detail.resolution" = "Binibigyang-daan kang bawasan ang resolution ng laro.";
-
-"preference.title.fullscreen_airplay" = "Fullscreen AirPlay";
-"preference.detail.fullscreen_airplay" = "Allows presenting fullscreen game window on the external display rather than mirroring everything on screen.";
 "preference.title.press_duration" = "Tagal ng pagpindot nang long-press (ms)";
-"preference.detail.press_duration" = "Trigger press duration for destroying blocks and dropping items.";
 "preference.title.button_scale" = "Sukat ng button sa screen (%)";
 "preference.detail.button_scale" = "Palakihin ang mga ito kung masyadong maliit ang mga button, kadalasang kailangan para sa mga user ng iPad.";
 "preference.title.mouse_scale" = "Pag-scale ng mouse (%)";
 "preference.detail.mouse_scale" = "Baguhin ang laki ng virtual mouse";
 "preference.title.mouse_speed" = "Bilis ng Mouse (%)";
 "preference.detail.mouse_speed" = "Baguhin ang bilis ng virtual mouse";
-"preference.title.virtmouse_enable" = "Virtual mouse";
 "preference.detail.virtmouse_enable" = "Paganahin ang opsyong ito upang magsimula nang naka-on ang virtual na mouse";
 "preference.title.slideable_hotbar" = "Naii-slide na hotbar";
 "preference.detail.slideable_hotbar" = "Gawing slideable ang hotbar na parang gulong ng mouse";
-
-"preference.title.java_home" = "Gamitin ang Java 17 para sa Minecraft < 1.17";
-"preference.title.java_args" = "JVM Launch arguments";
 "preference.placeholder.java_args" = "Tukuyin ang mga argumento...";
 "preference.title.auto_ram" = "Awtomatikong RAM";
 "preference.detail.auto_ram" = "Pinapagana ang awtomatikong RAM adjuster";
@@ -171,18 +155,8 @@
 "preference.title.allocated_memory" = "Paglalaan ng Memory (MB)";
 "preference.detail.allocated_memory" = "Kinokontrol kung magkano ang memorya na ibinibigay sa Minecraft";
 "preference.warn.allocated_memory" = "Dahil sa mga limitasyon sa mismong operating system, ang opsyong ito ay maaaring magdulot ng kawalang-tatag dito at mas mataas na halaga. Magpatuloy nang may pag-iingat.";
-"preference.title.custom_env" = "Variables ng environment";
-
-"preference.title.debug_skip_wait_jit" = "Skip \"Waiting for JIT\" dialog";
-"preference.detail.debug_skip_wait_jit" = "This does not allow you to launch without JIT, instead this skips debugger check, because check fails on certain jailbreaks.";
 "preference.title.debug_ipad_ui" = "I-unlock ang iPadOS UI";
 "preference.detail.debug_ipad_ui" = "I-unlock ang iPad-exlusive na UI (alerto, keyboard, atbp.) kung pinagana o iPhone UI kung naka-disable.";
-"preference.title.debug_auto_correction" = "Auto correction";
-"preference.detail.debug_auto_correction" = "Enable auto correction when typing text in game.";
-"preference.title.debug_hide_home_indicator" = "Hide home indicator";
-"preference.detail.debug_hide_home_indicator" = "This will disable home indicator locking. You will need to use Guided Access to hide and lock home indicator at the same time.";
-"preference.title.debug_show_layout_bounds" = "Ipakita ang mga hangganan ng layout";
-"preference.detail.debug_show_layout_bounds" = "Ipakita ang mga hangganan ng clip, mga margin";
-"preference.title.debug_show_layout_overlap" = "Ipakita ang layout na magkakapatong";
-"preference.detail.debug_show_layout_overlap" = "I-overlay ang bawat view gamit ang isang transparent na kulay upang ipakita ang mga magkakapatong na view.";
+
+"preference.profile.title.name" = "Pangalan";
 "controller_configurator.playstation.title.named_back" = "Iselekta";

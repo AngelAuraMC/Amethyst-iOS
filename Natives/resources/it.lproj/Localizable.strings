@@ -14,11 +14,13 @@
 
 // The play button
 "Play" = "Gioca";
+"Details" = "Dettagli";
 
 // Version categories
 "Installed" = "Installato";
 "Snapshot" = "Snapshot";
-"Releases" = "Releases";
+"Releases" = "Release";
+"Unstable" = "Instabile";
 "Old-beta" = "Vecchie-beta";
 "Old-alpha" = "Vecchie-alpha";
 
@@ -28,46 +30,83 @@
 "Move" = "Sposta";
 "Remove" = "Rimuovi";
 "Resize" = "Ridimensiona";
+// Visibility
+"Always" = "Sempre";
+"In game" = "In gioco";
+"In menu" = "Nel menu";
 
+"custom_controls.button_edit.forward_lock" = "Blocco in avanti";
 "custom_controls.button_edit.name" = "Nome";
 "custom_controls.button_edit.size" = "Dimensione";
-"custom_controls.button_edit.mapping" = "Mapping";
+"custom_controls.button_edit.mapping" = "Mappatura";
 "custom_controls.button_edit.orientation" = "Orientamento";
 "custom_controls.button_edit.toggleable" = "Attivabile";
+"custom_controls.button_edit.mouse_pass" = "Passaggio del mouse";
 "custom_controls.button_edit.swipeable" = "Swipeabile";
 "custom_controls.button_edit.bg_color" = "Colore di sfondo";
+"custom_controls.button_edit.stroke_width" = "Spessore tratto (dp)";
 "custom_controls.button_edit.stroke_color" = "Colore tratto";
+"custom_controls.button_edit.corner_radius" = "Raggio dell'angolo (%)";
+"custom_controls.button_edit.opacity" = "Opacità (%)";
+"custom_controls.button_edit.visibility" = "Visibilità";
 
 "custom_controls.button_menu.add_subbutton" = "Aggiungi sotto-pulsante";
 "custom_controls.control_menu.discard_changes" = "Annulla modifiche";
 "custom_controls.control_menu.exit" = "Esci";
 "custom_controls.control_menu.exit.warn" = "Stai per uscire senza salvare le modifiche.";
 "custom_controls.control_menu.save" = "Salva";
-"custom_controls.control_menu.save.error.default" = "Il nome dei controlli non può essere \"default\" in quanto verrà sovrascritto.";
+"custom_controls.control_menu.save.error.json" = "Errore JSON";
+"custom_controls.control_menu.save.error.write" = "Errore nel salvataggio del file";
 "custom_controls.control_menu.load" = "Carica";
 "custom_controls.control_menu.make_default" = "Rendi predefinito";
+"custom_controls.control_menu.safe_area" = "Area sicura";
 "custom_controls.control_menu.add_button" = "Aggiungi pulsante";
+"custom_controls.control_menu.add_drawer" = "Aggiungi tasto drawer";
+"custom_controls.control_menu.add_joystick" = "Aggiungi joystick";
+"custom_controls.error.incompatible" = "Questa versione di controllo (codice %d) non è implementata in questa build di launcher.";
 "custom_controls.hint" = "Tieni premuto ovunque sullo schermo per più opzioni";
 
 "init.migrateDir" = "La nuova cartella di Amethyst è %@. Tutti i tuoi dati esistenti sono stati spostati.";
 
+"java.error.missing_main_class" = "%@ manca il main class attribute. Se questa è una mod, mettila nella cartella “mods” dell'istanza selezionata.";
+"java.error.missing_runtime" = "%@ richiede Java %d o versioni successive. Si prega di installarlo prima e specificarlo nella Gestione Runtime.";
+
+"launcher.mcl.downloading_file" = "Scaricando %@";
+"launcher.mcl.error_download" = "Download di %@ non riuscito: %@";
+
 "launcher.menu.custom_controls" = "Controlli personalizzati";
-"launcher.menu.install_jar" = "Installa .jar";
+"launcher.menu.execute_jar" = "Esegui .jar";
 
 "launcher.wait_jit.title" = "In attesa di JIT";
 "launcher.wait_jit.message" = "Amethyst si basa sulla compilazione Just-in-time per Java per lavorare con prestazioni migliori.";
+"launcher.wait_jit_trollstore.message" = "Se vedi ancora questo messaggio, abilita URL Scheme in TrollStore.";
+
+"login.error.username.outOfRange" = "L'username deve contenere almeno 3 caratteri e un massimo di 16 caratteri";
 
 "login.alert.field.username" = "Nome utente";
 
 "login.jit.checking" = "Controllando JIT";
 "login.jit.enabled" = "JIT è stato attivato";
+"login.jit.fail" = "Non è stato possibile ablitare JIT.";
+"login.jit.fail.title" = "Non è stato possibile abilitare JIT sul tuo dispositivo.";
+"login.jit.fail.description" = "Nessuna integrazione può essere utilizzata per abilitare automaticamente JIT sul tuo dispositivo, che deve essere ora abilitato manualmente. Gli errori sono stati registrati su latestlog.txt.";
+"login.jit.fail.description_unsupported" = "È stato rilevato un metodo d'installazione non supportato. Reinstalla usando uno dei metodi supportati.";
 
 // Login buttons
 "login.menu.sendlogs" = "Invia i logs";
 "login.option.add" = "Aggiungi un account";
 "login.option.select" = "Seleziona account";
+"login.option.demo" = "Account demo";
 "login.option.microsoft" = "Account Microsoft";
 "login.option.local" = "Account locale";
+
+"login.warn.title.legacy_device" = "La prossima versione di Amethyst non sarà compatibile con questo dispositivo.";
+"login.warn.message.legacy_device" = "Per eseguire la prossima major release, è necessario un dispositivo in grado di eseguire iOS 14.";
+"login.warn.title.legacy_ios" = "La prossima versione di Amethyst richiederà un aggiornamento del sistema.";
+"login.warn.message.legacy_ios" = "Per eseguire la prossima major release, è necessario iOS 14 o successivo su questo dispositivo.";
+"login.warn.title.limited_ram" = "Questo dispositivo ha una quantità limitata di memoria disponibile.";
+"login.warn.message.limited_ram" = "Si consiglia di lasciare la RAM automatica abilitata per evitare problemi d'instabilità e prestazioni.";
+"login.warn.title.ios19_jitdead" = "Amethyst non è supportato su iOS 26 o versioni successive.";
 "login.warn.message.demomode" = "In sostituzione di modalità offline e locale, la modalità demo vi permetterà di accedere ad un account Microsoft che non possiede il gioco e giocare la prova Java Edition, introdotto successivamente alla 1.3. Le versioni più vecchie contengono il gioco completo, poiché il launcher ufficiale non pone queste restrizioni. Visita il nostro sito web per saperne di più su questa transizione dalla modalità offline.";
 
 "login.warn.title.localmode" = "La modalità offline è ora modalità locale.";
@@ -115,10 +154,7 @@
 "preference.title.reset_settings" = "Resetta impostazioni";
 "preference.title.confirm.reset_settings" = "Questo rimuoverà tutte le tue preferenze personalizzate, incluse le dimensioni dei pulsanti, e gli argomenti Java.";
 "preference.title.done.reset_settings" = "Tutte le impostazioni predefinite sono state ripristinate.";
-
-"preference.title.renderer" = "Renderer";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - exports OpenGL 2.1";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
 
 "preference.detail.renderer" = "Cambia il motore di rendering OpenGL in uso";
 
@@ -140,7 +176,6 @@
 "preference.title.gyroscope_sensitivity" = "Sensibilità giroscopio";
 "preference.detail.gyroscope_sensitivity" = "Regola la sensibilità del giroscopio";
 
-"preference.title.java_home" = "Usa Java 17 per Minecraft < 1.17";
 "preference.title.java_args" = "Argomenti di avvio della JVM";
 "preference.placeholder.java_args" = "Specifica argomenti...";
 "preference.title.auto_ram" = "RAM automatica";
@@ -149,16 +184,11 @@
 "preference.title.allocated_memory" = "Memoria allocata (MB)";
 "preference.detail.allocated_memory" = "Controlla quanta memoria dedicare a Minecraft";
 "preference.warn.allocated_memory" = "A causa delle limitazioni nel sistema operativo stesso, questa opzione può causare instabilità con questi valori e superiori. Procedere con cautela.";
-"preference.title.custom_env" = "Variabili ambientali";
-
 "preference.title.debug_skip_wait_jit" = "Salta l'avviso \"In attesa di JIT\"";
 "preference.detail.debug_skip_wait_jit" = "Questo non consente di avviare senza JIT, ti consente di saltare il controllo del debugger perché questo controllo fallisce su alcuni jailbreak.";
-"preference.title.debug_ipad_ui" = "Unlock iPadOS UI";
 "preference.detail.debug_ipad_ui" = "Utilizza la UI esclusiva di iPad (avvisi, tastiera, etc.) se abilitato o la UI di iPhone se disabilitato.";
 "preference.title.debug_hide_home_indicator" = "Nascondi barra home";
 "preference.detail.debug_hide_home_indicator" = "Questo disabiliterà il blocco della barra home. Dovrai utilizzare Accesso Guidato per nascondere e bloccare la barra home simultaneamente.";
-"preference.title.debug_show_layout_bounds" = "Mostra limiti layout";
-"preference.detail.debug_show_layout_bounds" = "Mostra misure clip, margini, bounds";
-"preference.title.debug_show_layout_overlap" = "Mostra sovrapposizione del layout";
-"preference.detail.debug_show_layout_overlap" = "Sovrapponi ad ogni visuale un colore trasparente per mostrare visuali sovrapposte.";
+
+"preference.profile.title.name" = "Nome";
 "controller_configurator.playstation.title.named_back" = "Seleziona";
