@@ -3,7 +3,7 @@
 <dict>
 	<key>application-identifier</key>
 	<string>org.angelauramc.amethyst</string>
-<key>com.apple.private.security.container-required</key>
+	<key>com.apple.private.security.container-required</key>
 	<string>org.angelauramc.amethyst</string>
     <key>get-task-allow</key>
     <true/>
