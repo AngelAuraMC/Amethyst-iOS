@@ -14,7 +14,6 @@
 "Old-alpha" = "Παλιά-alpha";
 "Edit" = "Επεξεργασία";
 "Remove" = "Αφαίρεσε";
-
 "custom_controls.button_edit.name" = "Όνομα";
 "custom_controls.button_edit.size" = "Μέγεθος";
 "custom_controls.button_edit.mapping" = "Χαρτογράφηση";
@@ -39,7 +38,10 @@
 "preference.title.game_directory" = "Κατάλογος παιχνιδιού";
 
 "preference.title.renderer" = "Απόδοση";
+
 "preference.title.java_args" = "JVM Εντολές εκκίνησης";
 "preference.title.auto_ram" = "Αυτόματη RAM";
 "preference.detail.auto_ram" = "Ενεργοποιεί τον αυτόματο ρυθμιστή RAM";
 "preference.detail.allocated_memory" = "Ελέγχει πόση μνήμη δίνεται στο Minecraft";
+
+"preference.profile.title.name" = "Όνομα";

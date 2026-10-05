@@ -11,10 +11,8 @@
 "Play" = "เล่น";
 "Snapshot" = "ภาพรวม";
 "Old-beta" = "เบตาเก่า";
-"Old-alpha" = "Old-alpha";
 "Edit" = "แก้ไข";
 "Remove" = "ถอดออก";
-
 "custom_controls.button_edit.name" = "ชื่อ";
 "custom_controls.button_edit.size" = "ขนาด";
 "custom_controls.button_edit.mapping" = "ปุ่มที่ให้กด";
@@ -31,7 +29,6 @@
 "custom_controls.control_menu.add_button" = "เพิ่มปุ่ม";
 
 "launcher.menu.custom_controls" = "การควบคุมกำหนดเอง";
-"launcher.menu.install_jar" = "ติดตั้ง .jar";
 "login.option.add" = "เพิ่มบัญชี";
 "login.option.select" = "เลือกบัญชี";
 
@@ -49,8 +46,9 @@
 "preference.title.gyroscope_enable" = "เปิดใช้งานการควบคุมไจโรสโคป";
 "preference.title.gyroscope_sensitivity" = "ความรวดเร็วในการควบคุมไจโร";
 "preference.detail.gyroscope_sensitivity" = "ปรับความไวของการควบคุมไจโรสโคป";
-"preference.title.java_args" = "JVM Launch arguments";
 "preference.title.auto_ram" = "RAM อัตโนมัติ";
 "preference.detail.auto_ram" = "เปิดใช้งานตัวปรับ RAM อัตโนมัติ";
 "preference.detail.allocated_memory" = "ควบคุมเเรมที่จะให้กับเกมมายคราฟ";
+
+"preference.profile.title.name" = "ชื่อ";
 "controller_configurator.playstation.title.named_back" = "เลือก";

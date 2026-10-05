@@ -10,11 +10,15 @@
 // The play button
 "Play" = "Žaisti";
 "Snapshot" = "Naujinimai";
+"Unstable" = "Nestabilus";
 "Old-beta" = "Beta";
 "Old-alpha" = "Alpha";
 "Edit" = "Redaguoti";
 "Remove" = "Pašalinti";
-
+// Visibility
+"Always" = "Visada";
+"In game" = "Žaidime";
+"In menu" = "Meniu";
 "custom_controls.button_edit.name" = "Pavadinimas";
 "custom_controls.button_edit.size" = "Dydis";
 "custom_controls.button_edit.mapping" = "Mygtukų sąrašas";
@@ -23,15 +27,23 @@
 "custom_controls.button_edit.swipeable" = "Perbraukiamas";
 "custom_controls.button_edit.bg_color" = "Fono spalva";
 "custom_controls.button_edit.stroke_color" = "Linijos spalva";
+"custom_controls.button_edit.visibility" = "Matomumas";
 
 "custom_controls.button_menu.add_subbutton" = "Pridetį mygtukų spintos mygtuką";
+"custom_controls.control_menu.discard_changes" = "Neišsaugoti pakeitimų";
 "custom_controls.control_menu.exit" = "Išeiti";
+"custom_controls.control_menu.exit.warn" = "Tu tuoj išeisi neišsaugojęs pakeitimų.";
 "custom_controls.control_menu.save" = "Išsaugoti";
+"custom_controls.control_menu.save.error.json" = "JSON klaida";
+"custom_controls.control_menu.save.error.write" = "Klaida išsaugant failą";
 "custom_controls.control_menu.load" = "Įjungti";
+"custom_controls.control_menu.make_default" = "Padaryti numatytajį";
+"custom_controls.control_menu.safe_area" = "Saugi vieta";
 "custom_controls.control_menu.add_button" = "Pridėti mygtuką";
 
 "launcher.menu.custom_controls" = "Kontrolės";
-"launcher.menu.install_jar" = "Instaliuoti .jar";
+
+"launcher.wait_jit.title" = "Laukiama JIT";
 "login.option.select" = "Pasirinkti paskyrą";
 
 "News" = "Naujienos";
@@ -44,8 +56,11 @@
 "preference.title.cosmetica" = "\"Cosmetica\" apvalkalai";
 
 "preference.title.renderer" = "Vaizdo generatorius";
+
 "preference.title.java_args" = "JVM Paleidimo argumentai";
 "preference.title.auto_ram" = "Automatiškas RAM";
 "preference.detail.auto_ram" = "Įjungia automatišką RAM keitėją";
 "preference.detail.allocated_memory" = "Kontroliuoja kiek RAM atminties duodama Minecraft";
+
+"preference.profile.title.name" = "Pavadinimas";
 "controller_configurator.playstation.title.named_back" = "Pasirinkti";

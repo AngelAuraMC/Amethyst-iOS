@@ -14,21 +14,26 @@
 
 // The play button
 "Play" = "プレイ";
+"Details" = "詳細";
 
 // Version categories
 "Installed" = "インストール済み";
 "Snapshot" = "スナップショット";
 "Releases" = "リリース";
+"Unstable" = "不安定";
 "Old-beta" = "Beta 版";
 "Old-alpha" = "Alpha 版";
 
 // Custom controls
 "Copy" = "コピー";
 "Edit" = "編集";
-"Move" = "Move";
+"Move" = "移動";
 "Remove" = "消去";
 "Resize" = "サイズ調整";
-
+// Visibility
+"Always" = "常時";
+"In game" = "ゲーム内";
+"In menu" = "メニュー内";
 "custom_controls.button_edit.name" = "名前";
 "custom_controls.button_edit.size" = "サイズ";
 "custom_controls.button_edit.mapping" = "割り当て";
@@ -41,13 +46,13 @@
 "custom_controls.button_edit.stroke_color" = "線の色";
 "custom_controls.button_edit.corner_radius" = "角の半径 (%)";
 "custom_controls.button_edit.opacity" = "透明度 (%)";
+"custom_controls.button_edit.visibility" = "コントロールの可視性";
 
 "custom_controls.button_menu.add_subbutton" = "サブボタンを追加";
 "custom_controls.control_menu.discard_changes" = "変更を破棄";
 "custom_controls.control_menu.exit" = "閉じる";
 "custom_controls.control_menu.exit.warn" = "変更を保存せずに終了しようとしています。";
 "custom_controls.control_menu.save" = "保存";
-"custom_controls.control_menu.save.error.default" = "コントロール名は上書きされるため、\"default\"にはできません。";
 "custom_controls.control_menu.save.error.json" = "JSON エラー";
 "custom_controls.control_menu.save.error.write" = "ファイルの保存中にエラーが発生しました";
 "custom_controls.control_menu.load" = "読み込む";
@@ -55,16 +60,21 @@
 "custom_controls.control_menu.safe_area" = "セーフエリア";
 "custom_controls.control_menu.add_button" = "ボタンを追加";
 "custom_controls.control_menu.add_drawer" = "引き出しを追加";
+"custom_controls.control_menu.add_joystick" = "ジョイスティックを追加";
 "custom_controls.error.incompatible" = "この制御バージョン(コード %d) はこのランチャービルドでは実装されていません。";
 "custom_controls.hint" = "画面上の任意の場所を長押ししてオプションを追加";
 
 "init.migrateDir" = "Amethystのディレクトリが %@になりました。既存のすべてのデータが新しい場所に移動されました。";
 
+"java.error.missing_main_class" = "%@ にはメインクラス属性がありません。これがmodの場合は、選択したインスタンスの「mods」フォルダに入れてください。";
+"java.error.missing_runtime" = "%@ を実行するにはJava %d 以降が必要です。特定のバージョンのJavaをインストールし、ランタイムの管理で指定してください。";
+
 "launcher.menu.custom_controls" = "カスタムコントロール";
-"launcher.menu.install_jar" = ".jarをインストール";
+"launcher.menu.execute_jar" = ".jar を実行";
 
 "launcher.wait_jit.title" = "JITを待っています";
 "launcher.wait_jit.message" = "Amethystは、Javaが最大限のパフォーマンスで動作するようにJust-in-timeコンパイルに依存しています。";
+"launcher.wait_jit_trollstore.message" = "このメッセージが表示される場合は、TrollStoreでURLスキームを有効にしてください。";
 
 "login.error.username.outOfRange" = "ユーザー名は最低3文字、最大16文字でなければなりません。";
 
@@ -72,18 +82,31 @@
 
 "login.jit.checking" = "JITを確認中";
 "login.jit.enabled" = "JIT が有効になりました";
+"login.jit.fail" = "JITを有効にできませんでした。";
+"login.jit.fail.title" = "お使いのデバイスでJITを有効にできませんでした。";
+"login.jit.fail.description" = "このデバイスではJITを自動的に有効化する統合機能はご利用いただけません。そのため、手動で有効化する必要があります。詳細はlatestlog.txtをご覧ください。";
+"login.jit.fail.description_unsupported" = "サポートされていないインストール方法が検出されました。サポートされているいずれかの方法で再インストールしてください。";
 
 // Login buttons
 "login.menu.sendlogs" = "ログを送信する";
 "login.option.add" = "アカウントを追加";
 "login.option.select" = "アカウントを選択";
+"login.option.demo" = "デモアカウント";
 "login.option.microsoft" = "Microsoft アカウント";
 "login.option.local" = "ローカルアカウント";
+
+"login.warn.title.legacy_device" = "Amethystの次のリリースは、このデバイスと互換性がありません。";
+"login.warn.message.legacy_device" = "次のメジャーリリースを実行するには、iOS 14を実行できるデバイスが必要です。";
+"login.warn.title.legacy_ios" = "Amethystの次のリリースを使用するには、システムの更新が必要になります。";
+"login.warn.message.legacy_ios" = "次のメジャーリリースを実行するには、このデバイスは iOS 14 以降を実行している必要があります。";
+"login.warn.title.ios19_jitdead" = "AnmetystはiOS 26以降ではサポートされていません。";
+"login.warn.message.ios19_jitdead" = "iOSの変更により、JITを有効にすることができなくなりました。 そのためAmethystはご利用いただけません。開発チームは回避策を模索しています。\n\nOKを押すとアプリが終了します。";
 
 "login.warn.title.demomode" = "あなたのアカウントはデモ版です";
 "login.warn.message.demomode" = "オフラインモードとローカルモードへの置き換えとして デモモードでは、ゲームを所有していないMicrosoftアカウントにサインインし、Java Editionの試用版をプレイすることができます。 1.3で導入されました。以前のバージョンでは、公式ランチャーがこれらの制限を設けていないため、以前のバージョンではフルゲームが含まれています。 このオフラインモードからの移行の詳細については、当社のウェブサイトをご覧ください。";
 
 "login.warn.title.localmode" = "オフラインモードは現在ローカルモードです。";
+"login.warn.message.localmode" = "インストール済みのバージョンは引き続きプレイできますが、有料アカウントなしで Minecraft をダウンロードすることはできません。 ローカルアカウントやその他のマインクラフトの取得手段についてのサポートは提供されません。";
 
 "login.msa.error.xsts.noxboxacc" = "このMicrosoftアカウントにXboxプロファイルが登録されていません。Xboxプロファイルを作成したことを確認してください。\nエラーコード: 2148916233";
 "login.msa.error.xsts.noxbox" = "現在お住まいの国では Xbox Live がご利用いただけません。\nエラーコード: 2148916235";
@@ -98,9 +121,12 @@
 "login.msa.progress.checkMCProfile" = "(5/5) Minecraft プロファイルの確認";
 
 "News" = "ニュース";
+"Profiles" = "プロファイル";
 "Settings" = "設定";
 
 "preference.section.general" = "一般設定";
+"preference.section.video" = "ビデオとオーディオの設定";
+"preference.section.footer.video" = "自動レンダラーを使用すると、AmethystはMinecraftのバージョンに基づいて最適なオプションを選択することができます。解像度を下げると、GPUの負荷が減少し、パフォーマンスが向上します。";
 "preference.section.control" = "制御のカスタマイズ";
 "preference.section.debug" = "UIデバッグ設定";
 "preference.section.footer.debug" = "デバッグとは別に、これらの設定はカスタムコントロールに役立ちます。変更を有効にするにはランチャーを再起動する必要があります。";
@@ -120,13 +146,12 @@
 "preference.detail.cosmetica" = "Cosmetica (以前はArc) からケープを有効にします。詳細については、https://cosmetica.ccを参照してください。OptiFine が必要です。";
 "preference.title.debug_logging" = "デバッグログ";
 "preference.detail.debug_logging" = "内部設定とアクションをlatestlog.txtに記録します。 これにより、開発者は問題を簡単に見つけることができますが、ログがより頻繁に書き込まれるため、Minecraft の動作が遅くなる可能性があります。";
-"preference.title.jitstreamer_server" = "JitStreamer サーバー IP";
-"preference.detail.jitstreamer_server" = "自己ホストインスタンスなどのカスタムJitStreamerサーバーIPに変更できます。 デフォルトのJitStreamerサーバーを使用している場合は、このオプションを残すことができます。";
 "preference.title.appicon" = "アプリアイコンを設定";
 "preference.detail.appicon" = "Amethystの異なるホーム画面アイコンから選択できます。";
 "preference.title.appicon-default" = "おなじみのAmethyst ライトテーマ";
 "preference.title.appicon-dark" = "おなじみのAmethystダークテーマ";
 "preference.title.hidden_sidebar" = "デフォルトでメインメニューサイドバーを非表示にする";
+"preference.detail.hidden_sidebar" = "メインメニューのサイドバーをデフォルトで非表示にします。";
 
 "preference.title.reset_warnings" = "すべての警告をリセット";
 "preference.title.done.reset_warnings" = "すべての警告がリセットされました。";
@@ -135,17 +160,36 @@
 "preference.title.confirm.reset_settings" = "これにより、解像度、ボタンサイズ、Java 引数を含むすべてのカスタム設定が削除されます。";
 "preference.title.done.reset_settings" = "すべての既定の設定が復元されました。";
 
+"preference.title.erase_demo_data" = "デモゲームデータの消去";
+"preference.title.confirm.erase_demo_data" = "デモアカウントで使用されるすべてのデモゲームバージョンとデータが消去されます。";
+"preference.title.done.erase_demo_data" = "デモゲームのデータはすべて消去されました。";
+
 "preference.title.renderer" = "レンダラー";
+
+"preference.title.renderer.release.auto" = "自動";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.zink" = "Zink";
 
 "preference.title.renderer.debug.auto" = "自動: gl4es または angle";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - エクスポートOpenGL 3.2 (Core Profile, limited)";
-"preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
+
+"preference.detail.renderer" = "OpenGLレンダリングエンジンを使用するように変更します。iOS 16以降では問題を診断するため一時的に無効化されています。";
 
 "preference.title.resolution" = "解像度 (%)";
 "preference.detail.resolution" = "ゲームの解像度を下げることができます。";
+"preference.title.max_framerate" = "最大フレームレート";
+"preference.detail.max_framerate" = "ProMotionディスプレイでゲームフレームレートを60FPSに制限できます。";
+
+"preference.title.performance_hud" = "パフォーマンス HUD を表示";
+"preference.detail.performance_hud" = "利用可能な場合は、パフォーマンスオーバーレイを表示します。";
 
 "preference.title.fullscreen_airplay" = "全画面AirPlay";
 "preference.detail.fullscreen_airplay" = "画面上のすべてをミラーリングするのではなく、外部ディスプレイにフルスクリーンのゲームウィンドウを表示できます。";
+"preference.title.silence_other_audio" = "ゲーム開始時にオーディオを一時停止";
+"preference.detail.silence_other_audio" = "ゲームの起動時に、音楽などの他のアプリからオーディオを一時停止します。";
+"preference.title.silence_with_switch" = "消音モードでオーディオを無効にする";
+"preference.detail.silence_with_switch" = "消音モードがオンの場合、オーディオは無効になります。ヘッドフォンと外部スピーカーは影響を受けません。";
+"preference.title.allow_microphone" = "マイク入力を許可";
 "preference.title.press_duration" = "長押し時間 (ms)";
 "preference.detail.press_duration" = "ブロックを破壊したりアイテムをドロップしたりするための長さをトリガーします。";
 "preference.title.button_scale" = "オンスクリーンボタンの拡大率(%)";
@@ -163,7 +207,6 @@
 "preference.title.gyroscope_sensitivity" = "ジャイロコントロールの感度";
 "preference.detail.gyroscope_sensitivity" = "ジャイロコントロールの感度の調整";
 
-"preference.title.java_home" = "Java 17 for Minecraft < 1.17 を使用";
 "preference.title.java_args" = "JVM 起動引数";
 "preference.placeholder.java_args" = "引数の指定...";
 "preference.title.auto_ram" = "自動RAM調整";
@@ -172,8 +215,6 @@
 "preference.title.allocated_memory" = "メモリ割り当て (MB)";
 "preference.detail.allocated_memory" = "Minecraftに与えられるメモリの量を制御します";
 "preference.warn.allocated_memory" = "オペレーティングシステム自体に制限があるため、このオプションは不安定な場合があり、値が大きい場合がありますのでご注意ください。";
-"preference.title.custom_env" = "環境変数";
-
 "preference.title.debug_skip_wait_jit" = "「JIT待機中」ダイアログをスキップ";
 "preference.detail.debug_skip_wait_jit" = "これは、JITなしで起動することはできません。代わりに、特定の脱獄時にチェックが失敗するため、デバッガのチェックをスキップします。";
 "preference.title.debug_ipad_ui" = "iPadOS UIのロックを解除";
@@ -182,8 +223,45 @@
 "preference.detail.debug_auto_correction" = "ゲーム内でテキストを入力するときに自動修正を有効にします。";
 "preference.title.debug_hide_home_indicator" = "詳細バーを非表示";
 "preference.detail.debug_hide_home_indicator" = "詳細バーのロックを無効にします。ガイド付きアクセスを使用してホームインジケーターを非表示にしてロックする必要があります。";
-"preference.title.debug_show_layout_bounds" = "レイアウト境界を表示";
-"preference.detail.debug_show_layout_bounds" = "クリップの境界線、余白を表示";
-"preference.title.debug_show_layout_overlap" = "レイアウト重複を表示";
-"preference.detail.debug_show_layout_overlap" = "透明な色ですべてのビューをオーバーレイし、重複するビューを表示します。";
+
+"preference.profile.title.name" = "名前";
+"profile.title.install_fabric_quilt" = "Fabric/Quilt のインストール";
+
+"controller_configurator.title.current" = "ゲームパッドの設定ファイル";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "L ボタン";
+"controller_configurator.xbox.title.bumper_right" = "R ボタン";
+"controller_configurator.xbox.title.trigger_left" = "左トリガー";
+"controller_configurator.xbox.title.trigger_right" = "右トリガー";
+"controller_configurator.xbox.title.named_start" = "メニュー";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "上";
+"controller_configurator.xbox.title.dpad_down" = "下";
+"controller_configurator.xbox.title.dpad_left" = "左";
+"controller_configurator.xbox.title.dpad_right" = "右";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
 "controller_configurator.playstation.title.named_back" = "選択...";
+"controller_configurator.playstation.title.named_start" = "スタート";
+"controller_configurator.playstation.title.named_a" = "✕";
+"controller_configurator.playstation.title.named_b" = "◯";
+"controller_configurator.playstation.title.named_x" = "□";
+"controller_configurator.playstation.title.named_y" = "△";
+"controller_configurator.playstation.title.dpad_up" = "上";
+"controller_configurator.playstation.title.dpad_down" = "下";
+"controller_configurator.playstation.title.dpad_left" = "左";
+"controller_configurator.playstation.title.dpad_right" = "右";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "現在の設定ファイル";
+"controller_configurator.section.game_mappings" = "ゲームマッピング";
+"controller_configurator.section.controller_style" = "コントローラの種類";

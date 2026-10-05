@@ -9,12 +9,10 @@
 
 // The play button
 "Play" = "Jogar";
-"Snapshot" = "Snapshot";
 "Old-beta" = "Beta antiga";
 "Old-alpha" = "Alpha antiga";
 "Edit" = "Editar";
 "Remove" = "Remover";
-
 "custom_controls.button_edit.name" = "Nome";
 "custom_controls.button_edit.size" = "Tamanho";
 "custom_controls.button_edit.mapping" = "Mapeamento";
@@ -31,7 +29,6 @@
 "custom_controls.control_menu.add_button" = "Adicionar botão";
 
 "launcher.menu.custom_controls" = "Controlos personalizados";
-"launcher.menu.install_jar" = "Instalar .jar";
 "login.option.select" = "Seleciona a conta";
 
 "News" = "Notícias";
@@ -44,7 +41,10 @@
 "preference.title.cosmetica" = "Capas da 'Comestica'";
 
 "preference.title.renderer" = "Renderizador";
+
 "preference.title.java_args" = "Argumentos JVM";
 "preference.title.auto_ram" = "RAM automática";
 "preference.detail.auto_ram" = "Ativa o ajuste automático de RAM";
 "preference.detail.allocated_memory" = "Controla quanta memória é dada ao Minecraft";
+
+"preference.profile.title.name" = "Nome";

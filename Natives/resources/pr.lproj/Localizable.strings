@@ -4,31 +4,71 @@
 */
 
 "game.menu.force_close" = "Принудительное закрытіе";
+"game.menu.confirm.force_close" = "Вы увѣрены, что хотите принудительно завершить игру?";
 "game.menu.log_output" = "Журналъ";
 "game.menu.custom_controls" = "Пользовательское управленіе";
 
+"game.note.airplay" = "Minecraft дублируется на экранъ AirPlay";
+
+"game.title.exit_code" = "Произошёлъ сбой игры съ шифромъ %d";
+
 // The play button
 "Play" = "Играть";
+"Details" = "Подробности";
+
+// Version categories
+"Installed" = "Установлено";
 "Snapshot" = "Пробныя версіи";
+"Releases" = "Полныя версіи";
+"Unstable" = "Нестабильно";
 "Old-beta" = "Старыя бета";
 "Old-alpha" = "Старыя альфа";
-"Edit" = "Править";
-"Remove" = "Удалить";
 
+// Custom controls
+"Copy" = "Копировать";
+"Edit" = "Править";
+"Move" = "Перемѣстить";
+"Remove" = "Удалить";
+"Resize" = "Измѣнить размѣръ";
+// Visibility
+"Always" = "Всегда";
+"In game" = "Въ игрѣ";
+"In menu" = "Въ меню";
+
+"custom_controls.button_edit.forward_lock" = "Блокировка движенія вперёдъ";
 "custom_controls.button_edit.name" = "Имя";
 "custom_controls.button_edit.size" = "Размѣръ";
 "custom_controls.button_edit.mapping" = "Кнопки";
 "custom_controls.button_edit.orientation" = "Положеніе";
 "custom_controls.button_edit.toggleable" = "Переключаемый";
+"custom_controls.button_edit.mouse_pass" = "Пропускать касаніе въ игру";
 "custom_controls.button_edit.swipeable" = "Пролистываемый";
 "custom_controls.button_edit.bg_color" = "Цвѣтъ фона";
+"custom_controls.button_edit.stroke_width" = "​Толщина обведенія (%)";
 "custom_controls.button_edit.stroke_color" = "Цвѣтъ обведенія";
+"custom_controls.button_edit.corner_radius" = "Радіусъ угла (%)";
+"custom_controls.button_edit.opacity" = "Видимость (%)";
+"custom_controls.button_edit.visibility" = "Видимость";
 
 "custom_controls.button_menu.add_subbutton" = "Добавить подъ-кнопку";
+"custom_controls.control_menu.discard_changes" = "Сбросить измѣненія";
 "custom_controls.control_menu.exit" = "Выйти";
+"custom_controls.control_menu.exit.warn" = "Вы собираетесь выйти безъ сохраненія измѣненій.";
 "custom_controls.control_menu.save" = "Сохранить";
+"custom_controls.control_menu.save.error.json" = "Ошибка формата";
+"custom_controls.control_menu.save.error.write" = "Ошибка сохраненія файла";
 "custom_controls.control_menu.load" = "Загрузка";
+"custom_controls.control_menu.make_default" = "Сдѣлать основной";
+"custom_controls.control_menu.safe_area" = "Безопасная область";
 "custom_controls.control_menu.add_button" = "Добавить кнопку";
+"custom_controls.control_menu.add_drawer" = "Добавить группу";
+"custom_controls.control_menu.add_joystick" = "Добавить управляющую ручку";
+"custom_controls.error.incompatible" = "Эта версія раскладки (шифръ %d) не поддерживается въ используемой сборкѣ запускателя.";
+"custom_controls.hint" = "Зажмите въ свободномъ мѣстѣ для дополнительныхъ настроекъ";
+
+"init.migrateDir" = "Новое расположеніе Amethyst: %@. ​Всѣ​ ​существующія​ ​данныя​ также были перемѣщены.";
+
+"java.error.missing_main_class" = "У %@ отсутствуетъ основной признакъ класса. Если это модификація, помѣстите её въ папку «mods» выбраннаго вами экземпляра.";
 
 "launcher.menu.custom_controls" = "Пользовательское управленіе";
 "login.option.select" = "Выбрать документъ";
@@ -39,7 +79,10 @@
 "preference.title.game_directory" = "Папка игры";
 
 "preference.title.renderer" = "Визуализаторъ";
+
 "preference.title.java_args" = "Аргументы запуска J.V.M.";
 "preference.title.auto_ram" = "Автоматическое выдѣленіе О.З.У.";
 "preference.detail.auto_ram" = "Автоматически управляетъ количествомъ выдѣленнаго О.З.У.";
 "preference.detail.allocated_memory" = "Управляетъ выдѣленіемъ памяти для Minecraft";
+
+"preference.profile.title.name" = "Имя";

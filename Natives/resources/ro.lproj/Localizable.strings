@@ -14,46 +14,140 @@
 
 // The play button
 "Play" = "Joacă";
+"Details" = "Detalii";
 
 // Version categories
 "Installed" = "Instalat";
 "Snapshot" = "Lansat pentru testare";
 "Releases" = "Lansări";
+"Unstable" = "Instabil";
 "Old-beta" = "Beta-vechi";
 "Old-alpha" = "Alpha-vechi";
 
 // Custom controls
 "Copy" = "Copiere";
 "Edit" = "Editează";
+"Move" = "Mută/mișcă";
 "Remove" = "Șterge";
+"Resize" = "Redimensionează";
+// Visibility
+"Always" = "Întotdeauna";
+"In game" = "În joc";
+"In menu" = "În meniu";
 
+"custom_controls.button_edit.forward_lock" = "Blochează direcția înainte";
 "custom_controls.button_edit.name" = "Nume";
 "custom_controls.button_edit.size" = "Dimensiune";
 "custom_controls.button_edit.mapping" = "Asocieri";
 "custom_controls.button_edit.orientation" = "Orientare";
 "custom_controls.button_edit.toggleable" = "Comutabil";
+"custom_controls.button_edit.mouse_pass" = "Mouse pass";
 "custom_controls.button_edit.swipeable" = "Glisabil";
 "custom_controls.button_edit.bg_color" = "Culoarea de fundal";
+"custom_controls.button_edit.stroke_width" = "Lățimea conturului (dp)";
 "custom_controls.button_edit.stroke_color" = "Culoarea conturului";
+"custom_controls.button_edit.corner_radius" = "Raza colțului (%)";
+"custom_controls.button_edit.opacity" = "Opacitate (%)";
+"custom_controls.button_edit.visibility" = "Vizibilitate";
 
 "custom_controls.button_menu.add_subbutton" = "Adaugă sub-buton";
+"custom_controls.control_menu.discard_changes" = "Renunță la modificări";
 "custom_controls.control_menu.exit" = "Ieșire";
+"custom_controls.control_menu.exit.warn" = "Sunteți pe cale de a ieși fără să vă salvați modificările.";
 "custom_controls.control_menu.save" = "Salvează";
+"custom_controls.control_menu.save.error.json" = "Eroare JSON";
+"custom_controls.control_menu.save.error.write" = "Eroare la salvarea fișierului";
 "custom_controls.control_menu.load" = "Incarcă";
+"custom_controls.control_menu.make_default" = "Setează ca implicit";
+"custom_controls.control_menu.safe_area" = "Zonă fără atingere";
 "custom_controls.control_menu.add_button" = "Adaugă buton";
+"custom_controls.control_menu.add_drawer" = "Adaugă meniu tip sertar";
+"custom_controls.control_menu.add_joystick" = "Adaugă manetă";
+"custom_controls.error.incompatible" = "Această versiune de control (cod %d) nu este implementată în această versiune de lansator.";
+"custom_controls.hint" = "Apăsați lung oriunde pe ecran pentru mai multe opțiuni";
+
+"init.migrateDir" = "Dosarul de date Amethyst este acum %@. Toate datele existente au fost mutate în noua locaţie.";
+
+"java.error.missing_main_class" = "%@ nu are atribut main class. Dacă acesta este un mod, plasați-l în dosarul \"mods\" al instanței selectate.";
+"java.error.missing_runtime" = "%@ necesită versiunea Java %d sau mai nou pentru a rula. Vă rugăm să instalați Java și să îl specificați în meniul Manage Runtimes.";
+
+"launcher.mcl.downloading_file" = "Se descarcă %@";
+"launcher.mcl.error_download" = "A eșuat descărcarea %@: %@";
 
 "launcher.menu.custom_controls" = "Controale personalizate";
-"launcher.menu.install_jar" = "Instalează .jar";
+"launcher.menu.execute_jar" = "Execută un .jar";
+
+"launcher.wait_jit.title" = "Se așteaptă pentru JIT";
+"launcher.wait_jit.message" = "Amethyst folosește compilarea Just-in-time (în timp real) pentru Java pentru a ating performanțe maxime.";
+"launcher.wait_jit_trollstore.message" = "Dacă încă vedeți acest mesaj, vă rugăm să activați schema URL în TrollStore.";
+
+"login.error.username.outOfRange" = "Numele de utilizator trebuie să aibă un minim de 3 litere și un maxim de 16 litere. (sau cifre)";
+
+"login.alert.field.username" = "Nume de utilizator";
+
+"login.jit.checking" = "Se verifică prezența JIT";
+"login.jit.enabled" = "JIT a fost activat";
+"login.jit.fail" = "JIT nu a putut fi activat.";
+"login.jit.fail.title" = "JIT nu s-a putut activa pe dispozitivul dumneavoastră.";
+"login.jit.fail.description" = "Nicio integrare nu a putut fi folosită pentru activarea automată a JIT pe dispozitivul dvs., și trebuie activat manual. Erorile au fost notate în latestlog.txt.";
+"login.jit.fail.description_unsupported" = "A fost detectată o metodă de instalare nesuportată. Reinstalați folosind una dintre metodele recomandate.";
+
+// Login buttons
+"login.menu.sendlogs" = "Trimite-ți-vă fișierele log";
 "login.option.add" = "Adăugați un cont";
 "login.option.select" = "Selectează contul";
+"login.option.demo" = "Cont demonstrativ";
+"login.option.microsoft" = "Cont Microsoft";
+"login.option.local" = "Cont local";
+
+"login.warn.title.legacy_device" = "Următoarea versiune a Amethyst nu va mai fi compatibilă cu dispozitivul dvs.";
+"login.warn.message.legacy_device" = "Pentru a rula următoarea versiune majoră un dispozitiv ce rulează iOS 14 este necesar.";
+"login.warn.title.legacy_ios" = "Următoarea versiune a Amethyst va necesita o actualizare a sistemului dvs.";
+"login.warn.message.legacy_ios" = "Pentru a rula următoarea versiune majoră un dispozitiv ce rulează iOS 14 sau mai nou este necesar.";
+"login.warn.title.limited_ram" = "Acest dispozitiv are o capacitate de memorie liberă redusă.";
+"login.warn.message.limited_ram" = "Recomandăm lăsarea setării auto RAM activată pentru a preveni instabilitatea și problemele de performanță.";
+"login.warn.title.ios19_jitdead" = "Amethyst nu prezintă suport tehnic pe iOS 26 sau mai nou.";
+"login.warn.message.ios19_jitdead" = "Din cauza modificărilor aduse iOS ce nu mai permit cum trebuie activarea JIT, Amethyst nu poate funcționa în forma actuală și necesită cercetări îndelungate pentru a găsi o nouă metodă de funcționare.\n\nApăsând pe OK veți închide aplicația.";
+
+"login.warn.title.demomode" = "Contul dvs este unul demo";
+"login.warn.message.demomode" = "Modurile offline și local au fost înlocuite cu modul demo, acesta vă permite conectarea unui cont Microsoft ce nu deține jocul pentru a juca Java Edition Trial, introdus în 1.3.1 și versiunile mai recente. Versiunile mai vechi conțin întregul joc, deoarece lansatorul oficial nu le restricționează. Vizitați-ne pagina web pentru a afla mai multe despre tranziția de la modul offline.";
+
+"login.warn.title.localmode" = "Modul offline se numește acum modul local.";
+"login.warn.message.localmode" = "Puteți continua să vă jucați versiunile instalate, dar nu veți mai putea descărca Minecraft fără un cont cu licență. Niciun suport tehnic nu va fi acordat pentru problemele legate de conturile locale, sau legate de alte metode de a obține Minecraft.";
+
+"login.msa.error.xsts.noxboxacc" = "Acest cont Microsoft nu a înregistrat niciun profil Xbox. Vă rugăm să verificați că aveți un profil Xbox.\nCod de eroare: 2148916233";
+"login.msa.error.xsts.noxbox" = "Xbox Live este momentan indisponibil în țara dumneavoastră.\nCod de eroare: 2148916235";
+"login.msa.error.xsts.krverify" = "Contul tău trebuie să fie verificat de părinții tăi înainte de a putea continua.\nCodul de eroare: 2148916236 sau 2148916237.";
+"login.msa.error.xsts.underage" = "Contul tău trebuie asociat contului unui părinte pentru a continua.\nCod de eroare: 2148916238";
+
+"login.msa.progress.acquireAccessToken" = "(1/5) Obținerea tokenului de acces";
+"login.msa.progress.acquireXBLToken" = "(2/5) Obținerea tokenului Xbox Live";
+"login.msa.progress.acquireXSTS" = "Se obține XSTS";
+"login.msa.progress.acquireXboxProfile" = "(3/5) Obținerea profilului Xbox";
+"login.msa.progress.acquireMCToken" = "(4/5) Obținerea tokenului Minecraft";
+"login.msa.progress.checkMCProfile" = "(5/5) Se verifică profilul Minecraft";
 
 "News" = "Știri";
+"Profiles" = "Profiluri";
 "Settings" = "Setări";
+
+"preference.section.general" = "Setări generale";
+"preference.section.video" = "Setări video și audio";
+"preference.section.footer.video" = "Programul de randare automat îi permite aplicației Amethyst să selecteze opțiunea optimă pentru această versiune de Minecraft. Reducând rezoluția veți ușura sarcina cipului grafic (GPU) pentru o performanță mai bună.";
 "preference.section.control" = "Personalizarea controalelor";
+"preference.section.debug" = "Setări depanare a interfeței (UI)";
+"preference.section.footer.debug" = "Este posibil să fiți nevoit să reporniți lansatorul pentru ca modificările să aibă efect.";
 //"preference.section.footer.control" = "";
 "preference.section.java" = "Ajustări Java";
+//"preference.section.footer.java" = "";
+
+"preference.title.confirm" = "Sigur doriți acest lucru?";
 
 "preference.title.game_directory" = "Dosarul jocului";
+"preference.title.confirm.delete_game_directory" = "Instanța %@ va fi ștearsă pentru totdeauna și nu poate fi restaurată.";
+"preference.multidir.add_directory" = "adăugați dosarul jocului";
+
+"preference.title.check_sha" = "Verifică fișierele după descărcare";
 "preference.title.cosmetica" = "Pelerine Cosmetica";
 
 "preference.title.renderer" = "Randator";
@@ -61,8 +155,10 @@
 "preference.title.gyroscope_enable" = "Permite controalele gyroscopului";
 "preference.title.gyroscope_sensitivity" = "Controalele tiroscopului controlează sensibilitatea";
 "preference.detail.gyroscope_sensitivity" = "Ajustați sensibilitatea controalelor cu giroscop";
+
 "preference.title.java_args" = "Argumente de lansare JVM";
-"preference.title.auto_ram" = "Auto RAM";
 "preference.detail.auto_ram" = "Activează ajustarea automată RAM";
 "preference.detail.allocated_memory" = "Controlează cât de multă memorie este dată la Minecraft";
+
+"preference.profile.title.name" = "Nume";
 "controller_configurator.playstation.title.named_back" = "Selectați";

@@ -1,31 +1,7 @@
-/*
-  Localizable.strings
-  StringLocalization
-*/
-
-"game.menu.force_close" = "Force close";
 "game.menu.log_output" = "Registra la sortida";
-"game.menu.custom_controls" = "Custom controls";
-
-// The play button
-"Play" = "Play";
-"Snapshot" = "Snapshot";
-"Old-beta" = "Old-beta";
-"Old-alpha" = "Old-alpha";
-"Edit" = "Edit";
-"Remove" = "Remove";
-
-"custom_controls.button_edit.name" = "Name";
 "custom_controls.button_edit.size" = "Mida";
-"custom_controls.control_menu.exit" = "Exit";
-"custom_controls.control_menu.save" = "Save";
-"custom_controls.control_menu.load" = "Load";
-"custom_controls.control_menu.add_button" = "Add button";
-
-"launcher.menu.custom_controls" = "Custom controls";
 "login.option.select" = "Seleccioneu un compte";
 
 "News" = "Notícies";
-"Settings" = "Settings";
 
 "preference.title.renderer" = "Renderitzador";
