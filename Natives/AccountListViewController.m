@@ -4,7 +4,7 @@
 #import "AccountListViewController.h"
 #import "AFNetworking.h"
 #import "LauncherPreferences.h"
-#import "UIImageView+AFNetworking.h"
+#import "PLAccountSkin.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
@@ -56,8 +56,10 @@
     }
 
     if (indexPath.row == self.accountList.count) {
+        [cell.imageView.layer setValue:nil forKey:@"accountImageRequest"];
         cell.imageView.image = [UIImage imageNamed:@"IconAdd"];
         cell.textLabel.text = localize(@"login.option.add", nil);
+        cell.detailTextLabel.text = nil;
         return cell;
     }
 
@@ -75,8 +77,18 @@
         cell.detailTextLabel.text = selected[@"xboxGamertag"];
     }
 
-    cell.imageView.contentMode = UIViewContentModeCenter;
-    [cell.imageView setImageWithURL:[NSURL URLWithString:[selected[@"profilePicURL"] stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"]] placeholderImage:[UIImage imageNamed:@"DefaultAccount"]];
+    cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
+    cell.imageView.layer.magnificationFilter = kCAFilterNearest;
+    cell.imageView.layer.minificationFilter = kCAFilterNearest;
+    NSObject *request = [NSObject new];
+    [cell.imageView.layer setValue:request forKey:@"accountImageRequest"];
+    __weak UITableViewCell *weakCell = cell;
+    [PLAccountSkin loadHeadForAccount:selected completion:^(UIImage *head) {
+        if ([weakCell.imageView.layer valueForKey:@"accountImageRequest"] == request) {
+            weakCell.imageView.image = head;
+            [weakCell setNeedsLayout];
+        }
+    }];
 
     return cell;
 }

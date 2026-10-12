@@ -186,6 +186,13 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
             [uuid substringWithRange:NSMakeRange(20, 12)]
         ];
         self.authData[@"profilePicURL"] = [NSString stringWithFormat:@"https://mc-heads.net/head/%@/120", self.authData[@"profileId"]];
+        [self.authData removeObjectForKey:@"minecraftSkinURL"];
+        for (NSDictionary *skin in response[@"skins"]) {
+            if ([skin[@"state"] isEqualToString:@"ACTIVE"] && [skin[@"url"] isKindOfClass:NSString.class]) {
+                self.authData[@"minecraftSkinURL"] = skin[@"url"];
+                break;
+            }
+        }
         self.authData[@"oldusername"] = self.authData[@"username"];
         self.authData[@"username"] = response[@"name"];
         callback(nil, [self saveChanges]);
@@ -195,6 +202,7 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
         if ([errorDict[@"error"] isEqualToString:@"NOT_FOUND"]) {
             // If there is no profile, use the Xbox gamertag as username with Demo mode
             self.authData[@"profileId"] = @"00000000-0000-0000-0000-000000000000";
+            [self.authData removeObjectForKey:@"minecraftSkinURL"];
             self.authData[@"username"] = [NSString stringWithFormat:@"Demo.%@", self.authData[@"xboxGamertag"]];
 
             if ([self saveChanges]) {

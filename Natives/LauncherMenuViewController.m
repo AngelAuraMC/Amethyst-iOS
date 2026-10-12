@@ -9,8 +9,7 @@
 #import "LauncherPreferencesViewController.h"
 #import "LauncherProfilesViewController.h"
 #import "PLProfiles.h"
-#import "UIButton+AFNetworking.h"
-#import "UIImageView+AFNetworking.h"
+#import "PLAccountSkin.h"
 #import "UIKit+hook.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
@@ -39,10 +38,32 @@
 
 @end
 
+// Navigation bars must measure both title lines independently of the avatar's size.
+@interface LauncherAccountButton : UIButton
+@property(nonatomic) CGFloat maximumWidth;
+@end
+
+@implementation LauncherAccountButton
+- (CGSize)intrinsicContentSize {
+    CGFloat textWidth = ceil([self.currentAttributedTitle size].width);
+    return CGSizeMake(MIN(self.maximumWidth, textWidth > 0 ? 60 + textWidth : 48), 44);
+}
+- (CGSize)sizeThatFits:(CGSize)size {
+    return self.intrinsicContentSize;
+}
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    self.imageView.frame = CGRectMake(8, (self.bounds.size.height - 32) / 2, 32, 32);
+    self.titleLabel.frame = CGRectMake(48, 0, MAX(0, self.bounds.size.width - 60), self.bounds.size.height);
+}
+@end
+
 @interface LauncherMenuViewController()
 @property(nonatomic) NSMutableArray<LauncherMenuCustomItem*> *options;
 @property(nonatomic) UILabel *statusLabel;
 @property(nonatomic) int lastSelectedIndex;
+@property(nonatomic) NSAttributedString *accountTitle;
+@property(nonatomic) NSObject *accountImageRequest;
 @end
 
 @implementation LauncherMenuViewController
@@ -166,13 +187,17 @@
 
 - (UIBarButtonItem *)drawAccountButton {
     if (!self.accountBtnItem) {
-        self.accountButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.accountButton = [LauncherAccountButton buttonWithType:UIButtonTypeCustom];
         [self.accountButton addTarget:self action:@selector(selectAccount:) forControlEvents:UIControlEventPrimaryActionTriggered];
         self.accountButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
 
-        self.accountButton.titleEdgeInsets = UIEdgeInsetsMake(0, 4, 0, -4);
         self.accountButton.imageView.contentMode = UIViewContentModeScaleAspectFit;
-        self.accountButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        self.accountButton.imageView.layer.magnificationFilter = kCAFilterNearest;
+        self.accountButton.imageView.layer.minificationFilter = kCAFilterNearest;
+        self.accountButton.titleLabel.numberOfLines = 2;
+        self.accountButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+        self.accountButton.titleLabel.minimumScaleFactor = 0.7;
+        self.accountButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
         self.accountBtnItem = [[UIBarButtonItem alloc] initWithCustomView:self.accountButton];
     }
 
@@ -238,7 +263,11 @@
             self.lastSelectedIndex = indexPath.row;
         }
         selected.vcArray[0].navigationItem.rightBarButtonItem = self.accountBtnItem;
-        selected.vcArray[0].navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+        // Column-style split views supply their own sidebar toggle. The legacy item is unsupported
+        // there and iPadOS 26 renders its empty background beside the working system button.
+        selected.vcArray[0].navigationItem.leftBarButtonItem =
+            self.splitViewController.style == UISplitViewControllerStyleUnspecified ?
+                self.splitViewController.displayModeButtonItem : nil;
         selected.vcArray[0].navigationItem.leftItemsSupplementBackButton = true;
     }
 }
@@ -273,22 +302,22 @@
 
 - (void)updateAccountInfo {
     NSDictionary *selected = BaseAuthenticator.current.authData;
-    CGSize size = CGSizeMake(contentNavigationController.view.frame.size.width, contentNavigationController.view.frame.size.height);
+    NSObject *request = [NSObject new];
+    self.accountImageRequest = request;
     
     if (selected == nil) {
-        if((size.width / 3) > 200) {
-            [self.accountButton setAttributedTitle:[[NSAttributedString alloc] initWithString:localize(@"login.option.select", nil)] forState:UIControlStateNormal];
-        } else {
-            [self.accountButton setAttributedTitle:(NSAttributedString *)@"" forState:UIControlStateNormal];
-        }
+        self.accountTitle = [[NSAttributedString alloc] initWithString:localize(@"login.option.select", nil)
+            attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:17], NSForegroundColorAttributeName: UIColor.labelColor}];
+        self.accountButton.accessibilityLabel = self.accountTitle.string;
         [self.accountButton setImage:[UIImage imageNamed:@"DefaultAccount"] forState:UIControlStateNormal];
-        [self.accountButton sizeToFit];
+        [self layoutAccountButton];
         return;
     }
 
     // Remove the prefix "Demo." if there is
     BOOL isDemo = [selected[@"username"] hasPrefix:@"Demo."];
-    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]];
+    NSMutableAttributedString *title = [[NSMutableAttributedString alloc] initWithString:[selected[@"username"] substringFromIndex:(isDemo?5:0)]
+        attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:17], NSForegroundColorAttributeName: UIColor.labelColor}];
 
     // Check if we're switching between demo and full mode
     BOOL shouldUpdateProfiles = (getenv("DEMO_LOCK")!=NULL) != isDemo;
@@ -309,22 +338,19 @@
         subtitle = selected[@"xboxGamertag"];
     }
 
-    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12]}];
+    subtitle = [[NSAttributedString alloc] initWithString:subtitle attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:12], NSForegroundColorAttributeName: UIColor.secondaryLabelColor}];
     [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:nil]];
     [title appendAttributedString:subtitle];
     
-    if((size.width / 3) > 200) {
-        [self.accountButton setAttributedTitle:title forState:UIControlStateNormal];
-    } else {
-        [self.accountButton setAttributedTitle:(NSAttributedString *)@"" forState:UIControlStateNormal];
-    }
-    
-    // TODO: Add caching mechanism for profile pictures
-    NSURL *url = [NSURL URLWithString:[selected[@"profilePicURL"] stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"]];
-    UIImage *placeholder = [UIImage imageNamed:@"DefaultAccount"];
-    [self.accountButton setImageForState:UIControlStateNormal withURL:url placeholderImage:placeholder];
-    [self.accountButton.imageView setImageWithURL:url placeholderImage:placeholder];
-    [self.accountButton sizeToFit];
+    self.accountTitle = title;
+    self.accountButton.accessibilityLabel = [title.string stringByReplacingOccurrencesOfString:@"\n" withString:@", "];
+    [self layoutAccountButton];
+    __weak typeof(self) weakSelf = self;
+    [PLAccountSkin loadHeadForAccount:selected completion:^(UIImage *head) {
+        if (weakSelf.accountImageRequest == request) {
+            [weakSelf.accountButton setImage:head forState:UIControlStateNormal];
+        }
+    }];
 
     // Update profiles and local version list if needed
     if (shouldUpdateProfiles) {
@@ -337,6 +363,21 @@
     if ([tableVC isKindOfClass:UITableViewController.class]) {
         [tableVC.tableView reloadData];
     }
+}
+
+- (void)layoutAccountButton {
+    if (!self.accountButton) return;
+    CGFloat availableWidth = contentNavigationController.view.bounds.size.width;
+    LauncherAccountButton *button = (LauncherAccountButton *)self.accountButton;
+    CGFloat maximumWidth = MAX(48, MIN(320, availableWidth / 2));
+    NSAttributedString *title = availableWidth > 600 ? self.accountTitle : nil;
+    if (button.maximumWidth == maximumWidth && (button.currentAttributedTitle == title ||
+        [button.currentAttributedTitle isEqualToAttributedString:title])) return;
+    button.maximumWidth = maximumWidth;
+    [button setAttributedTitle:title forState:UIControlStateNormal];
+    [button invalidateIntrinsicContentSize];
+    [button sizeToFit];
+    [button setNeedsLayout];
 }
 
 - (void)displayProgress:(NSString *)status {
