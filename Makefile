@@ -324,13 +324,16 @@ dep_mg:
 	cp $(SOURCEDIR)/Natives/external/MobileGlues/src/main/cpp/libraries/ios/libspirv-cross-c-shared.0.dylib $(WORKINGDIR)/libspirv-cross-c-shared.0.dylib
 	echo '[Amethyst v$(VERSION)] dep_mg - end'
 
+# gl4es rất nặng CPU (chuyển đổi vertex, đánh giá state FPE) nên phải luôn build tối ưu;
+# mặc định RELEASE=0 khiến nó thành -O0 và chậm hơn nhiều so với libgl4es_114.dylib prebuilt.
+# Ghim CMAKE_BUILD_TYPE=RelWithDebInfo cho gl4es_116 bất kể cấu hình build chung.
 dep_gl4es_116:
 	echo '[Amethyst v$(VERSION)] dep_gl4es_116 - start'
 	mkdir -p $(WORKINGDIR)/gl4es_116
 	rm -rf $(WORKINGDIR)/gl4es_116/CMakeCache.txt $(WORKINGDIR)/gl4es_116/CMakeFiles
 	cd $(WORKINGDIR)/gl4es_116 && cmake \
 		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 		-DCMAKE_CROSSCOMPILING=true \
 		-DCMAKE_SYSTEM_NAME=Darwin \
 		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
@@ -345,7 +348,7 @@ dep_gl4es_116:
 		-DSTATICLIB=OFF \
 		$(SOURCEDIR)/Natives/external/gl4es_116
 
-	cmake --build $(WORKINGDIR)/gl4es_116 --config $(CMAKE_BUILD_TYPE) -j$(JOBS) --target GL
+	cmake --build $(WORKINGDIR)/gl4es_116 --config RelWithDebInfo -j$(JOBS) --target GL
 	if [ -f "$(WORKINGDIR)/gl4es_116/lib/libgl4es_116.dylib" ]; then \
 		cp $(WORKINGDIR)/gl4es_116/lib/libgl4es_116.dylib $(WORKINGDIR)/libgl4es_116.dylib; \
 	elif [ -f "$(WORKINGDIR)/gl4es_116/src/libgl4es_116.dylib" ]; then \

@@ -9,6 +9,7 @@
 #include "list.h"
 #include "loader.h"
 #include "render.h"
+#include "envvars.h"
 
 //#define DEBUG
 #ifdef DEBUG
@@ -456,6 +457,12 @@ static int quad_ibo_ready(void) {
     if (glstate->quad_ibo_state)
         return glstate->quad_ibo_state > 0;
     glstate->quad_ibo_state = -1;
+    // Opt-in experimental fast path (DEFAULT OFF). Set AMETHYST_GL4ES_QUAD_IBO=1 to enable.
+    // When OFF, GL_QUADS uses the stock gl4es client-index path (known-good, e.g. Forge
+    // 1.12.2 splash / loading screen), so a broken IBO path can never affect the default build.
+    const char *qenv = GetEnvVar("AMETHYST_GL4ES_QUAD_IBO");
+    if (!qenv || strcmp(qenv, "1") != 0)
+        return 0;
     if (hardext.esversion < 2 || !globals4es.usevbo)
         return 0;
     GLushort *tbl = (GLushort*)malloc(QUAD_IDX_COUNT * sizeof(GLushort));
