@@ -59,7 +59,7 @@
         } else if (error != nil) {
             [self finishDownloadWithError:error file:name];
         } else if (![self checkSHA:sha forFile:path altName:altName]) {
-            [self finishDownloadWithErrorString:[NSString stringWithFormat:@"Failed to verify file %@: SHA1 mismatch", path.lastPathComponent]];
+            [self finishDownloadWithErrorString:[NSString stringWithFormat:localize(@"launcher.mcl.error_hash", nil), path.lastPathComponent]];
         } else {
             progress.totalUnitCount = progress.completedUnitCount;
             if (success) success();
@@ -319,7 +319,7 @@
     if (!accessible) {
         [self.progress cancel];
         if (show) {
-            [self finishDownloadWithErrorString:@"Minecraft can't be legally installed when logged in with a local account. Please switch to an online account to continue."];
+            [self finishDownloadWithErrorString:localize(@"launcher.mcl.error_local_account", nil)];
         }
     }
     return accessible;

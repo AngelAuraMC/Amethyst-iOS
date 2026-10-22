@@ -22,25 +22,43 @@
     return nil;
 }
 
-- (void)downloader:(MinecraftResourceDownloadTask *)downloader submitDownloadTasksFromPackage:(NSString *)packagePath toPath:(NSString *)destPath {
+- (void)downloader:(MinecraftResourceDownloadTask *)downloader submitDownloadTasksFromPackage:(NSString *)packagePath toPath:(NSString *)instanceRoot {
     [self doesNotRecognizeSelector:_cmd];
 }
 
 - (id)getEndpoint:(NSString *)endpoint params:(NSDictionary *)params {
+    return [self requestEndpoint:endpoint params:params post:NO];
+}
+- (NSDictionary *)requestHeaders { return @{}; }
+
+- (id)postEndpoint:(NSString *)endpoint params:(NSDictionary *)params {
+    return [self requestEndpoint:endpoint params:params post:YES];
+}
+
+- (id)requestEndpoint:(NSString *)endpoint params:(NSDictionary *)params post:(BOOL)post {
+    self.lastError = nil;
     __block id result;
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
     NSString *url = [self.baseURL stringByAppendingPathComponent:endpoint];
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-    [manager GET:url parameters:params headers:nil progress:nil
-    success:^(NSURLSessionTask *task, id obj) {
+    if (post) manager.requestSerializer = [AFJSONRequestSerializer serializer];
+    manager.requestSerializer.timeoutInterval = 30;
+    if ([self.baseURL containsString:@"api.modrinth.com"]) {
+        [manager.requestSerializer setValue:@"AngelAuraAmethyst/1.0 (https://github.com/AngelAuraMC/Amethyst-iOS)" forHTTPHeaderField:@"User-Agent"];
+    }
+    void (^success)(NSURLSessionDataTask *, id) = ^(NSURLSessionDataTask *task, id obj) {
         result = obj;
         dispatch_group_leave(group);
-    } failure:^(NSURLSessionTask *operation, NSError *error) {
+    };
+    void (^failure)(NSURLSessionDataTask *, NSError *) = ^(NSURLSessionDataTask *operation, NSError *error) {
         self.lastError = error;
         dispatch_group_leave(group);
-    }];
+    };
+    if (post) [manager POST:url parameters:params headers:self.requestHeaders progress:nil success:success failure:failure];
+    else [manager GET:url parameters:params headers:self.requestHeaders progress:nil success:success failure:failure];
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    [manager invalidateSessionCancelingTasks:NO resetSession:NO];
     //NSLog(@"%@", result);
     return result;
 }

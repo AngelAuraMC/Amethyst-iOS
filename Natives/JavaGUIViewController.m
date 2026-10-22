@@ -403,7 +403,7 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
     uint32_t magic = OSSwapConstInt32(*(uint32_t*)mainClassData.bytes);
     if (magic != 0xCAFEBABE) {
-        [self showErrorMessage:[NSString stringWithFormat:@"Invalid magic number: 0x%x", magic]];
+        [self showErrorMessage:[NSString stringWithFormat:localize(@"java.error.invalid_class", nil), magic]];
         return _requiredJavaVersion = 0;
     }
 

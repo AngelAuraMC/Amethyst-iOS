@@ -1,0 +1,3 @@
+/* Localized privacy permission descriptions */
+"NSLocalNetworkUsageDescription" = "Amethyst utiliza la red local para encontrar AltServer y servidores LAN y comunicarse con ellos.";
+"NSMicrophoneUsageDescription" = "Amethyst utiliza el micrófono para los mods de chat de voz.";

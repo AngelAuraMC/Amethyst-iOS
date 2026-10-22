@@ -71,7 +71,7 @@ static BaseAuthenticator *current = nil;
     error = saveJSONToFile(self.authData, newPath);
 
     if (error != nil) {
-        showDialog(@"Error while saving file", error.localizedDescription);
+        showDialog(localize(@"custom_controls.control_menu.save.error.write", nil), error.localizedDescription);
     }
     return error == nil;
 }

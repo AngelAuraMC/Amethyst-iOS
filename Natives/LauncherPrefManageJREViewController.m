@@ -482,9 +482,9 @@ styleForMenuWithConfiguration:(UIContextMenuConfiguration *)configuration
     if (dict[@"Error"]) {
         return dict[@"Error"];
     } else if (![dict[@"OS_ARCH"] isEqualToString:@"aarch64"]) {
-        return [NSString stringWithFormat:@"Wrong runtime architecture: %@ (need aarch64)", dict[@"OS_ARCH"]];
+        return [NSString stringWithFormat:localize(@"java.error.runtime_arch", nil), dict[@"OS_ARCH"]];
     } else if (![dict[@"OS_NAME"] isEqualToString:@"Darwin"]) {
-        return [NSString stringWithFormat:@"Wrong runtime platform: %@ (need Darwin)", dict[@"OS_NAME"]];
+        return [NSString stringWithFormat:localize(@"java.error.runtime_platform", nil), dict[@"OS_NAME"]];
     }
 
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -502,17 +502,17 @@ styleForMenuWithConfiguration:(UIContextMenuConfiguration *)configuration
 + (NSString *)lzmaErrorDescriptionForCode:(int)code {
     switch (code) {
         case LZMA_MEM_ERROR:
-            return @"Memory allocation failed";
+            return localize(@"java.error.memory", nil);
         case LZMA_FORMAT_ERROR:
-            return @"The input is not in the .xz format";
+            return localize(@"java.error.xz_format", nil);
         case LZMA_OPTIONS_ERROR:
-            return @"Unsupported compression options";
+            return localize(@"java.error.compression", nil);
         case LZMA_DATA_ERROR:
-            return @"Compressed file is corrupt";
+            return localize(@"java.error.corrupt", nil);
         case LZMA_BUF_ERROR:
-            return @"Compressed file is truncated or otherwise corrupt";
+            return localize(@"java.error.truncated", nil);
         default:
-            return @"Unknown error, possibly a bug";
+            return localize(@"java.error.unknown", nil);
     }
 }
 
@@ -619,7 +619,7 @@ styleForMenuWithConfiguration:(UIContextMenuConfiguration *)configuration
                     default: // Ignore everything else
                         if (currFileHeader.typeflag < '0' && currFileHeader.typeflag > '7'
                         && (currFileHeader.typeflag != 'x' && currFileHeader.typeflag != 'g')) {
-                            msg = [NSString stringWithFormat:@"Invalid typeflag %c", currFileHeader.typeflag];
+                            msg = [NSString stringWithFormat:localize(@"java.error.archive_type", nil), currFileHeader.typeflag];
                             goto cleanup;
                         }
                         NSLog(@"[RuntimeUnpack] Skipped %s (typeflag %c)", currFileHeader.name, currFileHeader.typeflag);

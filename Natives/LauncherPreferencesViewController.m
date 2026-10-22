@@ -13,6 +13,7 @@
 #import "config.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
+#import "installer/modpack/CurseForgeAPI.h"
 
 @interface LauncherPreferencesViewController()
 @property(nonatomic) NSArray<NSString*> *rendererKeys, *rendererList;
@@ -56,6 +57,8 @@
         @[
             // General settings
             @{@"icon": @"cube"},
+            @{@"key": @"curseforge_api_key", @"icon": @"key", @"type": self.typeButton,
+              @"enableCondition": whenNotInGame, @"action": ^void(){ [self editCurseForgeKey]; }},
             @{@"key": @"check_sha",
               @"hasDetail": @YES,
               @"icon": @"lock.shield",
@@ -442,6 +445,28 @@
         return nil;
     }
     return footer;
+}
+
+- (void)editCurseForgeKey {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:localize(@"preference.title.curseforge_api_key", nil) message:localize(@"preference.description.curseforge_api_key", nil) preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *field) {
+        field.secureTextEntry = YES; field.autocorrectionType = UITextAutocorrectionTypeNo;
+        field.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        field.textContentType = @"";
+        field.placeholder = [CurseForgeAPI isConfigured] ? localize(@"content.curseforge.key_present", nil) : localize(@"content.curseforge.key_placeholder", nil);
+    }];
+    [alert addAction:[UIAlertAction actionWithTitle:localize(@"Cancel", nil) style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:localize(@"Save", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSString *key = alert.textFields.firstObject.text;
+        if (!key.length) return;
+        NSError *error;
+        if (![CurseForgeAPI setAPIKey:key error:&error]) showDialog(localize(@"Error", nil), error.localizedDescription);
+    }]];
+    if ([CurseForgeAPI isConfigured]) [alert addAction:[UIAlertAction actionWithTitle:localize(@"content.curseforge.remove_key", nil) style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        NSError *error;
+        if (![CurseForgeAPI setAPIKey:@"" error:&error]) showDialog(localize(@"Error", nil), error.localizedDescription);
+    }]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

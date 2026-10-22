@@ -63,7 +63,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 
     [alert setValue:atrStr forKey:@"attributedMessage"];
 
-    UIAlertAction* okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+    UIAlertAction* okAction = [UIAlertAction actionWithTitle:localize(@"OK", nil) style:UIAlertActionStyleDefault
         handler:^(UIAlertAction * action) {
             if (exitIfOk == JNI_TRUE) {
                 exit(-1);
@@ -71,7 +71,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
         }];
     [alert addAction:okAction];
     
-    UIAlertAction* copyAction = [UIAlertAction actionWithTitle:@"Copy" style:UIAlertActionStyleDefault
+    UIAlertAction* copyAction = [UIAlertAction actionWithTitle:localize(@"Copy", nil) style:UIAlertActionStyleDefault
         handler:^(UIAlertAction * action) {
             UIPasteboard.generalPasteboard.string = message_o;
             if (exitIfOk == JNI_TRUE) {

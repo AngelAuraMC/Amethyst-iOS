@@ -487,7 +487,7 @@ void loadControlObject(UIView* targetView, NSMutableDictionary* controlDictionar
         controlDictionary[@"scaledAt"] = getPrefObject(@"control.button_scale");
 
         if (errorString.length > 0) {
-            showDialog(@"Error processing dynamic position", errorString);
+            showDialog(localize(@"custom_controls.error.dynamic_position", nil), errorString);
         }
     }
 }

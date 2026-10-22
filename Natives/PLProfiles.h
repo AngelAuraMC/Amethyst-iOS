@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+FOUNDATION_EXPORT NSNotificationName const PLProfilesDidChangeNotification;
+
 @interface PLProfiles : NSObject
 
 @property(nonatomic) NSString *profilePath;

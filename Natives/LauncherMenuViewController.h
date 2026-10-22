@@ -19,6 +19,7 @@
 - (void)restoreHighlightedSelection;
 - (void)selectAccount:(UIButton *)sender;
 - (void)updateAccountInfo;
+- (void)layoutAccountButton;
 - (UIBarButtonItem *)drawAccountButton;
 
 @end

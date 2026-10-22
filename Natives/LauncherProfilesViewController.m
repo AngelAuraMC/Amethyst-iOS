@@ -70,7 +70,7 @@ typedef NS_ENUM(NSUInteger, LauncherProfilesTableSection) {
                 [self actionCreateForgeProfile];
             }],
         [UIAction
-            actionWithTitle:@"Modpack" image:nil
+            actionWithTitle:localize(@"profile.title.modpack", nil) image:nil
             identifier:@"modpack" handler:^(UIAction *action) {
                 [self actionCreateModpackProfile];
             }]

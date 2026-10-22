@@ -8,17 +8,19 @@
 "game.menu.log_output" = "Registro de salida";
 "game.menu.custom_controls" = "Controles personalizados";
 
-"game.note.airplay" = "Minecraft está siendo mostrado en la pantalla de AirPlay";
+"game.note.airplay" = "Minecraft se está mostrando en la pantalla duplicada de AirPlay.";
 
 "game.title.exit_code" = "El juego se cerró con el código %d";
 
 // The play button
 "Play" = "Jugar";
+"Details" = "Detalles";
 
 // Version categories
-"Installed" = "Instalada";
+"Installed" = "Instaladas";
 "Snapshot" = "Snapshots";
-"Releases" = "Versiones lanzadas";
+"Releases" = "Versiones estables";
+"Unstable" = "Inestables";
 "Old-beta" = "Betas";
 "Old-alpha" = "Alphas";
 
@@ -28,40 +30,56 @@
 "Move" = "Mover";
 "Remove" = "Eliminar";
 "Resize" = "Cambiar tamaño";
+// Visibility
+"Always" = "Siempre";
+"In game" = "En el juego";
+"In menu" = "En los menús";
 
+"custom_controls.button_edit.forward_lock" = "Bloqueo de avance";
 "custom_controls.button_edit.name" = "Nombre";
 "custom_controls.button_edit.size" = "Tamaño";
-"custom_controls.button_edit.mapping" = "Mapeado";
+"custom_controls.button_edit.mapping" = "Asignaciones";
 "custom_controls.button_edit.orientation" = "Orientación";
 "custom_controls.button_edit.toggleable" = "Activable";
+"custom_controls.button_edit.mouse_pass" = "Dejar pasar el ratón";
 "custom_controls.button_edit.swipeable" = "Deslizable";
 "custom_controls.button_edit.bg_color" = "Color de fondo";
+"custom_controls.button_edit.stroke_width" = "Grosor del borde (dp)";
 "custom_controls.button_edit.stroke_color" = "Color del trazo";
 "custom_controls.button_edit.corner_radius" = "Radio de las esquinas (%)";
 "custom_controls.button_edit.opacity" = "Opacidad (%)";
+"custom_controls.button_edit.visibility" = "Visibilidad";
 
 "custom_controls.button_menu.add_subbutton" = "Añadir sub-botón";
 "custom_controls.control_menu.discard_changes" = "Descartar cambios";
 "custom_controls.control_menu.exit" = "Salir";
 "custom_controls.control_menu.exit.warn" = "Estás a punto de salir sin guardar los cambios.";
 "custom_controls.control_menu.save" = "Guardar";
-"custom_controls.control_menu.save.error.default" = "Los controles no pueden llamarse \"default\" ya que serán sobrescritos.";
 "custom_controls.control_menu.save.error.json" = "Error JSON";
 "custom_controls.control_menu.save.error.write" = "Error al guardar el archivo";
 "custom_controls.control_menu.load" = "Cargar";
 "custom_controls.control_menu.make_default" = "Establecer por defecto";
 "custom_controls.control_menu.safe_area" = "Área segura";
 "custom_controls.control_menu.add_button" = "Añadir botón";
-"custom_controls.control_menu.add_drawer" = "Añadir Cajón";
-"custom_controls.hint" = "Mantenga pulsado en cualquier lugar de la pantalla para más opciones";
+"custom_controls.control_menu.add_drawer" = "Añadir cajón";
+"custom_controls.control_menu.add_joystick" = "Añadir joystick";
+"custom_controls.error.incompatible" = "Esta versión de controles (código %d) no está implementada en esta versión de la app.";
+"custom_controls.hint" = "Mantén pulsada cualquier zona de la pantalla para ver más opciones.";
 
 "init.migrateDir" = "La carpeta de Amethyst ahora está en %@. Todos tus datos han sido movidos a esa nueva ubicación.";
 
+"java.error.missing_main_class" = "%@ no tiene el atributo de clase principal. Si es un mod, colócalo en la carpeta «mods» de la instancia seleccionada.";
+"java.error.missing_runtime" = "%@ necesita Java %d o posterior. Instálalo y selecciónalo en Gestionar entornos de ejecución.";
+
+"launcher.mcl.downloading_file" = "Descargando %@";
+"launcher.mcl.error_download" = "No se pudo descargar %@: %@";
+
 "launcher.menu.custom_controls" = "Controles personalizados";
-"launcher.menu.install_jar" = "Instalar .jar";
+"launcher.menu.execute_jar" = "Ejecutar .jar";
 
 "launcher.wait_jit.title" = "Esperando por JIT";
 "launcher.wait_jit.message" = "Amethyst utiliza la compilación Just-in-time para que Java funcione con el máximo rendimiento.";
+"launcher.wait_jit_trollstore.message" = "Si sigues viendo este mensaje, activa URL Scheme en TrollStore.";
 
 "login.error.username.outOfRange" = "El nombre de usuario debe tener al menos 3 caracteres y un máximo de 16 caracteres";
 
@@ -69,20 +87,38 @@
 
 "login.jit.checking" = "Buscando JIT";
 "login.jit.enabled" = "JIT ha sido habilitado";
+"login.jit.fail" = "No se pudo activar JIT.";
+"login.jit.fail.title" = "No se pudo activar JIT en tu dispositivo.";
+"login.jit.fail.description" = "Ninguna integración pudo activar JIT automáticamente en tu dispositivo. Debes activarlo manualmente. Los errores se han registrado en latestlog.txt.";
+"login.jit.fail.description_unsupported" = "Se ha detectado un método de instalación no compatible. Vuelve a instalar la app con uno de los métodos compatibles.";
 
 // Login buttons
 "login.menu.sendlogs" = "Envía tus logs";
-"login.option.select" = "Seleccione una cuenta";
+"login.option.add" = "Añadir cuenta";
+"login.option.select" = "Seleccionar cuenta";
+"login.option.demo" = "Cuenta de demostración";
 "login.option.microsoft" = "Cuenta de Microsoft";
 "login.option.local" = "Cuenta local";
-"login.warn.message.demomode" = "Como reemplazo del modo offline y el modo local, el modo demo te permitirá iniciar sesión en una cuenta de Microsoft que no tenga el juego para jugar a las trials de Java Edition, introducido en la versión 1.3.1 y versiones nuevas. Versiones anteriores a estas tienen acceso al juego entero, porque el launcher oficial no contiene estas restricciones. Ve a nuestro sitio web para saber más sobre esta transición de el modo offline.";
+
+"login.warn.title.legacy_device" = "La próxima versión de Amethyst no será compatible con este dispositivo.";
+"login.warn.message.legacy_device" = "La próxima versión principal requiere un dispositivo compatible con iOS 14.";
+"login.warn.title.legacy_ios" = "La próxima versión de Amethyst requerirá actualizar el sistema.";
+"login.warn.message.legacy_ios" = "Para usar la próxima versión principal, este dispositivo debe tener iOS 14 o posterior.";
+"login.warn.title.limited_ram" = "Este dispositivo tiene poca memoria disponible.";
+"login.warn.message.limited_ram" = "Recomendamos mantener activado el ajuste automático de RAM para evitar problemas de estabilidad y rendimiento.";
+"login.warn.title.ios19_jitdead" = "Amethyst no es compatible con iOS 26 o posterior.";
+"login.warn.message.ios19_jitdead" = "Los cambios en iOS que impiden activar JIT hacen que Amethyst no pueda funcionar en su estado actual. Es necesario investigar nuevas alternativas.\n\nAl pulsar Aceptar se cerrará la app.";
+
+"login.warn.title.demomode" = "Tu cuenta es de demostración";
+"login.warn.message.demomode" = "El modo de demostración sustituye a los modos sin conexión y local. Te permite iniciar sesión con una cuenta de Microsoft que no tenga el juego comprado y jugar a la prueba de Java Edition, disponible desde la versión 1.3.1. Las versiones anteriores incluyen el juego completo, ya que el lanzador oficial no aplica estas restricciones. Consulta nuestro sitio web para saber más sobre esta transición.";
 
 "login.warn.title.localmode" = "El modo offline ahora es el modo local.";
+"login.warn.message.localmode" = "Puedes seguir jugando a las versiones instaladas, pero ya no puedes descargar Minecraft sin una cuenta que tenga el juego comprado. No se ofrece soporte para problemas con cuentas locales ni con otros métodos de obtener Minecraft.";
 
-"login.msa.error.xsts.noxboxacc" = "Esta cuenta de Microsoft no poseé un perfil de Xbox. Por favor, asegúrate de haber creado un perfil de Xbox en esta cuenta.\nCódigo de error: 2148916233";
+"login.msa.error.xsts.noxboxacc" = "Esta cuenta de Microsoft no tiene un perfil de Xbox. Asegúrate de haber creado uno.\nCódigo de error: 2148916233";
 "login.msa.error.xsts.noxbox" = "Xbox Live no está disponible actualmente en tu país.\nCódigo de error: 2148916235";
 "login.msa.error.xsts.krverify" = "Tu cuenta debe ser verificada por tus padres para poder continuar.\nCódigo de error: 2148916236 o 2148916237.";
-"login.msa.error.xsts.underage" = "Tu cuenta debe de ser vinculada a una cuenta de padre para poder continuar.\nCódigo de error: 2148916238";
+"login.msa.error.xsts.underage" = "Tu cuenta debe estar vinculada a la de uno de tus padres para poder continuar.\nCódigo de error: 2148916238";
 
 "login.msa.progress.acquireAccessToken" = "(1/5) Adquiriendo el token de acceso";
 "login.msa.progress.acquireXBLToken" = "(2/5) Adquiriendo el token de Xbox Live";
@@ -92,12 +128,15 @@
 "login.msa.progress.checkMCProfile" = "(5/5) Comprobando el perfil de Minecraft";
 
 "News" = "Noticias";
+"Profiles" = "Perfiles";
 "Settings" = "Ajustes";
 
 "preference.section.general" = "Configuración general";
-"preference.section.video" = "Configuración de Vídeo";
+"preference.section.video" = "Vídeo y audio";
+"preference.section.footer.video" = "El renderizador automático permite a Amethyst elegir la mejor opción según la versión de Minecraft. Reducir la resolución disminuye la carga de la GPU y mejora el rendimiento.";
 "preference.section.control" = "Personalización del control";
-"preference.section.footer.debug" = "Aparte de el debugging, estas opciones pueden ser útiles para los controles personalizados. Es posible que tengas que reiniciar el launcher para que los cambios tengan efecto.";
+"preference.section.debug" = "Depuración de la interfaz";
+"preference.section.footer.debug" = "Es posible que tengas que reiniciar la app para que los cambios tengan efecto.";
 //"preference.section.footer.control" = "";
 "preference.section.java" = "Ajustes de Java";
 //"preference.section.footer.java" = "";
@@ -106,56 +145,111 @@
 
 "preference.title.game_directory" = "Directorio del juego";
 "preference.title.confirm.delete_game_directory" = "La instancia %@ va a ser borrada para siempre y nunca podrá ser restaurada.";
-"preference.multidir.add_directory" = "Añadir Ubicación de carpeta del juego";
+"preference.multidir.add_directory" = "Añadir carpeta del juego";
 
 "preference.title.check_sha" = "Comprobar archivos después de descargar";
-"preference.detail.check_sha" = "Está opción fuerza al launcher a verificar si el archivo hash está disponible. Previene falta de archivos y corrupciones.";
-"preference.title.cosmetica" = "Capas de Comestica";
-"preference.detail.cosmetica" = "Activar capas de Comestica (anteriormente Arc.) Para más información, por favor ve a https://cosmetica.cc. (Requiere OptiFine)";
+"preference.detail.check_sha" = "Comprueba el hash del archivo cuando está disponible para detectar descargas dañadas.";
+"preference.title.cosmetica" = "Capas de Cosmetica";
+"preference.detail.cosmetica" = "Activa las capas de Cosmetica (anteriormente Arc). Más información en https://cosmetica.cc. Requiere OptiFine.";
 "preference.title.debug_logging" = "Registro de depuración";
 "preference.detail.debug_logging" = "Registra las configuraciones y acciones internas en latestlog.txt. Esto ayuda a los desarrolladores a encontrar problemas más fácilmente, pero es posible que el juego sea más lento, ya que los registros serán escritos con más frecuencia.";
-"preference.title.jitstreamer_server" = "IP del servidor JitStreamer";
-"preference.title.appicon" = "Establecer icono del app";
-"preference.detail.appicon" = "Le permite elegir entre diferentes iconos de Amethyst para tu pantalla de inicio.";
+"preference.title.appicon" = "Icono de la app";
+"preference.detail.appicon" = "Permite elegir entre diferentes iconos de Amethyst para la pantalla de inicio.";
 "preference.title.appicon-default" = "Amethyst clásico claro";
 "preference.title.appicon-dark" = "Amethyst clásico oscuro";
+"preference.title.appicon-development" = "Boceto de desarrollo";
+"preference.title.hidden_sidebar" = "Ocultar el menú lateral por defecto";
+"preference.detail.hidden_sidebar" = "Oculta el menú lateral por defecto y al girar el dispositivo.";
 
-"preference.title.reset_warnings" = "Reiniciar todas las advertencias";
-"preference.title.done.reset_warnings" = "Todas las advertencias han sido reiniciadas.";
+"preference.title.reset_warnings" = "Restablecer todas las advertencias";
+"preference.title.done.reset_warnings" = "Se han restablecido todas las advertencias.";
 
-"preference.title.reset_settings" = "Reiniciar todas las configuraciones";
-"preference.title.confirm.reset_settings" = "Esto va a remover todas tus configuraciones, incluyendo resolución, tamaño de botones y argumentos de Java.";
+"preference.title.reset_settings" = "Restablecer todos los ajustes";
+"preference.title.confirm.reset_settings" = "Se eliminarán todos tus ajustes personalizados, incluidos la resolución, el tamaño de los botones y los argumentos de Java.";
 "preference.title.done.reset_settings" = "Todas las configuraciones predeterminadas han sido restauradas.";
+
+"preference.title.erase_demo_data" = "Borrar los datos de demostración";
+"preference.title.confirm.erase_demo_data" = "Se borrarán todas las versiones y los datos del juego utilizados por las cuentas de demostración.";
+"preference.title.done.erase_demo_data" = "Se han borrado todos los datos de demostración del juego.";
 
 "preference.title.renderer" = "Renderizador";
 
+"preference.title.renderer.release.auto" = "Automático";
+"preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.angle" = "ANGLE";
+"preference.title.renderer.release.mg" = "MobileGlues";
+"preference.title.renderer.release.zink" = "Zink";
+
 "preference.title.renderer.debug.auto" = "Automático: gl4es o ANGLE";
-"preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - exporta a OpenGL 2.1";
-"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - exporta OpenGL 3.1 (perfil Core, limitado)";
+"preference.title.renderer.debug.gl4es" = "holy gl4es - ofrece OpenGL 2.1";
+"preference.title.renderer.debug.angle" = "ANGLE (1.17+) - ofrece OpenGL 3.2 (perfil Core, limitado)";
+"preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - ofrece OpenGL 4.0, EXPERIMENTAL";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exporta a OpenGL 4.1";
 
-"preference.detail.renderer" = "Cambiar el motor de renderizado para que OpenGL utilicé";
+"preference.detail.renderer" = "Cambia el motor de renderizado OpenGL. Zink está temporalmente desactivado en iOS 16 y posteriores para investigar problemas.";
 
 "preference.title.resolution" = "Resolución (%)";
 "preference.detail.resolution" = "Permite reducir la resolución del juego.";
+"preference.title.max_framerate" = "Límite de fotogramas por segundo";
+"preference.detail.max_framerate" = "Permite limitar el juego a 60 FPS en pantallas ProMotion.";
+
+"preference.title.performance_hud" = "Mostrar indicadores de rendimiento";
+"preference.detail.performance_hud" = "Muestra los indicadores de rendimiento cuando estén disponibles.";
 
 "preference.title.fullscreen_airplay" = "AirPlay en pantalla completa";
 "preference.detail.fullscreen_airplay" = "Permite presentar la ventana de juego a pantalla completa en la pantalla externa en lugar de reflejar todo en la pantalla interna.";
+"preference.title.silence_other_audio" = "Pausar el audio al iniciar el juego";
+"preference.detail.silence_other_audio" = "Permite a Amethyst pausar el audio de otras apps, como Música, al iniciar el juego.";
+"preference.title.silence_with_switch" = "Silenciar el audio con el interruptor de silencio";
+"preference.detail.silence_with_switch" = "Silencia el audio cuando está activado el modo silencio. No afecta a los auriculares ni a los altavoces externos.";
+"preference.title.allow_microphone" = "Permitir el uso del micrófono";
+"preference.detail.allow_microphone" = "Actívalo solo si utilizas un mod de chat de voz. Se ignorará la opción del interruptor de silencio y se verá afectada la calidad del audio de otras apps.";
+"preference.title.default_gamepad_ctrl" = "Configuración del mando";
+"preference.title.hardware_hide" = "Ocultar controles al conectar un ratón o mando";
+"preference.detail.hardware_hide" = "Oculta automáticamente los controles en pantalla al conectar un ratón o mando.";
+"preference.title.recording_hide" = "Ocultar controles en las grabaciones de pantalla";
+"preference.detail.recording_hide" = "Oculta los controles en capturas y grabaciones de pantalla, aunque siguen visibles en el dispositivo.";
+"preference.title.gesture_mouse" = "Gestos del ratón";
+"preference.detail.gesture_mouse" = "Activa gestos como tocar para colocar bloques, mantener pulsado para romperlos y desplazar con dos dedos.";
+"preference.title.gesture_hotbar" = "Gestos de la barra rápida";
+"preference.detail.gesture_hotbar" = "Activa gestos para seleccionar una casilla de la barra rápida, intercambiar objetos entre las manos y soltar objetos.";
+"preference.title.disable_haptics" = "Desactivar la respuesta háptica de los controles";
 "preference.title.press_duration" = "Duración para pulsado largo (ms)";
+"preference.detail.press_duration" = "Duración de la pulsación necesaria para destruir bloques y soltar objetos.";
 "preference.title.button_scale" = "Escala de botones en pantalla (%)";
 "preference.detail.button_scale" = "Sube de tamaño a los botones si resultan ser muy pequeños, es usualmente necesario para usuarios de iPad.";
 "preference.title.mouse_scale" = "Tamaño del ratón (%)";
-"preference.detail.mouse_scale" = "Cambiar velocidad del ratón virtual";
+"preference.detail.mouse_scale" = "Cambia el tamaño del ratón virtual.";
 "preference.title.mouse_speed" = "Velocidad del ratón (%)";
 "preference.detail.mouse_speed" = "Cambiar velocidad del ratón virtual";
 "preference.title.virtmouse_enable" = "Ratón virtual";
-"preference.detail.virtmouse_enable" = "Habilita está opcion para empezar con el ratón virtual encendido";
-"preference.title.slideable_hotbar" = "Hotbar deslizable";
-"preference.detail.slideable_hotbar" = "Permite deslizarse en el hotbar como la rueda del ratón";
+"preference.detail.virtmouse_enable" = "Activa esta opción para empezar con el ratón virtual activado.";
+"preference.title.slideable_hotbar" = "Barra rápida deslizable";
+"preference.detail.slideable_hotbar" = "Permite deslizar la barra rápida como con la rueda del ratón.";
 
-"preference.title.java_home" = "Usar Java 17 para Minecraft < 1.17";
-"preference.title.java_args" = "JRE Argumentos de lanzamiento";
+"preference.title.gyroscope_enable" = "Activar controles con el giroscopio";
+"preference.detail.gyroscope_enable" = "Permite girar en el juego al girar el dispositivo.";
+"preference.title.gyroscope_invert_x_axis" = "Invertir izquierda y derecha del giroscopio";
+"preference.detail.gyroscope_invert_x_axis" = "Invierte el eje X del giroscopio.";
+"preference.title.gyroscope_sensitivity" = "Sensibilidad del giroscopio";
+"preference.detail.gyroscope_sensitivity" = "Ajusta la sensibilidad de los controles del giroscopio.";
+
+"preference.title.manage_runtime" = "Gestionar entornos de ejecución";
+"preference.title.confirm.delete_runtime" = "Se eliminará %@";
+"preference.manage_runtime.header.default" = "Versión de Java preferida";
+"preference.manage_runtime.default.1165" = "1.16.5 y anteriores";
+"preference.manage_runtime.default.117" = "1.17 y posteriores";
+"preference.manage_runtime.footer.default" = "Minecraft 1.16.5 y anteriores pueden funcionar con una versión de Java más reciente, pero no se garantiza la compatibilidad con los mods. Puedes colocar entornos de ejecución externos en la carpeta «java_runtimes». Cambiar la versión de Java para «Ejecutar .jar» solo tiene efecto si el instalador no requiere una versión más reciente.";
+"preference.manage_runtime.footer.java8" = "Esta es la versión por defecto para Minecraft 1.16.5 y anteriores.";
+"preference.manage_runtime.footer.java17" = "Esta es la versión por defecto para Minecraft 1.17 y posteriores.";
+"preference.manage_runtime.header.invalid" = "Entornos de ejecución no válidos";
+
+"preference.title.java_args" = "Argumentos de inicio de la JVM";
+"preference.detail.java_args" = "Pasa argumentos a Java al iniciar Minecraft. Modificarlos incorrectamente puede hacer que el juego se cierre.";
 "preference.placeholder.java_args" = "Especifica argumentos...";
+"preference.title.env_variables" = "Variables de entorno";
+"preference.detail.env_variables" = "Establece variables de entorno al iniciar Minecraft. Modificarlas incorrectamente puede hacer que el juego se cierre.";
+"preference.placeholder.env_variables" = "Especifica variables...";
 "preference.title.auto_ram" = "Auto RAM";
 "preference.detail.auto_ram" = "Habilita el ajuste automático de RAM";
 "preference.warn.auto_ram" = "Deshabilitar esta opción para un dispositivo sin JailBreak puede crear inestabilidad si es alterada. Procede con cuidado.";
@@ -163,11 +257,289 @@
 "preference.detail.allocated_memory" = "Controla cuánta memoria se le da a Minecraft";
 "preference.warn.allocated_memory" = "Debido a limitaciones con el sistema operativo en sí, esta opción puede causar inestabilidad en esta y mayores cantidades. Procede con cuidado.";
 "preference.title.custom_env" = "Variables de entorno";
+"preference.detail.custom_env" = "Esta opción está en desarrollo. Mientras tanto, crea y edita custom_env.txt.";
 
+"preference.title.debug_always_attached_jit" = "Mantener la conexión con StikDebug";
+"preference.detail.debug_always_attached_jit" = "Actívalo si tus mods necesitan cargar archivos .dylib durante la ejecución. Mientras esté activado, no cierres la ventana flotante de StikDebug durante el juego.";
 "preference.title.debug_skip_wait_jit" = "Omitir diálogo \"Esperando por JIT\"";
-"preference.detail.debug_skip_wait_jit" = "Esto no le permite jugar sin JIT, solo la omite la comprobación del depurador, porque la comprobación falla en ciertas jailbreaks.";
+"preference.detail.debug_skip_wait_jit" = "Omite la comprobación del depurador, que falla en algunos dispositivos con jailbreak. Sigue siendo necesario activar JIT para jugar.";
 "preference.title.debug_ipad_ui" = "Activar interfaz de iPadOS";
-"preference.detail.debug_ipad_ui" = "Activa la interfaz exclusiva de iPad (alerta, teclado, etc.) si está opción está habilitada, o usar la interfaz de iPhone si está opción está desactivada.";
+"preference.detail.debug_ipad_ui" = "Activa la interfaz exclusiva de iPad (alertas, teclado, etc.). Si se desactiva, se utiliza la interfaz de iPhone.";
 "preference.title.debug_auto_correction" = "Corrección automática";
 "preference.detail.debug_auto_correction" = "Activar corrección automática al escribir texto en el juego.";
+"preference.title.debug_hide_home_indicator" = "Ocultar el indicador de inicio";
+"preference.detail.debug_hide_home_indicator" = "Desactiva el bloqueo del indicador de inicio. Utiliza Acceso guiado para ocultarlo y bloquearlo a la vez.";
+
+"preference.profile.title.name" = "Nombre";
+"preference.profile.title.loader_type" = "Tipo de cargador";
+"preference.profile.title.loader_vendor" = "Proveedor del cargador";
+"preference.profile.title.loader_version" = "Versión del cargador";
+"preference.profile.title.version" = "Versión";
+"preference.profile.title.version_type" = "Tipo de versión";
+"preference.profile.title.default_touch_control" = "Controles táctiles";
+"preference.profile.title.default_gamepad_control" = "Controles del mando";
+
+"profile.error.name_exists" = "Ya existe un perfil con ese nombre. Elige otro nombre.";
+"profile.section.instance" = "Ajustes de la instancia del juego";
+"profile.section.profiles" = "Perfiles de esta instancia";
+"profile.title.create" = "Crear un perfil";
+"profile.title.separate_preference" = "Ajustes independientes";
+"profile.detail.separate_preference" = "Permite que los cambios de ajustes solo afecten a este perfil. Al restablecerlos, se recuperarán los ajustes globales en lugar de los valores por defecto.";
+"profile.title.install_fabric_quilt" = "Instalar Fabric/Quilt";
+
+"controller_configurator.title.current" = "Gamepad configuration file";
+"controller_configurator.title.type.xbox" = "Xbox";
+"controller_configurator.title.type.playstation" = "PlayStation";
+
+"controller_configurator.xbox.title.bumper_left" = "Botón superior izquierdo";
+"controller_configurator.xbox.title.bumper_right" = "Botón superior derecho";
+"controller_configurator.xbox.title.trigger_left" = "Gatillo izquierdo";
+"controller_configurator.xbox.title.trigger_right" = "Gatillo derecho";
+"controller_configurator.xbox.title.named_back" = "Guía";
+"controller_configurator.xbox.title.named_start" = "Menú";
+"controller_configurator.xbox.title.named_a" = "A";
+"controller_configurator.xbox.title.named_b" = "B";
+"controller_configurator.xbox.title.named_x" = "X";
+"controller_configurator.xbox.title.named_y" = "Y";
+"controller_configurator.xbox.title.dpad_up" = "Arriba";
+"controller_configurator.xbox.title.dpad_down" = "Abajo";
+"controller_configurator.xbox.title.dpad_left" = "Izquierda";
+"controller_configurator.xbox.title.dpad_right" = "Derecha";
+"controller_configurator.xbox.title.thumb_left" = "Pulsar el joystick izquierdo";
+"controller_configurator.xbox.title.thumb_right" = "Pulsar el joystick derecho";
+
+"controller_configurator.playstation.title.bumper_left" = "L1";
+"controller_configurator.playstation.title.bumper_right" = "R1";
+"controller_configurator.playstation.title.trigger_left" = "L2";
+"controller_configurator.playstation.title.trigger_right" = "R2";
+"controller_configurator.playstation.title.named_back" = "Seleccionar";
+"controller_configurator.playstation.title.named_start" = "Inicio";
+"controller_configurator.playstation.title.named_a" = "Cruz";
+"controller_configurator.playstation.title.named_b" = "Círculo";
+"controller_configurator.playstation.title.named_x" = "Cuadrado";
+"controller_configurator.playstation.title.named_y" = "Triángulo";
+"controller_configurator.playstation.title.dpad_up" = "Arriba";
+"controller_configurator.playstation.title.dpad_down" = "Abajo";
+"controller_configurator.playstation.title.dpad_left" = "Izquierda";
+"controller_configurator.playstation.title.dpad_right" = "Derecha";
+"controller_configurator.playstation.title.thumb_left" = "L3";
+"controller_configurator.playstation.title.thumb_right" = "R3";
+
+"controller_configurator.section.config_files" = "Current configuration file";
+"controller_configurator.section.game_mappings" = "Game mappings";
+"controller_configurator.section.footer.game_mappings" = "Bindings when the mouse is locked in game.";
+"controller_configurator.section.menu_mappings" = "Menu mappings";
+"controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
+"controller_configurator.section.controller_style" = "Controller type";
+"controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
+
+"mods.title" = "Mods";
+"mods.search_placeholder" = "Buscar mods en Modrinth";
+"mods.filters" = "Filtros";
+"mods.results" = "Mods";
+"mods.profile_footer" = "Filtros por defecto del perfil: %@";
+"mods.filter.minecraft" = "Versión de Minecraft";
+"mods.filter.minecraft_help" = "Introduce una versión exacta de Minecraft. Déjalo vacío para buscar en todas las versiones.";
+"mods.filter.loader" = "Cargador de mods";
+"mods.filter.sort" = "Ordenar por";
+"mods.filter.reset" = "Usar filtros del perfil";
+"mods.filter.any" = "Cualquiera";
+"mods.filter.categories" = "Categorías";
+"mods.filter.categories_all" = "Todas las categorías";
+"mods.filter.categories_count" = "%lu seleccionadas";
+"mods.filter.categories_help" = "Elige una o varias categorías. Los resultados deben coincidir con todas las categorías seleccionadas.";
+"mods.filter.categories_empty" = "No hay categorías disponibles";
+"mods.category.adventure" = "Aventura";
+"mods.category.cursed" = "Extravagantes";
+"mods.category.decoration" = "Decoración";
+"mods.category.economy" = "Economía";
+"mods.category.equipment" = "Equipamiento";
+"mods.category.food" = "Comida";
+"mods.category.game-mechanics" = "Mecánicas de juego";
+"mods.category.library" = "Bibliotecas";
+"mods.category.magic" = "Magia";
+"mods.category.management" = "Gestión";
+"mods.category.minigame" = "Minijuegos";
+"mods.category.mobs" = "Criaturas";
+"mods.category.optimization" = "Optimización";
+"mods.category.social" = "Social";
+"mods.category.storage" = "Almacenamiento";
+"mods.category.technology" = "Tecnología";
+"mods.category.transportation" = "Transporte";
+"mods.category.utility" = "Utilidades";
+"mods.category.worldgen" = "Generación del mundo";
+"mods.sort.relevance" = "Relevancia";
+"mods.sort.downloads" = "Descargas";
+"mods.sort.follows" = "Seguidores";
+"mods.sort.newest" = "Más recientes";
+"mods.sort.updated" = "Actualizados recientemente";
+"mods.loading" = "Cargando…";
+"mods.retry" = "No se pudo cargar. Toca para reintentar.";
+"mods.empty" = "No se encontraron resultados. Prueba otra búsqueda o cambia los filtros.";
+"mods.load_more" = "Cargar más resultados";
+"mods.open_project" = "Abrir en Modrinth";
+"mods.versions.title" = "Versiones que coinciden con los filtros";
+"mods.versions.empty" = "Ninguna versión coincide con estos filtros. Cambia los filtros o abre la web del proyecto.";
+"mods.download" = "Descargar versión";
+"mods.download.hint" = "Guardar este JAR en la carpeta mods del perfil seleccionado.";
+"mods.download.no_jar" = "Esta versión no incluye un archivo JAR descargable.";
+"mods.download.replace_title" = "¿Reemplazar el archivo instalado?";
+"mods.download.replace_message" = "%@ ya existe en la carpeta mods del perfil.";
+"mods.download.replace" = "Reemplazar";
+"mods.install.checking" = "Comprobando versión instalada…";
+"mods.install.unknown" = "No se pudo comprobar la versión instalada";
+"mods.install.absent" = "No está instalado en este perfil";
+"mods.install.present" = "Versión instalada: %@";
+"mods.install.profile" = "Carpeta de mods del perfil: %@";
+"mods.install.duplicates" = "Hay varias copias. Selecciona una versión para conservar una sola.";
+"mods.install.installed" = "Instalada";
+"mods.install.install" = "Instalar";
+"mods.install.update" = "Actualizar";
+"mods.install.downgrade" = "Retroceder";
+"mods.install.change" = "Usar esta versión";
+"mods.install.downloading" = "Descargando %@";
+"mods.install.verifying" = "Verificando e instalando %@";
+"mods.install.progress" = "%d%% · %@ de %@";
+"mods.install.cancel" = "Cancelar descarga";
+"mods.install.retry" = "Reintentar";
+"mods.install.wait" = "Instalando…";
+"mods.install.busy" = "Espera a que termine la instalación o cancela su descarga.";
+"mods.install.hash_error" = "El archivo descargado no supera la verificación. Se conserva la versión anterior.";
+"mods.install.changed_file" = "El archivo instalado cambió durante la descarga. Vuelve a comprobar la versión instalada antes de reintentar.";
+"mods.install.name_conflict" = "Otro archivo ya usa este nombre. Se ha conservado; elige otra versión o revisa la carpeta del perfil.";
+"mods.install.recovery_error" = "No se pudo sustituir el archivo de forma segura. Los archivos anteriores siguen en la copia de la instalación.";
+"content.title.mod" = "Mods";
+"content.title.resourcepack" = "Paquetes de recursos";
+"content.title.shader" = "Paquetes de shaders";
+"content.provider" = "Fuente de descarga";
+"content.search_placeholder" = "Buscar en %@";
+"content.curseforge.pending" = "CurseForge pendiente de configurar";
+"content.curseforge.unconfigured" = "CurseForge estará disponible cuando se configure su clave API. Mientras tanto puedes usar Modrinth.";
+"content.invalid_response" = "El servicio devolvió una respuesta no válida. Vuelve a intentarlo.";
+"content.section_unavailable" = "Este apartado no está disponible en la fuente seleccionada.";
+"content.categories.curseforge_help" = "Elige hasta 10 categorías de CurseForge.";
+"content.sort.popularity" = "Popularidad";
+"content.install.profile" = "Carpeta %@ del perfil: %@";
+"content.open_project" = "Abrir en %@";
+"content.download.hint" = "Guardar este archivo en la carpeta %@ del perfil seleccionado.";
+"content.download.unavailable" = "Esta versión no incluye un archivo descargable y verificable para este apartado.";
+"content.download.unavailable_title" = "No disponible";
+"content.download.restricted" = "Este archivo no está disponible para descargar desde launchers. Abre el proyecto en CurseForge.";
+"mods.category.combat" = "Combate";
+"mods.category.modded" = "Con mods";
+"mods.category.realistic" = "Realista";
+"mods.category.simplistic" = "Simplificado";
+"mods.category.themed" = "Temático";
+"mods.category.tweaks" = "Ajustes";
+"mods.category.vanilla-like" = "Estilo vanilla";
+"mods.category.cartoon" = "Dibujos animados";
+"mods.category.fantasy" = "Fantasía";
+"mods.category.semi-realistic" = "Semirrealista";
+"preference.title.curseforge_api_key" = "Clave API de CurseForge";
+"preference.description.curseforge_api_key" = "Introduce tu clave API autorizada de CurseForge. Se guarda en el llavero del dispositivo. CurseForge permanece desactivado hasta guardar una clave.";
+"content.curseforge.key_error" = "No se ha podido guardar la clave API en el llavero.";
+"content.curseforge.key_present" = "Clave guardada · introduce otra para sustituirla";
+"content.curseforge.key_placeholder" = "Clave API de CurseForge";
+"content.curseforge.remove_key" = "Eliminar clave";
+"mods.installed.tab" = "Instalados";
+"mods.installed.search" = "Buscar mods instalados";
+"mods.installed.actions" = "Gestionar perfil seleccionado";
+"mods.installed.check_updates" = "Comprobar actualizaciones";
+"mods.installed.dependencies" = "Resolver dependencias";
+"mods.installed.resolving" = "Resolviendo dependencias obligatorias…";
+"mods.installed.downloading" = "Descargando mods y dependencias…";
+"mods.installed.empty" = "No hay mods instalados que coincidan con esta búsqueda";
+"mods.installed.enabled" = "Activado";
+"mods.installed.disabled" = "Desactivado";
+"mods.installed.enable" = "Activar y resolver dependencias";
+"mods.installed.disable" = "Desactivar";
+"mods.installed.unidentified" = "Archivo sin identificar · actualizaciones y dependencias automáticas no disponibles";
+"mods.installed.no_compatible" = "No hay una descarga compatible con este perfil";
+"mods.installed.not_checked" = "Actualizaciones sin comprobar";
+"mods.installed.up_to_date" = "Actualizado";
+"mods.installed.update_available" = "Actualización disponible: %@";
+"mods.installed.versions" = "Ver versiones";
+"mods.installed.remove" = "Eliminar mod";
+"mods.installed.remove_confirm" = "¿Eliminar %@ de este perfil? Los mods que dependen de él podrían dejar de funcionar.";
+"mods.installed.profile_required" = "Selecciona un perfil con versión de Minecraft y cargador de mods para resolver dependencias.";
+"mods.installed.unresolved" = "No se ha podido resolver una dependencia obligatoria para este perfil. No se han cambiado los archivos de mods.";
+"mods.installed.conflict" = "Las versiones obligatorias entran en conflicto con otros mods activados. No se han cambiado los archivos de mods.";
+"mods.installed.enable_file" = "Activar";
+
+// Additional app and shared action translations
+"preference.title.jitstreamer_server" = "IP del servidor JitStreamer";
+"launcher.menu.install_jar" = "Instalar .jar";
 "preference.title.debug_show_layout_bounds" = "Mostrar límites de diseño";
+"custom_controls.control_menu.save.error.default" = "Los controles no pueden llamarse \"default\" ya que serán sobrescritos.";
+"preference.title.java_home" = "Usar Java 17 para Minecraft < 1.17";
+"Cancel" = "Cancelar";
+"Delete" = "Eliminar";
+"Done" = "Listo";
+"Edit profile" = "Editar perfil";
+"Error" = "Error";
+"None" = "Ninguno";
+"OK" = "Aceptar";
+"Release" = "Estable";
+"Rename" = "Cambiar nombre";
+"Save" = "Guardar";
+"Share" = "Compartir";
+"Sign in" = "Iniciar sesión";
+"Warning" = "Advertencia";
+"launcher.loading" = "Cargando…";
+"profile.title.modpack" = "Paquete de mods";
+"login.error.open_browser" = "No se pudo abrir Safari.";
+"content.modrinth.invalid_categories" = "La respuesta de categorías de Modrinth no es válida.";
+"content.modrinth.invalid_search" = "La respuesta de búsqueda de Modrinth no es válida.";
+"content.modrinth.invalid_versions" = "La respuesta de versiones de Modrinth no es válida.";
+"content.modrinth.invalid_files" = "La respuesta de búsqueda de archivos de Modrinth no es válida.";
+"content.modpack.error_open" = "No se pudo abrir el paquete de mods: %@";
+"content.modpack.error_index" = "No se pudo leer modrinth.index.json: %@";
+"content.modpack.error_overrides" = "No se pudo extraer la carpeta overrides del paquete de mods: %@";
+"content.modpack.error_client_overrides" = "No se pudo extraer la carpeta client-overrides del paquete de mods: %@";
+
+// Installer, account and control editor messages
+"custom_controls.button_edit.width" = "Ancho";
+"custom_controls.button_edit.height" = "Alto";
+"custom_controls.error.dynamic_position" = "Error al calcular la posición dinámica";
+"launcher.version_placeholder" = "Especifica una versión…";
+"login.error.keychain_load" = "No se pudieron leer los tokens de la cuenta del llavero.";
+"login.error.keychain_save" = "No se pudieron guardar los tokens de la cuenta en el llavero.";
+"login.error.unknown_xerr" = "%@\n\nCódigo XErr desconocido. Respuesta:\n%@";
+"launcher.mcl.error_hash" = "No se pudo verificar el archivo %@: el hash SHA1 no coincide";
+"launcher.mcl.error_local_account" = "No se puede instalar Minecraft con una cuenta local. Cambia a una cuenta en línea para continuar.";
+"installer.search_versions" = "Buscar versiones";
+"installer.download_cancelled" = "Descarga cancelada";
+"installer.download_cancelled_message" = "Se ha cancelado la descarga.";
+"installer.download_complete" = "Descarga completada";
+"installer.run_message" = "Ahora se ejecutará el instalador de %@. Cuando termine, tendrás que reiniciar la app.";
+"installer.error_versions" = "Error al cargar las versiones";
+"content.version.release" = "Estable";
+"content.version.beta" = "Beta";
+"content.version.alpha" = "Alfa";
+
+// Runtime validation messages
+"custom_controls.error.open_file" = "No se pudo abrir %@: %@";
+"java.error.invalid_class" = "La firma del archivo de clase no es válida: 0x%x";
+"java.error.runtime_arch" = "Arquitectura del entorno no compatible: %@ (se necesita aarch64)";
+"java.error.runtime_platform" = "Plataforma del entorno no compatible: %@ (se necesita Darwin)";
+"java.error.memory" = "No se pudo asignar memoria";
+"java.error.xz_format" = "El archivo no tiene formato .xz";
+"java.error.compression" = "Las opciones de compresión no son compatibles";
+"java.error.corrupt" = "El archivo comprimido está dañado";
+"java.error.truncated" = "El archivo comprimido está incompleto o dañado";
+"java.error.unknown" = "Error desconocido, posiblemente un fallo de la app";
+"java.error.archive_type" = "El indicador de tipo del archivo no es válido: %c";
+"content.version.recommended" = "Recomendada";
+
+"content.installed.resourcepack.search" = "Buscar paquetes de recursos instalados";
+"content.installed.resourcepack.empty" = "No hay paquetes de recursos instalados que coincidan con esta búsqueda";
+"content.installed.resourcepack.downloading" = "Descargando paquete…";
+"content.installed.resourcepack.unidentified" = "Archivo sin identificar · actualizaciones automáticas no disponibles";
+"content.installed.resourcepack.remove" = "Eliminar paquete";
+"content.installed.resourcepack.remove_confirm" = "¿Eliminar %@ de este perfil?";
+"content.installed.shader.search" = "Buscar paquetes de shaders instalados";
+"content.installed.shader.empty" = "No hay paquetes de shaders instalados que coincidan con esta búsqueda";
+"content.installed.shader.downloading" = "Descargando paquete…";
+"content.installed.shader.unidentified" = "Archivo sin identificar · actualizaciones automáticas no disponibles";
+"content.installed.shader.remove" = "Eliminar paquete";
+"content.installed.shader.remove_confirm" = "¿Eliminar %@ de este perfil?";

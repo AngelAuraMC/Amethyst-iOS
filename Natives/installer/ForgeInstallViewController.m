@@ -185,7 +185,7 @@
     self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     self.searchController.searchResultsUpdater = (id<UISearchResultsUpdating>)self;
     self.searchController.obscuresBackgroundDuringPresentation = NO;
-    self.searchController.searchBar.placeholder = @"Search versions";
+    self.searchController.searchBar.placeholder = localize(@"installer.search_versions", nil);
     self.navigationItem.searchController = self.searchController;
     self.navigationItem.hidesSearchBarWhenScrolling = NO;
     self.definesPresentationContext = YES;
@@ -237,7 +237,7 @@
     }
     
     [self.afManager invalidateSessionCancelingTasks:YES resetSession:NO];
-    showDialog(@"Download Cancelled", @"The download has been cancelled.");
+    showDialog(localize(@"installer.download_cancelled", nil), localize(@"installer.download_cancelled_message", nil));
 }
 
 - (void)resetCellAppearance:(NSIndexPath *)indexPath {
@@ -565,13 +565,13 @@
 
 - (NSString *)getLabelForVersionType:(NSString *)version {
     if ([version containsString:@"recommended"]) {
-        return @"Recommended";
+        return localize(@"content.version.recommended", nil);
     } else if ([version containsString:@"beta"] || [version containsString:@"-beta"]) {
-        return @"Beta";
+        return localize(@"content.version.beta", nil);
     } else if ([version containsString:@"alpha"] || [version containsString:@"-alpha"]) {
-        return @"Alpha";
+        return localize(@"content.version.alpha", nil);
     } else {
-        return @"Release";
+        return localize(@"content.version.release", nil);
     }
 }
 
@@ -633,7 +633,7 @@
     MinecraftVersionHeaderView *headerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:@"MinecraftVersionHeader"];
     
     if (self.isDataLoading) {
-        headerView.titleLabel.text = @"Loading...";
+        headerView.titleLabel.text = localize(@"launcher.loading", nil);
         headerView.isExpanded = NO;
         headerView.expandCollapseButton.tag = section;
         [headerView.expandCollapseButton removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
@@ -645,7 +645,7 @@
     if (section >= self.versionList.count || self.versionList.count == 0) {
         [self.dataLock unlock];
 
-        headerView.titleLabel.text = @"Loading...";
+        headerView.titleLabel.text = localize(@"launcher.loading", nil);
         headerView.isExpanded = NO;
         headerView.expandCollapseButton.tag = section;
 
@@ -709,7 +709,7 @@
     ForgeVersionCell *cell = [tableView dequeueReusableCellWithIdentifier:@"ForgeVersionCell" forIndexPath:indexPath];
     
     if (self.isDataLoading) {
-        cell.versionLabel.text = @"Loading...";
+        cell.versionLabel.text = localize(@"launcher.loading", nil);
         cell.subtitleLabel.text = @"";
         cell.accessoryType = UITableViewCellAccessoryNone;
         return cell;
@@ -731,7 +731,7 @@
     
     if (outOfBounds) {
         [self.dataLock unlock];
-        cell.versionLabel.text = @"Loading...";
+        cell.versionLabel.text = localize(@"launcher.loading", nil);
         cell.subtitleLabel.text = @"";
         cell.accessoryType = UITableViewCellAccessoryNone;
         return cell;
@@ -831,8 +831,8 @@
                 return;
             }
             
-            showDialog(@"Download Complete", 
-                      [NSString stringWithFormat:@"%@ installer will now run. After installation completes, you will need to restart the app.", self.currentVendor]);
+            showDialog(localize(@"installer.download_complete", nil),
+                      [NSString stringWithFormat:localize(@"installer.run_message", nil), self.currentVendor]);
             
             LauncherNavigationController *navVC = (id)((UISplitViewController *)self.presentingViewController).viewControllers[1];
             
@@ -1088,7 +1088,7 @@
         self.isDataLoading = NO;
         
         [self.refreshControl endRefreshing];
-        showDialog(@"Error Loading Versions", parseError.localizedDescription);
+        showDialog(localize(@"installer.error_versions", nil), parseError.localizedDescription);
         [self switchToReadyState];
     });
 }

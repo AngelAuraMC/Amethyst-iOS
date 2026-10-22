@@ -46,6 +46,13 @@ extern NSMutableDictionary *prefDict;
     [self changeDisplayModeForSize:size];
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    if (sidebarViewController.isViewLoaded) {
+        [sidebarViewController layoutAccountButton];
+    }
+}
+
 - (void)changeDisplayModeForSize:(CGSize)size {
     BOOL isPortrait = size.height > size.width;
     if (self.preferredDisplayMode == 0 || self.displayMode != UISplitViewControllerDisplayModeSecondaryOnly) {

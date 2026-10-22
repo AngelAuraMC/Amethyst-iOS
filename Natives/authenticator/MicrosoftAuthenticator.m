@@ -123,7 +123,7 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
                 errorString = @"login.msa.error.xsts.underage";
                 break;
             default:
-                errorString = [NSString stringWithFormat:@"%@\n\nUnknown XErr code, response:\n%@", error.localizedDescription, errorDict];
+                errorString = [NSString stringWithFormat:localize(@"login.error.unknown_xerr", nil), error.localizedDescription, errorDict];
                 break;
         }
         callback(localize(errorString, nil), NO);
@@ -186,6 +186,13 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
             [uuid substringWithRange:NSMakeRange(20, 12)]
         ];
         self.authData[@"profilePicURL"] = [NSString stringWithFormat:@"https://mc-heads.net/head/%@/120", self.authData[@"profileId"]];
+        [self.authData removeObjectForKey:@"minecraftSkinURL"];
+        for (NSDictionary *skin in response[@"skins"]) {
+            if ([skin[@"state"] isEqualToString:@"ACTIVE"] && [skin[@"url"] isKindOfClass:NSString.class]) {
+                self.authData[@"minecraftSkinURL"] = skin[@"url"];
+                break;
+            }
+        }
         self.authData[@"oldusername"] = self.authData[@"username"];
         self.authData[@"username"] = response[@"name"];
         callback(nil, [self saveChanges]);
@@ -195,6 +202,7 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
         if ([errorDict[@"error"] isEqualToString:@"NOT_FOUND"]) {
             // If there is no profile, use the Xbox gamertag as username with Demo mode
             self.authData[@"profileId"] = @"00000000-0000-0000-0000-000000000000";
+            [self.authData removeObjectForKey:@"minecraftSkinURL"];
             self.authData[@"username"] = [NSString stringWithFormat:@"Demo.%@", self.authData[@"xboxGamertag"]];
 
             if ([self saveChanges]) {
@@ -217,7 +225,7 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
 - (void)refreshTokenWithCallback:(Callback)callback {
     // Move tokens to keychain if we haven't
     if (!self.tokenData) {
-        showDialog(localize(@"Error", nil), @"Failed to load account tokens from keychain");
+        showDialog(localize(@"Error", nil), localize(@"login.error.keychain_load", nil));
         callback(nil, YES);
         return;
     }
@@ -232,7 +240,7 @@ typedef void(^XSTSCallback)(NSString *xsts, NSString *uhs);
 - (BOOL)saveChanges {
     BOOL savedToKeychain = [self setAccessToken:self.authData[@"accessToken"] refreshToken:self.authData[@"msaRefreshToken"]];
     if (!savedToKeychain) {
-        showDialog(localize(@"Error", nil), @"Failed to save account tokens to keychain");
+        showDialog(localize(@"Error", nil), localize(@"login.error.keychain_save", nil));
         return NO;
     }
     [self.authData removeObjectsForKeys:@[@"accessToken", @"msaRefreshToken"]];
