@@ -75,6 +75,7 @@ jmethodID method_SystemClipboardDataReceived;
 #undef ADD_CALLBACK_WWIN
 //};
 
+int guiScale;
 float resolutionScale;
 BOOL virtualMouseEnabled, isControlModifiable;
 uint64_t hwRedirectOrig[6], hwRedirectTarget[6];
