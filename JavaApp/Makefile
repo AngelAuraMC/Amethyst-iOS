@@ -12,7 +12,7 @@ TARGETS := $(TARGETS:$(SOURCEDIR)/%=$(OUTPUTDIR)/%.jar)
 SDL_JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(wildcard libs/lwjgl-3.4.3/*.jar))" -XDignore.symbol.file
 
 # Add all jars to classpath and allow compiling with private API
-JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(wildcard libs/*/*.jar))" -XDignore.symbol.file
+JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(filter-out libs/lwjgl-3.4.3/%, $(wildcard libs/*/*.jar)))" -XDignore.symbol.file
 
 all: $(TARGETS) $(OUTPUTDIR)/lwjgl-3.4.3.jar
 	
