@@ -417,9 +417,6 @@ public class SDLVideo {
       long __functionAddress = SDLVideo.Functions.SetWindowFullscreenMode;
       if (Checks.CHECKS) {
          Checks.check(window);
-         if (mode != 0L) {
-            SDL_DisplayMode.validate(mode);
-         }
       }
 
       return (SDL3Bridge.invokeOnMain(__functionAddress, window, mode, 0L, 0L) & 0xFFL) != 0L;
