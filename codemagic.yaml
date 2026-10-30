@@ -1,0 +1,25 @@
+workflows:
+  betterlauncher-ipa:
+    name: BetterLauncher iOS IPA
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      xcode: 16.4
+      java: 8
+    scripts:
+      - name: Install build tools and submodules
+        script: |
+          set -euo pipefail
+          brew install cmake ldid make wget
+          export PATH="$(brew --prefix make)/bin:$PATH"
+          git submodule update --init --recursive
+      - name: Build and package IPA
+        script: |
+          set -euo pipefail
+          export PATH="$(brew --prefix make)/bin:$PATH"
+          export BOOTJDK="$(/usr/libexec/java_home -v 1.8)/bin"
+          gmake -j"$(sysctl -n hw.logicalcpu)" dsym package PLATFORM=2
+    artifacts:
+      - artifacts/*.ipa
+      - artifacts/*.dSYM/**
+      - /tmp/xcodebuild_logs/*.log
