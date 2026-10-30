@@ -8,7 +8,7 @@
 static PLPreferences* pref;
 
 void loadPreferences(BOOL reset) {
-    assert(getenv("AME_HOME"));
+    assert(getenv("POJAV_HOME"));
     if (reset) {
         [pref reset];
     } else {
@@ -18,7 +18,7 @@ void loadPreferences(BOOL reset) {
 
 void toggleIsolatedPref(BOOL forceEnable) {
     if (!pref.instancePath) {
-        pref.instancePath = [NSString stringWithFormat:@"%s/launcher_preferences.plist", getenv("GAME_DIR")];
+        pref.instancePath = [NSString stringWithFormat:@"%s/launcher_preferences.plist", getenv("POJAV_GAME_DIR")];
     }
     [pref toggleIsolationForced:forceEnable];
 }
@@ -121,7 +121,7 @@ NSString* getSelectedJavaHome(NSString* defaultJRETag, int minVersion) {
     if ([selectedDir isEqualToString:@"internal"]) {
         selectedDir = [NSString stringWithFormat:@"%@/java_runtimes/java-%@-openjdk", NSBundle.mainBundle.bundlePath, selectedVer];
     } else {
-        selectedDir = [NSString stringWithFormat:@"%s/java_runtimes/%@", getenv("AME_HOME"), selectedDir];
+        selectedDir = [NSString stringWithFormat:@"%s/java_runtimes/%@", getenv("POJAV_HOME"), selectedDir];
     }
 
     if ([NSFileManager.defaultManager fileExistsAtPath:selectedDir]) {

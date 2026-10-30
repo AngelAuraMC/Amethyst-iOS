@@ -498,13 +498,29 @@ void CallbackBridge_nativeSendCursorPos(char event, CGFloat x, CGFloat y) {
     }
 }
 
+// Left and right Shift are tracked independently of the modifier flags that callers
+// pass in. Hardware keyboard events (UIKey.modifierFlags) always carry explicit flags,
+// so this state must be updated for every key event, not only when mods == 0.
+static BOOL leftShiftDown;
+static BOOL rightShiftDown;
+
+static inline char currentShiftModifier(void) {
+    return (leftShiftDown || rightShiftDown) ? GLFW_MOD_SHIFT : 0;
+}
+
+static void updateShiftState(int key, int action) {
+    BOOL down = action != 0; // 0 = release, 1 = press, 2 = repeat
+    if (key == GLFW_KEY_LEFT_SHIFT) {
+        leftShiftDown = down;
+    } else if (key == GLFW_KEY_RIGHT_SHIFT) {
+        rightShiftDown = down;
+    }
+}
+
 char getKeyModifiers(int key, int action) {
     static char currMods;
     char mod;
     switch (key) {
-        case GLFW_KEY_LEFT_SHIFT:
-            mod = GLFW_MOD_SHIFT;
-            break;
         case GLFW_KEY_LEFT_CONTROL:
             mod = GLFW_MOD_CONTROL;
             break;
@@ -518,21 +534,36 @@ char getKeyModifiers(int key, int action) {
             mod = GLFW_MOD_NUM_LOCK;
             break;
         default:
-            return currMods;
+            // Shift (either side) is derived from leftShiftDown/rightShiftDown
+            return (currMods & ~GLFW_MOD_SHIFT) | currentShiftModifier();
     }
     if (action) {
         currMods |= mod;
     } else {
         currMods &= ~mod;
     }
-    return currMods;
+    return (currMods & ~GLFW_MOD_SHIFT) | currentShiftModifier();
 }
 
 void CallbackBridge_nativeSendKey(int key, int scancode, int action, int mods) {
+    // Always track Shift, even when the caller supplied explicit modifier flags
+    updateShiftState(key, action);
+
+    // Always run the tracker so other modifier state stays current too
+    char tracked = getKeyModifiers(key, action);
+
     if (GLFW_invoke_Key && isInputReady) {
         keyDownBuffer[MAX(0, key-31)]=(jbyte)action;
         if (mods == 0) {
-            mods = getKeyModifiers(key, action);
+            mods = tracked;
+        } else {
+            // Explicit flags win, but never drop a Shift we know is held
+            mods |= currentShiftModifier();
+        }
+        // GLFW reports no Shift modifier on the release of the last Shift key
+        if ((key == GLFW_KEY_LEFT_SHIFT || key == GLFW_KEY_RIGHT_SHIFT) &&
+            action == 0 && !currentShiftModifier()) {
+            mods &= ~GLFW_MOD_SHIFT;
         }
 
         if (isUseStackQueueCall) {
@@ -556,7 +587,11 @@ void CallbackBridge_nativeSendMouseButton(int button, int action, int mods) {
         } else if (GLFW_invoke_MouseButton) {
             if (mods == 0) {
                 mods = getKeyModifiers(0, action);
+            } else {
+                mods |= currentShiftModifier();
             }
+            // Shift-click in inventories relies on the Shift bit reaching the click event
+            mods |= currentShiftModifier();
 
             if (isUseStackQueueCall) {
                 sendData(EVENT_TYPE_MOUSE_BUTTON, button, action, mods, 0);

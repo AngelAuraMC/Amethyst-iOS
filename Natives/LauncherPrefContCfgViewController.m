@@ -61,7 +61,7 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
 }
 
 - (void)loadGamepadConfigurationFile {
-    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/%@", getenv("AME_HOME"), getPrefObject(@"control.default_gamepad_ctrl")];
+    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/%@", getenv("POJAV_HOME"), getPrefObject(@"control.default_gamepad_ctrl")];
     self.currentMappings = parseJSONFromFile(gamepadPath);
     self.currentFileName = [getPrefObject(@"control.default_ctrl") stringByDeletingPathExtension];
     NSPredicate *filterPredicate = [NSPredicate predicateWithBlock:^BOOL(id obj, NSDictionary *dict) {
@@ -235,7 +235,7 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
 
 - (void)actionOpenFilePicker:(void (^)(NSString *name))handler {
     FileListViewController *vc = [[FileListViewController alloc] init];
-    vc.listPath = [NSString stringWithFormat:@"%s/controlmap/gamepads", getenv("AME_HOME")];
+    vc.listPath = [NSString stringWithFormat:@"%s/controlmap/gamepads", getenv("POJAV_HOME")];
     
     vc.whenItemSelected = handler;
     vc.modalPresentationStyle = UIModalPresentationPopover;
@@ -278,7 +278,7 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
             showDialog(localize(@"custom_controls.control_menu.save.error.json", nil), error.localizedDescription);
             return;
         }
-        BOOL success = [jsonData writeToFile:[NSString stringWithFormat:@"%s/controlmap/gamepads/%@.json", getenv("AME_HOME"), field.text] options:NSDataWritingAtomic error:&error];
+        BOOL success = [jsonData writeToFile:[NSString stringWithFormat:@"%s/controlmap/gamepads/%@.json", getenv("POJAV_HOME"), field.text] options:NSDataWritingAtomic error:&error];
         if (!success) {
             showDialog(localize(@"custom_controls.control_menu.save.error.write", nil), error.localizedDescription);
             return;
@@ -304,7 +304,7 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
 }
 
 - (void)exitButtonSelector {
-    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/%@", getenv("AME_HOME"), getPrefObject(@"control.default_gamepad_ctrl")];
+    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/%@", getenv("POJAV_HOME"), getPrefObject(@"control.default_gamepad_ctrl")];
     if([self.currentMappings isEqualToDictionary:parseJSONFromFile(gamepadPath)]) {
         [self dismissModalViewController];
     } else {

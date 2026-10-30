@@ -296,7 +296,7 @@ void AWTInputBridge_sendKey(int keycode) {
     [self addChildViewController:self.logOutputView.navController];
     [self.view addSubview:self.logOutputView.navController.view];
 
-    setenv("AME_SKIP_JNI_GLFW", "1", 1);
+    setenv("POJAV_SKIP_JNI_GLFW", "1", 1);
  
     // Register the display loop
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

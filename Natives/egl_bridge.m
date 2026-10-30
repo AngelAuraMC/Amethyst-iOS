@@ -49,16 +49,16 @@ int pojavInit(BOOL useStackQueue) {
 }
 
 int pojavInitOpenGL() {
-    NSString *renderer = NSProcessInfo.processInfo.environment[@"RENDERER"];
+    NSString *renderer = NSProcessInfo.processInfo.environment[@"POJAV_RENDERER"];
     BOOL isAuto = [renderer isEqualToString:@"auto"];
     if (isAuto || [renderer isEqualToString:@ RENDERER_NAME_GL4ES]) {
         // At this point, if renderer is still auto (unspecified major version), pick gl4es
         renderer = @ RENDERER_NAME_GL4ES;
-        setenv("RENDERER", renderer.UTF8String, 1);
+        setenv("POJAV_RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
         renderer = @ RENDERER_NAME_MOBILEGLUES;
-        setenv("RENDERER", renderer.UTF8String, 1);
+        setenv("POJAV_RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MTL_ANGLE]) {
         set_gl_bridge_tbl();
@@ -77,16 +77,16 @@ int pojavInitOpenGL() {
 void pojavSetWindowHint(int hint, int value) {
     if (hint == GLFW_CLIENT_API) {
         clientAPI = value;
-    } else if (strcmp(getenv("RENDERER"), "auto")==0 && hint == GLFW_CONTEXT_VERSION_MAJOR) {
+    } else if (strcmp(getenv("POJAV_RENDERER"), "auto")==0 && hint == GLFW_CONTEXT_VERSION_MAJOR) {
         switch (value) {
             case 1:
             case 2:
-                setenv("RENDERER", RENDERER_NAME_GL4ES, 1);
+                setenv("POJAV_RENDERER", RENDERER_NAME_GL4ES, 1);
                 JNI_LWJGL_changeRenderer(RENDERER_NAME_GL4ES);
                 break;
             // case 4: use Zink?
             default:
-                setenv("RENDERER", RENDERER_NAME_MOBILEGLUES, 1);
+                setenv("POJAV_RENDERER", RENDERER_NAME_MOBILEGLUES, 1);
                 JNI_LWJGL_changeRenderer(RENDERER_NAME_MOBILEGLUES);
                 break;
         }

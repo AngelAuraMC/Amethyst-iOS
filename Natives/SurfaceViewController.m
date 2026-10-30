@@ -648,6 +648,22 @@ static GameSurfaceView* pojavWindow;
     }
 }
 
+- (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    // A cancelled press never delivers pressesEnded; release it so tracked
+    // modifier state (e.g. Shift) cannot get stuck.
+    BOOL handled = NO;
+
+    for (UIPress *press in presses) {
+        if (press.key != nil && [KeyboardInput sendKeyEvent:press.key down:NO]) {
+            handled = YES;
+        }
+    }
+
+    if (!handled) {
+        [super pressesCancelled:presses withEvent:event];
+    }
+}
+
 - (BOOL)prefersPointerLocked {
     return GCMouse.mice.count > 0 && (isGrabbing || virtualMouseEnabled);
 }

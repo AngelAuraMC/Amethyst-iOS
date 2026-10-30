@@ -20,7 +20,7 @@ static BaseAuthenticator *current = nil;
 }
 
 + (id)loadSavedName:(NSString *)name {
-    NSMutableDictionary *authData = parseJSONFromFile([NSString stringWithFormat:@"%s/accounts/%@.json", getenv("AME_HOME"), name]);
+    NSMutableDictionary *authData = parseJSONFromFile([NSString stringWithFormat:@"%s/accounts/%@.json", getenv("POJAV_HOME"), name]);
     if (authData[@"NSErrorObject"] != nil) {
         NSError *error = ((NSError *)authData[@"NSErrorObject"]);
         if (error.code != NSFileReadNoSuchFileError) {
@@ -59,9 +59,9 @@ static BaseAuthenticator *current = nil;
 
     [self.authData removeObjectForKey:@"input"];
 
-    NSString *newPath = [NSString stringWithFormat:@"%s/accounts/%@.json", getenv("AME_HOME"), self.authData[@"username"]];
+    NSString *newPath = [NSString stringWithFormat:@"%s/accounts/%@.json", getenv("POJAV_HOME"), self.authData[@"username"]];
     if (self.authData[@"oldusername"] != nil && ![self.authData[@"username"] isEqualToString:self.authData[@"oldusername"]]) {
-        NSString *oldPath = [NSString stringWithFormat:@"%s/accounts/%@.json", getenv("AME_HOME"), self.authData[@"oldusername"]];
+        NSString *oldPath = [NSString stringWithFormat:@"%s/accounts/%@.json", getenv("POJAV_HOME"), self.authData[@"oldusername"]];
         [NSFileManager.defaultManager moveItemAtPath:oldPath toPath:newPath error:&error];
         // handle error?
     }

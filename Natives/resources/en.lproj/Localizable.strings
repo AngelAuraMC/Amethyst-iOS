@@ -106,8 +106,8 @@
 "login.warn.message.legacy_ios" = "To run the next major release, this device needs to be running iOS 14 or later.";
 "login.warn.title.limited_ram" = "This device has a limited amount of memory available.";
 "login.warn.message.limited_ram" = "We recommend leaving auto RAM enabled to prevent instability and performance issues.";
-"login.warn.title.ios19_jitdead" = "Amethyst is not supported on iOS 26 or later.";
-"login.warn.message.ios19_jitdead" = "Due to changes in iOS that inhibit the ability to enable JIT, Amethyst cannot work in its current state and requires heavy research to find a new path forward.\n\nPressing OK will close the app.";
+"login.warn.title.ios19_jitdead" = "Amethyst needs iOS 26 compatibility support.";
+"login.warn.message.ios19_jitdead" = "Recent iOS releases changed JIT and dyld behavior, so Amethyst now requires the iOS 26 compatibility fixes in the launcher.\n\nPressing OK will close the app.";
 
 "login.warn.title.demomode" = "Your account is Demo";
 "login.warn.message.demomode" = "As a replacement to offline and local mode, demo mode will allow you to sign into a Microsoft account that does not own the game and play the Java Edition trial, introduced in 1.3.1 and newer versions. Older versions contain the full game, as the official launcher does not place these restrictions. See our website to learn more about this transition from offline mode.";
@@ -332,3 +332,34 @@
 "controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
 "controller_configurator.section.controller_style" = "Controller type";
 "controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
+
+"preference.title.fix_simple_voice_chat_mod" = "Fix Simple Voice Chat";
+"preference.detail.fix_simple_voice_chat_mod" = "Apply compatibility patches for Simple Voice Chat mods.";
+
+"preference.title.mod_touch_enable" = "Enable TouchController Support";
+"preference.detail.mod_touch_enable" = "Enable support for the TouchController mod. Note: Enabling this will disable 'Slideable hotbar'.";
+
+// TouchController Preferences
+"preference.touchcontroller.title" = "TouchController";
+"preference.touchcontroller.section.mode" = "Communication Mode";
+"preference.touchcontroller.section.info" = "Information";
+"preference.touchcontroller.mode.title" = "Communication Mode";
+"preference.touchcontroller.select_mode.title" = "Select Communication Mode";
+"preference.touchcontroller.mode.disabled" = "Disabled";
+"preference.touchcontroller.mode.udp" = "UDP Protocol";
+"preference.touchcontroller.mode.staticlib" = "Static Library";
+"preference.touchcontroller.udp.title" = "UDP Protocol Mode";
+"preference.touchcontroller.udp.message" = "TouchController will communicate via UDP port 12450. This mode is compatible with most servers and provides stable network communication.";
+"preference.touchcontroller.staticlib.title" = "Static Library Mode";
+"preference.touchcontroller.staticlib.message" = "TouchController will use native static library for high-performance local communication via Unix Domain Socket. This mode provides better performance but requires the static library to be linked.";
+"preference.touchcontroller.about" = "About TouchController";
+"preference.touchcontroller.about.title" = "About TouchController";
+"preference.touchcontroller.about.message" = "TouchController is a Minecraft mod that adds touch controls to Java Edition. This launcher supports two communication modes:\n\n• UDP Protocol: Network-based communication\n• Static Library: High-performance local communication\n\nVisit GitHub for more information.";
+"preference.touchcontroller.ok" = "OK";
+"preference.touchcontroller.cancel" = "Cancel";
+"preference.touchcontroller.vibrate.enable" = "Enable Vibration";
+"preference.touchcontroller.vibrate.intensity" = "Vibration Intensity";
+"preference.touchcontroller.vibrate.intensity.light" = "Light";
+"preference.touchcontroller.vibrate.intensity.medium" = "Medium";
+"preference.touchcontroller.vibrate.intensity.heavy" = "Heavy";
+"preference.touchcontroller.moveview.enable" = "Enable Move View";

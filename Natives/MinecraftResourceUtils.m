@@ -125,7 +125,7 @@
     json[@"arguments"][@"jvm_processed"] = [[NSMutableArray alloc] init];
     NSDictionary *varArgMap = @{
         @"${classpath_separator}": @":",
-        @"${library_directory}": [NSString stringWithFormat:@"%s/libraries", getenv("GAME_DIR")],
+        @"${library_directory}": [NSString stringWithFormat:@"%s/libraries", getenv("POJAV_GAME_DIR")],
         @"${version_name}": json[@"id"]
     };
     int argsToSkip = 0;
@@ -157,7 +157,7 @@
 
     if ([version isKindOfClass:NSString.class]){
         // Find in inheritsFrom
-        NSDictionary *versionDict = parseJSONFromFile([NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("GAME_DIR"), version]);
+        NSDictionary *versionDict = parseJSONFromFile([NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), version]);
         NSAssert(versionDict != nil, @"version should not be null");
         if (versionDict[@"inheritsFrom"] == nil) {
             // How then?

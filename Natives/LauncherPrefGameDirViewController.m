@@ -24,7 +24,7 @@
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     self.tableView.sectionFooterHeight = 50;
 
-    NSString *path = [NSString stringWithFormat:@"%s/instances", getenv("AME_HOME")];
+    NSString *path = [NSString stringWithFormat:@"%s/instances", getenv("POJAV_HOME")];
 
     NSFileManager *fm = NSFileManager.defaultManager;
     NSArray *files = [fm contentsOfDirectoryAtPath:path error:nil];
@@ -41,8 +41,8 @@
     if (getenv("DEMO_LOCK")) return;
 
     setPrefObject(@"general.game_directory", name);
-    NSString *multidirPath = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), name];
-    NSString *lasmPath = @(getenv("GAME_DIR"));
+    NSString *multidirPath = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), name];
+    NSString *lasmPath = @(getenv("POJAV_GAME_DIR"));
     [NSFileManager.defaultManager removeItemAtPath:lasmPath error:nil];
     [NSFileManager.defaultManager createSymbolicLinkAtPath:lasmPath withDestinationPath:multidirPath error:nil];
     [NSFileManager.defaultManager changeCurrentDirectoryPath:lasmPath];
@@ -81,7 +81,7 @@
     // Calculate the instance size
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         unsigned long long folderSize = 0;
-        NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), self.array[indexPath.row]];
+        NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), self.array[indexPath.row]];
         [NSFileManager.defaultManager nr_getAllocatedSize:&folderSize ofDirectoryAtURL:[NSURL fileURLWithPath:directory] error:nil];
         dispatch_async(dispatch_get_main_queue(), ^{
             cell.detailTextLabel.text = [NSByteCountFormatter stringFromByteCount:folderSize countStyle:NSByteCountFormatterCountStyleMemory];
@@ -136,7 +136,7 @@ viewForFooterInSection:(NSInteger)section
     NSArray *menuItems;
     NSMutableArray *openItems = [[NSMutableArray alloc] init];
 
-    NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), self.array[indexPath.row]];
+    NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), self.array[indexPath.row]];
     NSDictionary *apps = @{
         @"shareddocuments": @"Files",
         @"filza": @"Filza",
@@ -221,7 +221,7 @@ viewForFooterInSection:(NSInteger)section
     confirmAlert.popoverPresentationController.sourceView = view;
     confirmAlert.popoverPresentationController.sourceRect = view.bounds;
     UIAlertAction *ok = [UIAlertAction actionWithTitle:localize(@"OK", nil) style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), self.array[indexPath.row]];
+        NSString *directory = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), self.array[indexPath.row]];
         NSError *error;
         if([NSFileManager.defaultManager removeItemAtPath:directory error:&error]) {
             if ([getPrefObject(@"general.game_directory") isEqualToString:self.array[indexPath.row]]) {
@@ -258,11 +258,11 @@ viewForFooterInSection:(NSInteger)section
 
     NSError *error;
 
-    NSString *dest = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), sender.text];
+    NSString *dest = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), sender.text];
     if (isFooterView) {
         [NSFileManager.defaultManager createDirectoryAtPath:dest withIntermediateDirectories:NO attributes:nil error:&error];
     } else {
-        NSString *source = [NSString stringWithFormat:@"%s/instances/%@", getenv("AME_HOME"), sender.placeholder];
+        NSString *source = [NSString stringWithFormat:@"%s/instances/%@", getenv("POJAV_HOME"), sender.placeholder];
         [NSFileManager.defaultManager moveItemAtPath:source toPath:dest error:&error];
     }
 

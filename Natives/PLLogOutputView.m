@@ -104,7 +104,7 @@ static PLLogOutputView* current;
 }
 
 - (void)actionShareLatestlog {
-    NSString *latestlogPath = [NSString stringWithFormat:@"file://%s/latestlog.txt", getenv("AME_HOME")];
+    NSString *latestlogPath = [NSString stringWithFormat:@"file://%s/latestlog.txt", getenv("POJAV_HOME")];
     UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[@"latestlog.txt",
         [NSURL URLWithString:latestlogPath]] applicationActivities:nil];
     activityVC.popoverPresentationController.sourceView = self.navigationBar;
@@ -169,8 +169,8 @@ static PLLogOutputView* current;
     });
 }
 
-+ (BOOL)handleExitCode:(int)code {
-    if (!current) return NO;
++ (void)handleExitCode:(int)code {
+    if (!current) return;
     dispatch_async(dispatch_get_main_queue(), ^(void){
         if (current.navController.view.hidden) {
             [current actionToggleLogOutput];
@@ -193,7 +193,7 @@ static PLLogOutputView* current;
         }
         [current actionClearLogOutput];
         [self _appendToLog:@"... (latestlog.txt)"];
-        NSString *latestlogPath = [NSString stringWithFormat:@"%s/latestlog.txt", getenv("AME_HOME")];
+        NSString *latestlogPath = [NSString stringWithFormat:@"%s/latestlog.txt", getenv("POJAV_HOME")];
         NSString *linesStr = [NSString stringWithContentsOfFile:latestlogPath
             encoding:NSUTF8StringEncoding error:nil];
         NSArray *lines = [linesStr componentsSeparatedByCharactersInSet:
@@ -206,7 +206,6 @@ static PLLogOutputView* current;
 
         fatalErrorOccurred = YES;
     });
-    return YES;
 }
 
 @end
