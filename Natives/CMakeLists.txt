@@ -163,6 +163,7 @@ add_executable(AngelAuraAmethyst
   LauncherMenuViewController.m
   LauncherNavigationController.m
   LauncherNewsViewController.m
+  MinecraftOptionUtils.m
   LauncherPreferences.m
   LauncherPreferencesViewController.m
   LauncherPrefContCfgViewController.m
