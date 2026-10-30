@@ -17,12 +17,16 @@
 #import "MinecraftResourceUtils.h"
 #import "PLProfiles.h"
 #import "SurfaceViewController.h"
+#import "sdl3_hook.h"
 #import "TrackedTextField.h"
 #import "UIKit+hook.h"
 #import "ios_uikit_bridge.h"
 
 #include "glfw_keycodes.h"
 #include "utils.h"
+
+#import <QuartzCore/CAMetalLayer.h>
+#include <string.h>
 
 #include <dlfcn.h>
 
@@ -116,7 +120,10 @@ static GameSurfaceView* pojavWindow;
     [self performSelector:@selector(initCategory_Navigation)];
     
     self.surfaceView = [[GameSurfaceView alloc] initWithFrame:self.view.frame];
-    self.surfaceView.layer.contentsScale = screenScale * resolutionScale;
+    NSString *rendererPreference = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
+    const char *rendererName = rendererPreference.UTF8String;
+    BOOL angleBacked = rendererName != NULL && (!strcmp(rendererName, "auto") || !strcmp(rendererName, RENDERER_NAME_MOBILEGLUES) || !strcmp(rendererName, RENDERER_NAME_MTL_ANGLE));
+    self.surfaceView.layer.contentsScale = angleBacked ? screenScale * resolutionScale : screenScale;
     self.surfaceView.layer.magnificationFilter = self.surfaceView.layer.minificationFilter = kCAFilterNearest;
     self.surfaceView.multipleTouchEnabled = YES;
     pojavWindow = self.surfaceView;
@@ -374,7 +381,10 @@ static GameSurfaceView* pojavWindow;
     }
 
     resolutionScale = getPrefFloat(@"video.resolution") / 100.0;
-    self.surfaceView.layer.contentsScale = self.screenScale * resolutionScale;
+    NSString *rendererPreference = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
+    const char *renderer = rendererPreference.UTF8String;
+    BOOL angleBacked = renderer != NULL && (!strcmp(renderer, "auto") || !strcmp(renderer, RENDERER_NAME_MOBILEGLUES) || !strcmp(renderer, RENDERER_NAME_MTL_ANGLE));
+    self.surfaceView.layer.contentsScale = angleBacked ? self.screenScale * resolutionScale : self.screenScale;
 
     physicalWidth = roundf(self.surfaceView.frame.size.width * self.screenScale);
     physicalHeight = roundf(self.surfaceView.frame.size.height * self.screenScale);
@@ -387,6 +397,10 @@ static GameSurfaceView* pojavWindow;
     if ((windowHeight % 2) != 0) {
         --windowHeight;
     }
+    if ([self.surfaceView.layer isKindOfClass:CAMetalLayer.class]) {
+        ((CAMetalLayer *)self.surfaceView.layer).drawableSize = CGSizeMake(MAX(windowWidth, 1), MAX(windowHeight, 1));
+    }
+    AmethystSDL3ApplyResolutionScale();
     CallbackBridge_nativeSendScreenSize(windowWidth, windowHeight);
 }
 

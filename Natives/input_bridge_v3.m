@@ -22,6 +22,7 @@
 #include "glfw_keycodes.h"
 #include "ios_uikit_bridge.h"
 #include "utils.h"
+#include "sdl3_hook.h"
 
 #include "JavaLauncher.h"
 
@@ -435,6 +436,10 @@ void CallbackBridge_nativeSetInputReady(BOOL inputReady) {
 }
 
 BOOL CallbackBridge_nativeSendChar(jchar codepoint /* jint codepoint */) {
+    if (AmethystSDL3InputActive()) {
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_CHAR, codepoint, 0, 0, 0, 0, 0);
+        return YES;
+    }
     if (GLFW_invoke_Char && isInputReady) {
         if (isUseStackQueueCall) {
             sendData(EVENT_TYPE_CHAR, codepoint, 0, 0, 0);
@@ -448,6 +453,10 @@ BOOL CallbackBridge_nativeSendChar(jchar codepoint /* jint codepoint */) {
 }
 
 BOOL CallbackBridge_nativeSendCharMods(jchar codepoint, int mods) {
+    if (AmethystSDL3InputActive()) {
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_CHAR, codepoint, 0, 0, 0, 0, 0);
+        return YES;
+    }
     if (GLFW_invoke_CharMods && isInputReady) {
         if (isUseStackQueueCall) {
             sendData(EVENT_TYPE_CHAR_MODS, (unsigned int) codepoint, mods, 0, 0);
@@ -466,6 +475,14 @@ JNIEXPORT void JNICALL Java_org_lwjgl_glfw_CallbackBridge_nativeSendCursorEnter(
 }
 */
 void CallbackBridge_nativeSendCursorPos(char event, CGFloat x, CGFloat y) {
+    if (AmethystSDL3InputActive()) {
+        if (!isGrabbing && windowWidth > 0 && windowHeight > 0) {
+            AmethystSDL3ForwardInput(AM_SDL_INPUT_CURSOR, event, 1, 0, 0, (float)(x / windowWidth), (float)(y / windowHeight));
+            return;
+        }
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_CURSOR, event, 0, 0, 0, (float)x, (float)y);
+        return;
+    }
     if (!GLFW_invoke_CursorPos || !isInputReady) return;
 
     switch (event) {
@@ -551,6 +568,10 @@ void CallbackBridge_nativeSendKey(int key, int scancode, int action, int mods) {
 
     // Always run the tracker so other modifier state stays current too
     char tracked = getKeyModifiers(key, action);
+    if (AmethystSDL3InputActive()) {
+        int sdlMods = mods != 0 ? (mods | currentShiftModifier()) : tracked;
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_KEY, key, scancode, action, sdlMods, 0, 0);
+    }
 
     if (GLFW_invoke_Key && isInputReady) {
         keyDownBuffer[MAX(0, key-31)]=(jbyte)action;
@@ -582,6 +603,11 @@ void CallbackBridge_nativeSendKey(int key, int scancode, int action, int mods) {
 }
 
 void CallbackBridge_nativeSendMouseButton(int button, int action, int mods) {
+    if (AmethystSDL3InputActive()) {
+        int trackedMods = mods != 0 ? (mods | currentShiftModifier()) : getKeyModifiers(0, action);
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_BUTTON, button, action, trackedMods, 0, 0, 0);
+        return;
+    }
     if (isInputReady) {
         if (button == -1) {
         } else if (GLFW_invoke_MouseButton) {
@@ -606,6 +632,8 @@ void CallbackBridge_nativeSendScreenSize(int width, int height) {
     windowWidth = width;
     windowHeight = height;
     
+    AmethystSDL3ForwardInput(AM_SDL_INPUT_SCREEN, width, height, 0, 0, 0, 0);
+
     if (isInputReady) {
         if (GLFW_invoke_FramebufferSize) {
             if (isUseStackQueueCall) {
@@ -627,6 +655,10 @@ void CallbackBridge_nativeSendScreenSize(int width, int height) {
 }
 
 void CallbackBridge_nativeSendScroll(CGFloat xoffset, CGFloat yoffset) {
+    if (AmethystSDL3InputActive()) {
+        AmethystSDL3ForwardInput(AM_SDL_INPUT_SCROLL, 0, 0, 0, 0, (float)xoffset, (float)yoffset);
+        return;
+    }
     if (GLFW_invoke_Scroll && isInputReady) {
         if (isUseStackQueueCall) {
             sendDataFloat(EVENT_TYPE_SCROLL, xoffset, yoffset, 0, 0);

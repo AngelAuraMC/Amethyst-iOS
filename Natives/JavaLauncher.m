@@ -174,6 +174,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
 
     BOOL launchJar = NO;
+    BOOL useSDLRuntime = NO;
     NSString *gameDir;
     NSString *defaultJRETag;
     NSCAssert(launchTarget, @"Unexpected nil launchTarget");
@@ -191,15 +192,16 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         // Pick the runtime stack per game version: 26.3+ needs Java 25 and the SDL3/LWJGL 3.4.x stack
         NSString *versionId = PLProfiles.current.selectedProfile[@"lastVersionId"];
         if (versionRequiresSDL(versionId)) {
+            useSDLRuntime = YES;
             if (minVersion < 25) {
                 minVersion = 25;
             }
-            NSString *sdlRuntime = [NSString stringWithFormat:@"%@/libs/lwjgl-sdl/lwjgl.jar", NSBundle.mainBundle.bundlePath];
+            NSString *sdlRuntime = [NSString stringWithFormat:@"%@/libs/lwjgl34/lwjgl.jar", NSBundle.mainBundle.bundlePath];
             if (![fm fileExistsAtPath:sdlRuntime]) {
                 // Fail early with a clear message instead of NoClassDefFoundError: org/lwjgl/sdl/SDLPlatform
                 NSLog(@"[JavaLauncher] %@ requires the SDL3/LWJGL 3.4.x runtime, which is not bundled in this build", versionId);
                 UIKit_returnToSplitView();
-                showDialog(localize(@"Error", nil), [NSString stringWithFormat:@"Minecraft %@ needs the SDL3 + LWJGL 3.4.3 runtime, which this build of Amethyst does not include yet.", versionId]);
+                showDialog(localize(@"Error", nil), [NSString stringWithFormat:@"Minecraft %@ needs the SDL3 + LWJGL 3.4.3 runtime. This app package is missing that runtime; rebuild and reinstall BetterLauncher.", versionId]);
                 return 1;
             }
         }
@@ -278,7 +280,11 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
     margv[++margc] = "-Xms128M";
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
-    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks", NSBundle.mainBundle.bundlePath].UTF8String;
+    NSString *frameworksPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Frameworks"];
+    NSString *javaLibraryPath = useSDLRuntime
+        ? [NSString stringWithFormat:@"%@:%@", [frameworksPath stringByAppendingPathComponent:@"lwjgl34"], frameworksPath]
+        : frameworksPath;
+    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@", javaLibraryPath].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", gameDir].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.home=%s", getenv("AME_HOME")].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.timezone=%@", NSTimeZone.localTimeZone.name].UTF8String;
@@ -398,7 +404,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     init_loadCustomJvmFlags(&margc, (const char **)margv);
     NSLog(@"[Init] Found JLI lib");
 
-    NSString *classpath = [NSString stringWithFormat:@"%@/*", librariesPath];
+    NSString *classpath = useSDLRuntime
+        ? [NSString stringWithFormat:@"%@/lwjgl34/*:%@/*", librariesPath, librariesPath]
+        : [NSString stringWithFormat:@"%@/*", librariesPath];
     if (launchJar) {
         classpath = [classpath stringByAppendingFormat:@":%@", launchTarget];
     }
