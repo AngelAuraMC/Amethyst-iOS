@@ -17,6 +17,7 @@ typedef void (^SetPreferenceBlock)(NSString *, NSString *, id);
 @property(nonatomic) NSArray<NSArray<NSDictionary*>*>* prefContents;
 @property(nonatomic) BOOL prefDetailVisible;
 
+- (void)initViewCreation;
 - (UIBarButtonItem *)drawHelpButton;
 
 @end

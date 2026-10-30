@@ -83,7 +83,7 @@
      (id)[LauncherMenuCustomItem
           title:localize(@"login.menu.sendlogs", nil)
           imageName:@"square.and.arrow.up" action:^{
-        NSString *latestlogPath = [NSString stringWithFormat:@"file://%s/latestlog.old.txt", getenv("AME_HOME")];
+        NSString *latestlogPath = [NSString stringWithFormat:@"file://%s/latestlog.old.txt", getenv("POJAV_HOME")];
         NSLog(@"Path is %@", latestlogPath);
         UIActivityViewController *activityVC;
         if (realUIIdiom != UIUserInterfaceIdiomTV) {
@@ -295,13 +295,13 @@
 
     // Reset states
     unsetenv("DEMO_LOCK");
-    setenv("GAME_DIR", [NSString stringWithFormat:@"%s/Library/Application Support/minecraft", getenv("AME_HOME")].UTF8String, 1);
+    setenv("POJAV_GAME_DIR", [NSString stringWithFormat:@"%s/Library/Application Support/minecraft", getenv("POJAV_HOME")].UTF8String, 1);
 
     id subtitle;
     if (isDemo) {
         subtitle = localize(@"login.option.demo", nil);
         setenv("DEMO_LOCK", "1", 1);
-        setenv("GAME_DIR", [NSString stringWithFormat:@"%s/.demo", getenv("AME_HOME")].UTF8String, 1);
+        setenv("POJAV_GAME_DIR", [NSString stringWithFormat:@"%s/.demo", getenv("POJAV_HOME")].UTF8String, 1);
     } else if (selected[@"xboxGamertag"] == nil) {
         subtitle = localize(@"login.option.local", nil);
     } else {

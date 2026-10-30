@@ -1,0 +1,47 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and package iOS IPA
+    runs-on: macos-14
+
+    steps:
+      - name: Check out repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 8
+        id: setup-java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "8"
+
+      - name: Install build tools
+        run: |
+          brew install cmake ldid make wget
+          echo "$(brew --prefix make)/bin" >> "$GITHUB_PATH"
+
+      - name: Build IPA
+        env:
+          BOOTJDK: ${{ steps.setup-java.outputs.path }}/bin
+        run: |
+          gmake -j"$(sysctl -n hw.logicalcpu)" dsym package PLATFORM=2
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Amethyst-iOS-IPA
+          path: artifacts/*.ipa
+          if-no-files-found: error

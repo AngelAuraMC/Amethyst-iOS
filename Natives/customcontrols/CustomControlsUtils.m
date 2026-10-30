@@ -26,19 +26,6 @@ NSMutableDictionary* createButton(NSString* name, int* keycodes, NSString* dynam
     return dict;
 }
 
-static NSMutableDictionary* createDefaultControlButton(NSString* name, int* keycodes, NSString* dynamicX, NSString* dynamicY, CGFloat width, CGFloat height, BOOL isToggle, BOOL isSwipeable, BOOL displayInGame, BOOL displayInMenu, CGFloat strokeWidth) {
-    NSMutableDictionary *dict = createButton(name, keycodes, dynamicX, dynamicY, width, height);
-    dict[@"cornerRadius"] = @(100);
-    dict[@"isToggle"] = @(isToggle);
-    dict[@"isSwipeable"] = @(isSwipeable);
-    dict[@"displayInGame"] = @(displayInGame);
-    dict[@"displayInMenu"] = @(displayInMenu);
-    dict[@"passThruEnabled"] = @NO;
-    dict[@"strokeColor"] = @(-1);
-    dict[@"strokeWidth"] = @(strokeWidth);
-    return dict;
-}
-
 NSMutableDictionary* createGamepadButton(NSString* name, int gamepad_button, int keycode) {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     dict[@"name"] = name;
@@ -75,21 +62,6 @@ int convertUIColor2RGB(UIColor* color) {
 static int computeStrokeWidth(float widthInPercent, float width, float height) {
     CGFloat maxSize = MAX(width, height);
     return (int) ((maxSize / 2) * (widthInPercent / 100));
-}
-
-// Normalize the layout to v8 from v6/7
-void convertV6_7Layout(NSMutableDictionary* dict) {
-    for (NSMutableDictionary *data in (NSMutableArray *)dict[@"mJoystickDataList"]) {
-        if ([data[@"height"] floatValue] > [data[@"width"] floatValue]) {
-            // Make the size square, adjust the dynamic position related to height
-            CGFloat ratio = [data[@"height"] floatValue] / [data[@"width"] floatValue];
-            data[@"dynamicX"] = [data[@"dynamicX"] stringByReplacingOccurrencesOfString:@"${height}" withString:[NSString stringWithFormat:@"(%f * ${height})", ratio]];
-            data[@"dynamicY"] = [data[@"dynamicY"] stringByReplacingOccurrencesOfString:@"${height}" withString:[NSString stringWithFormat:@"(%f * ${height})", ratio]];
-            data[@"height"] = data[@"width"];
-        }
-    }
-    
-    dict[@"version"] = @(8);
 }
 
 void convertV3_4Layout(NSMutableDictionary* dict) {
@@ -213,8 +185,6 @@ BOOL convertLayoutIfNecessary(NSMutableDictionary* dict) {
             break;
         case 6:
         case 7:
-            convertV6_7Layout(dict);
-        case 8:
             break;
         default:
             showDialog(localize(@"custom_controls.control_menu.save.error.json", nil), [NSString stringWithFormat:localize(@"custom_controls.error.incompatible", nil), version]);
@@ -224,153 +194,149 @@ BOOL convertLayoutIfNecessary(NSMutableDictionary* dict) {
 }
 
 void generateAndSaveDefaultControl() {
-    NSString *defaultPath = [NSString stringWithFormat:@"%s/controlmap/default.json", getenv("AME_HOME")];
+    NSString *defaultPath = [NSString stringWithFormat:@"%s/controlmap/default.json", getenv("POJAV_HOME")];
     if ([NSFileManager.defaultManager fileExistsAtPath:defaultPath]) {
         return;
     }
 
-    // Generate the built-in default control layout.
+    // Generate a v2.7 control
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-    dict[@"version"] = @(8);
+    dict[@"version"] = @(5);
     dict[@"scaledAt"] = @(100);
     dict[@"mControlDataList"] = [NSMutableArray new];
     dict[@"mDrawerDataList"] = [NSMutableArray new];
     dict[@"mJoystickDataList"] = [NSMutableArray new];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Jump",
-        (int[]){GLFW_KEY_SPACE,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.31131014 * ${screen_height} + (px(69.6) /100.0 * ${preferred_scale}) + ${margin}",
-        69.6, 69.6, NO, NO, YES, NO, 0
+    [dict[@"mControlDataList"] addObject:createButton(@"Keyboard",
+        (int[]){SPECIALBTN_KEYBOARD,0,0,0},
+        @"${margin} * 3 + ${width} * 2",
+        @"${margin}",
+        BTN_RECT
     )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Runtime\nMenu",
-        (int[]){SPECIALBTN_MENU,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Shift",
-        (int[]){GLFW_KEY_LEFT_SHIFT,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.31131014 * ${screen_height}",
-        69.6, 69.6, YES, NO, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Right\nClick",
-        (int[]){SPECIALBTN_MOUSESEC,0,0,0},
-        @"0.8756154 * ${screen_width} - ${width}",
-        @"0.8178498 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Left\nClick",
-        (int[]){SPECIALBTN_MOUSEPRI,0,0,0},
-        @"0.7756397 * ${screen_width} - ${width}",
-        @"0.8224885 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Middle\nClick",
-        (int[]){SPECIALBTN_MOUSEMID,0,0,0},
-        @"0.83548373 * ${screen_width} - ${width}",
-        @"0.67798775 * ${screen_height} - ${height}",
-        69.6, 69.6, NO, YES, YES, YES, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Sprint",
-        (int[]){GLFW_KEY_LEFT_CONTROL,0,0,0},
-        @"0.94878495 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - (px(69.6) / 100.0 * ${preferred_scale}) - ${margin} + (px(69.6) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.31131014 * ${screen_height}",
-        69.6, 69.6, YES, NO, YES, NO, 0
-    )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Hide\nGUI",
+    [dict[@"mControlDataList"] addObject:createButton(@"GUI",
         (int[]){SPECIALBTN_TOGGLECTRL,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin}",
-        @"0.0 * ${screen_height}",
-        69.6, 40.0, NO, NO, YES, YES, 0
+        @"${margin}",
+        @"${bottom} - ${margin}",
+        BTN_SQUARE
     )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Pause",
-        (int[]){GLFW_KEY_ESCAPE,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, YES, NO, 0
+    [dict[@"mControlDataList"] addObject:createButton(@"PRI",
+        (int[]){SPECIALBTN_MOUSEPRI,0,0,0},
+        @"${margin}",
+        @"${screen_height} - ${margin} * 3 - ${height} * 3",
+        BTN_SQUARE
     )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Inventory",
+    [dict[@"mControlDataList"] addObject:createButton(@"SEC",
+        (int[]){SPECIALBTN_MOUSESEC,0,0,0},
+        @"${margin} * 3 + ${width} * 2",
+        @"${screen_height} - ${margin} * 3 - ${height} * 3",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Mouse",
+        (int[]){SPECIALBTN_VIRTUALMOUSE,0,0,0},
+        @"${right} - ${margin}",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Debug",
+        (int[]){GLFW_KEY_F3,0,0,0},
+        @"${margin}",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Chat",
+        (int[]){GLFW_KEY_T,0,0,0},
+        @"${margin} * 2 + ${width}",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Tab",
+        (int[]){GLFW_KEY_TAB,0,0,0},
+        @"${margin} * 4 + ${width} * 3",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Opti-Zoom",
+        (int[]){GLFW_KEY_C,0,0,0},
+        @"${margin} * 5 + ${width} * 4",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Offhand",
+        (int[]){GLFW_KEY_F,0,0,0},
+        @"${margin} * 6 + ${width} * 5",
+        @"${margin}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"3rd",
+        (int[]){GLFW_KEY_F5,0,0,0},
+        @"${margin}",
+        @"${margin} * 2 + ${height}",
+        BTN_RECT
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"▲",
+        (int[]){GLFW_KEY_W,0,0,0},
+        @"${margin} * 2 + ${width}",
+        @"${bottom} - ${margin} * 3 - ${height} * 2",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"◀",
+        (int[]){GLFW_KEY_A,0,0,0},
+        @"${margin}",
+        @"${bottom} - ${margin} * 2 - ${height}",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"▼",
+        (int[]){GLFW_KEY_S,0,0,0},
+        @"${margin} * 2 + ${width}",
+        @"${bottom} - ${margin}",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"▶",
+        (int[]){GLFW_KEY_D,0,0,0},
+        @"${margin} * 3 + ${width} * 2",
+        @"${bottom} - ${margin} * 2 - ${height}",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Inv",
         (int[]){GLFW_KEY_E,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        100.0, 40.0, NO, NO, YES, NO, 0
+        @"${margin} * 3 + ${width} * 2",
+        @"${bottom} - ${margin}",
+        BTN_SQUARE
     )];
-    [dict[@"mControlDataList"] addObject:createDefaultControlButton(@"Exit\nMenu",
+    [dict[@"mControlDataList"] addObject:createButton(@"◇",
+        (int[]){GLFW_KEY_LEFT_SHIFT,0,0,0},
+        @"${margin} * 2 + ${width}",
+        @"${screen_height} - ${margin} * 2 - ${height} * 2",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"⬛",
+        (int[]){GLFW_KEY_SPACE,0,0,0},
+        @"${right} - ${margin} * 2 - ${width}",
+        @"${bottom} - ${margin} * 2 - ${height}",
+        BTN_SQUARE
+    )];
+    [dict[@"mControlDataList"] addObject:createButton(@"Esc",
         (int[]){GLFW_KEY_ESCAPE,0,0,0},
-        @"1.0 * ${screen_width} - (px(69.6) / 100.0 * ${preferred_scale}) - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} - (px(104.8) / 100.0 * ${preferred_scale}) - ${margin} + (px(104.8) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-        @"0.0 * ${screen_height}",
-        104.8, 39.2, NO, NO, NO, YES, 0
+        @"${right} - ${margin}",
+        @"${bottom} - ${margin}",
+        BTN_RECT
     )];
-
-    NSMutableDictionary *drawer = [NSMutableDictionary new];
-    drawer[@"orientation"] = @"FREE";
-    drawer[@"properties"] = createDefaultControlButton(@"More",
-        (int[]){0,0,0,0},
-        @"0.0 * ${screen_width}",
-        @"0.0 * ${screen_height}",
-        96.0, 40.0, NO, NO, YES, YES, 1.5
-    );
-    drawer[@"buttonProperties"] = [NSMutableArray arrayWithArray:@[
-        createDefaultControlButton(@"Third\nperson",
-            (int[]){GLFW_KEY_F5,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Debug\nMenu",
-            (int[]){GLFW_KEY_F3,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Mouse\nToggle",
-            (int[]){SPECIALBTN_VIRTUALMOUSE,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Chat",
-            (int[]){GLFW_KEY_T,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - ${width} - ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Keyboard",
-            (int[]){SPECIALBTN_KEYBOARD,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} - (px(96.0) / 100.0 * ${preferred_scale}) - ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin}",
-            96.0, 40.0, NO, NO, YES, YES, 0
-        ),
-        createDefaultControlButton(@"Player\nList",
-            (int[]){GLFW_KEY_TAB,0,0,0},
-            @"0.0 * ${screen_width} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin} + (px(96.0) / 100.0 * ${preferred_scale}) + ${margin}",
-            @"0.0026855469 * ${screen_height} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - (px(40.0) /100.0 * ${preferred_scale}) - ${margin} + (px(40.0) /100.0 * ${preferred_scale}) + ${margin} - ${height} - ${margin}",
-            96.0, 40.0, YES, NO, YES, YES, 0
-        )
-    ]];
-    [dict[@"mDrawerDataList"] addObject:drawer];
-
-    NSMutableDictionary *joystick = createDefaultControlButton(@"button",
-        (int[]){0,0,0,0},
-        @"0.02326631 * ${screen_width}",
-        @"0.9753418 * ${screen_height} - ${height}",
-        204.8, 204.8, NO, NO, YES, NO, 0
-    );
-    joystick[@"absolute"] = @NO;
-    joystick[@"forwardLock"] = @NO;
-    joystick[@"cornerRadius"] = @(0);
-    joystick[@"strokeColor"] = @(1291845632);
-    [dict[@"mJoystickDataList"] addObject:joystick];
-
     NSOutputStream *os = [[NSOutputStream alloc] initToFileAtPath:defaultPath append:NO];
     [os open];
     [NSJSONSerialization writeJSONObject:dict toStream:os options:NSJSONWritingPrettyPrinted error:nil];
     [os close];
+
+/*
+    [dict[@"mControlDataList"] addObject:createButton(@"NAME",
+        {SPECIALBTN_KEYBOARD,0,0,0},
+        @"DYNAMICX",
+        @"DYNAMICY",
+        WIDTHHEIGHT
+    )];
+*/
 }
 
 void generateAndSaveDefaultControlForGamepad() {
-    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/default.json", getenv("AME_HOME")];
+    NSString *gamepadPath = [NSString stringWithFormat:@"%s/controlmap/gamepads/default.json", getenv("POJAV_HOME")];
     if ([NSFileManager.defaultManager fileExistsAtPath:gamepadPath]) {
         return;
     }

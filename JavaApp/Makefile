@@ -8,10 +8,13 @@ CLASSES := $(SOURCES:$(SOURCEDIR)/%.java=$(OUTPUTDIR)/%.class)
 TARGETS := $(shell find $(SOURCEDIR) -mindepth 1 -maxdepth 1 -type d)
 TARGETS := $(TARGETS:$(SOURCEDIR)/%=$(OUTPUTDIR)/%.jar)
 
-# Add all jars to classpath and allow compiling with private API
-JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(wildcard libs/*/*.jar))" -XDignore.symbol.file
+# SDL/LWJGL 3.4.3 runtime for Minecraft 26.3+; compile against matching LWJGL APIs.
+SDL_JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(wildcard libs/lwjgl-3.4.3/*.jar))" -XDignore.symbol.file
 
-all: $(TARGETS)
+# Add all jars to classpath and allow compiling with private API
+JCFLAGS := -cp "$(subst $() $(),:,$(wildcard $(SOURCEDIR)/*/):$(filter-out libs/lwjgl-3.4.3/%, $(wildcard libs/*/*.jar)))" -XDignore.symbol.file
+
+all: $(TARGETS) $(OUTPUTDIR)/lwjgl-3.4.3.jar
 	
 # Sometimes the CI produces empty class file resulting in broken jar, so we check and abort here
 check_empty_classes:
@@ -30,7 +33,11 @@ $(CLASSES): $(OUTPUTDIR)/%.class: $(SOURCEDIR)/%.java
 	@mkdir -p $(OUTPUTDIR)/classes
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<"
-	@$(BOOTJDK)/javac $(JCFLAGS) -d $(OUTPUTDIR)/classes $<
+	@if [[ "$<" == $(SOURCEDIR)/lwjgl/org/lwjgl/sdl/* ]]; then \
+		$(BOOTJDK)/javac $(SDL_JCFLAGS) -d $(OUTPUTDIR)/classes $<; \
+	else \
+		$(BOOTJDK)/javac $(JCFLAGS) -d $(OUTPUTDIR)/classes $<; \
+	fi
 	@cp $(@:$(OUTPUTDIR)/$(TARGET)/%.class=$(OUTPUTDIR)/classes/%*.class) $(dir $@)/
 
 $(OUTPUTDIR)/launcher.jar: $(CLASSES) check_empty_classes
@@ -45,6 +52,15 @@ $(OUTPUTDIR)/lwjgl.jar: $(CLASSES) check_empty_classes
 	@cd $(OUTPUTDIR)/lwjgl_lib && find ../../libs/lwjgl -name 'lwjgl*.jar' -exec $(BOOTJDK)/jar -xf {} \; && rm -rf META-INF
 	@cp -R $(OUTPUTDIR)/lwjgl/* $(OUTPUTDIR)/lwjgl_lib/
 	@$(BOOTJDK)/jar -cf $@ -C $(OUTPUTDIR)/lwjgl_lib .
+
+$(OUTPUTDIR)/lwjgl-3.4.3.jar: $(CLASSES) check_empty_classes
+	@set -e
+	@echo "Creating $@"
+	@mkdir -p $(OUTPUTDIR)/lwjgl_lib_3.4.3
+	@cd $(OUTPUTDIR)/lwjgl_lib_3.4.3 && find ../../libs/lwjgl-3.4.3 -name 'lwjgl*.jar' -exec $(BOOTJDK)/jar -xf {} \;
+	@rm -rf $(OUTPUTDIR)/lwjgl_lib_3.4.3/META-INF
+	@cp -R $(OUTPUTDIR)/lwjgl/. $(OUTPUTDIR)/lwjgl_lib_3.4.3/
+	@$(BOOTJDK)/jar -cf $@ -C $(OUTPUTDIR)/lwjgl_lib_3.4.3 .
 
 $(OUTPUTDIR)/patchjna_agent.jar: $(CLASSES)
 	@set -e

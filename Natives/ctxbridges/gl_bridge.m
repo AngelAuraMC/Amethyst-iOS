@@ -12,7 +12,7 @@ static egl_library handle;
 
 void dlsym_EGL() {
     void* dl_handle = dlopen("@rpath/libtinygl4angle.dylib", RTLD_GLOBAL);
-    NSCAssert(dl_handle, @(dlerror()));
+    assert(dl_handle);
     handle.eglBindAPI = dlsym(dl_handle, "eglBindAPI");
     handle.eglChooseConfig = dlsym(dl_handle, "eglChooseConfig");
     handle.eglCreateContext = dlsym(dl_handle, "eglCreateContext");
@@ -51,7 +51,7 @@ static bool gl_init() {
 gl_render_window_t* gl_init_context(gl_render_window_t *share) {
     gl_render_window_t* bundle = calloc(1, sizeof(gl_render_window_t));
 
-    NSString *renderer = NSProcessInfo.processInfo.environment[@"RENDERER"];
+    NSString *renderer = NSProcessInfo.processInfo.environment[@"POJAV_RENDERER"];
     BOOL angleDesktopGL = [renderer isEqualToString:@ RENDERER_NAME_MTL_ANGLE];
 
     const EGLint attribs[] = {

@@ -16,6 +16,13 @@
 	<dict>
 		<key>CFBundleAlternateIcons</key>
 		<dict>
+			<key>AppIcon-Light</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>AppIcon-Light60x60</string>
+				</array>
+			</dict>
 			<key>AppIcon-Dark</key>
 			<dict>
 				<key>CFBundleIconFiles</key>
@@ -35,16 +42,24 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>AppIcon-Light60x60</string>
+				<string>AppIcon-BetterLauncher</string>
 			</array>
 			<key>CFBundleIconName</key>
-			<string>AppIcon-Light</string>
+			<string>AppIcon-BetterLauncher</string>
 		</dict>
 	</dict>
 	<key>CFBundleIcons~ipad</key>
 	<dict>
 		<key>CFBundleAlternateIcons</key>
 		<dict>
+			<key>AppIcon-Light</key>
+			<dict>
+				<key>CFBundleIconFiles</key>
+				<array>
+					<string>AppIcon-Light60x60</string>
+					<string>AppIcon-Light76x76</string>
+				</array>
+			</dict>
 			<key>AppIcon-Dark</key>
 			<dict>
 				<key>CFBundleIconFiles</key>
@@ -66,11 +81,10 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>AppIcon-Light60x60</string>
-				<string>AppIcon-Light76x76</string>
+				<string>AppIcon-BetterLauncher</string>
 			</array>
 			<key>CFBundleIconName</key>
-			<string>AppIcon-Light</string>
+			<string>AppIcon-BetterLauncher</string>
 		</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>

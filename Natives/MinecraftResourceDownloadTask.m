@@ -100,7 +100,7 @@
         versionStr = getPrefObject(@"internal.latest_version.snapshot");
     }
 
-    NSString *path = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("GAME_DIR"), versionStr];
+    NSString *path = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), versionStr];
     // Find it again to resolve latest-*
     version = (id)[MinecraftResourceUtils findVersion:versionStr inList:remoteVersionList];
 
@@ -111,7 +111,7 @@
             return;
         }
         if (self.metadata[@"inheritsFrom"]) {
-            NSMutableDictionary *inheritsFromDict = parseJSONFromFile([NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("GAME_DIR"), self.metadata[@"inheritsFrom"]]);
+            NSMutableDictionary *inheritsFromDict = parseJSONFromFile([NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), self.metadata[@"inheritsFrom"]]);
             if (inheritsFromDict) {
                 [MinecraftResourceUtils processVersion:self.metadata inheritsFrom:inheritsFromDict];
                 self.metadata = inheritsFromDict;
@@ -129,7 +129,7 @@
             return;
         } else if (json[@"inheritsFrom"]) {
             version = (id)[MinecraftResourceUtils findVersion:json[@"inheritsFrom"] inList:remoteVersionList];
-            path = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("GAME_DIR"), json[@"inheritsFrom"]];
+            path = [NSString stringWithFormat:@"%1$s/versions/%2$@/%2$@.json", getenv("POJAV_GAME_DIR"), json[@"inheritsFrom"]];
         } else {
             completionBlock();
             return;
@@ -154,7 +154,7 @@
         return;
     }
     NSString *name = [NSString stringWithFormat:@"assets/indexes/%@.json", assetIndex[@"id"]];
-    NSString *path = [@(getenv("GAME_DIR")) stringByAppendingPathComponent:name];
+    NSString *path = [@(getenv("POJAV_GAME_DIR")) stringByAppendingPathComponent:name];
     NSString *url = assetIndex[@"url"];
     NSString *sha = url.stringByDeletingLastPathComponent.lastPathComponent;
     NSUInteger size = [assetIndex[@"size"] unsignedLongLongValue];
@@ -181,7 +181,7 @@
             artifact[@"sha1"] = library[@"checksums"][0];
         }
 
-        NSString *path = [NSString stringWithFormat:@"%s/libraries/%@", getenv("GAME_DIR"), artifact[@"path"]];
+        NSString *path = [NSString stringWithFormat:@"%s/libraries/%@", getenv("POJAV_GAME_DIR"), artifact[@"path"]];
         NSString *sha = artifact[@"sha1"];
         NSUInteger size = [artifact[@"size"] unsignedLongLongValue];
         NSString *url = artifact[@"url"];
@@ -214,9 +214,9 @@
 
         NSString *path;
         if ([assets[@"map_to_resources"] boolValue]) {
-            path = [NSString stringWithFormat:@"%s/resources/%@", getenv("GAME_DIR"), name];
+            path = [NSString stringWithFormat:@"%s/resources/%@", getenv("POJAV_GAME_DIR"), name];
         } else {
-            path = [NSString stringWithFormat:@"%s/assets/objects/%@", getenv("GAME_DIR"), pathname];
+            path = [NSString stringWithFormat:@"%s/assets/objects/%@", getenv("POJAV_GAME_DIR"), pathname];
         }
 
         /* Special case for 1.19+
@@ -276,7 +276,7 @@
     NSString *packagePath = [NSTemporaryDirectory() stringByAppendingFormat:@"/%@.zip", name];
 
     NSURLSessionDownloadTask *task = [self createDownloadTask:url size:size sha:sha altName:nil toPath:packagePath success:^{
-        NSString *path = [NSString stringWithFormat:@"%s/custom_gamedir/%@", getenv("GAME_DIR"), name];
+        NSString *path = [NSString stringWithFormat:@"%s/custom_gamedir/%@", getenv("POJAV_GAME_DIR"), name];
         [api downloader:self submitDownloadTasksFromPackage:packagePath toPath:path];
     }];
     [task resume];
@@ -314,15 +314,8 @@
 
 // Check if the account has permission to download
 - (BOOL)checkAccessWithDialog:(BOOL)show {
-    // for now
-    BOOL accessible = [BaseAuthenticator.current.authData[@"username"] hasPrefix:@"Demo."] || BaseAuthenticator.current.authData[@"xboxGamertag"] != nil;
-    if (!accessible) {
-        [self.progress cancel];
-        if (show) {
-            [self finishDownloadWithErrorString:@"Minecraft can't be legally installed when logged in with a local account. Please switch to an online account to continue."];
-        }
-    }
-    return accessible;
+    // Enable all permission for local account.
+    return YES;
 }
 
 // Check SHA of the file

@@ -284,3 +284,31 @@
 "controller_configurator.section.footer.menu_mappings" = "当鼠标未被锁定时，如在标题屏幕或暂停菜单中时绑定。";
 "controller_configurator.section.controller_style" = "手柄类型";
 "controller_configurator.section.footer.controller_style" = "在此配置器中显示不同的手柄按钮名称。";
+
+"preference.title.mod_touch_enable" = "启用 TouchController 支持";
+"preference.detail.mod_touch_enable" = "启用 TouchController 模组支持。注意：开启此项将禁用“可滑动快捷栏”。";
+
+// TouchController Preferences
+"preference.touchcontroller.title" = "TouchController 管理界面";
+"preference.touchcontroller.section.mode" = "通信方式";
+"preference.touchcontroller.section.info" = "信息";
+"preference.touchcontroller.mode.title" = "通信方式";
+"preference.touchcontroller.select_mode.title" = "选择通信方式";
+"preference.touchcontroller.mode.disabled" = "已禁用";
+"preference.touchcontroller.mode.udp" = "UDP 协议";
+"preference.touchcontroller.mode.staticlib" = "静态库";
+"preference.touchcontroller.udp.title" = "UDP 协议模式";
+"preference.touchcontroller.udp.message" = "TouchController 将通过 UDP 端口 12450 进行通信。此模式兼容性较好，提供稳定的网络通信。\n该通信方式由WeiErLiTeo制作。";
+"preference.touchcontroller.staticlib.title" = "静态库模式";
+"preference.touchcontroller.staticlib.message" = "TouchController 将使用原生静态库进行高性能本地通信（Unix Domain Socket）。此模式性能更好，但需要静态库支持。\n该通信方式由Mod作者fifth_light与启动器作者制作。";
+"preference.touchcontroller.about" = "关于 TouchController";
+"preference.touchcontroller.about.title" = "关于 TouchController";
+"preference.touchcontroller.about.message" = "TouchController 是一个为 Minecraft Java 版添加触摸控制的模组。本启动器支持两种通信模式：\n\n• UDP 协议：基于网络的通信\n• 静态库：高性能本地通信\n\n访问 GitHub 获取更多信息。";
+"preference.touchcontroller.ok" = "确定";
+"preference.touchcontroller.cancel" = "取消";
+"preference.touchcontroller.vibrate.enable" = "启用震动反馈";
+"preference.touchcontroller.vibrate.intensity" = "震动强度";
+"preference.touchcontroller.vibrate.intensity.light" = "轻度";
+"preference.touchcontroller.vibrate.intensity.medium" = "中度";
+"preference.touchcontroller.vibrate.intensity.heavy" = "重度";
+"preference.touchcontroller.moveview.enable" = "启用移动视角";

@@ -25,6 +25,7 @@
             @"fullscreen_airplay": @YES,
             @"silence_other_audio": @NO,
             @"silence_with_switch": @NO,
+            @"fix_simple_voice_chat_mod": @NO,
             @"allow_microphone": @NO
         }.mutableCopy,
         @"control": @{
@@ -56,7 +57,8 @@
                 }.mutableCopy,
                 @"8": @"internal",
                 @"17": @"internal",
-                @"21": @"internal"
+                @"21": @"internal",
+                @"25": @"internal"
             }.mutableCopy,
             @"java_args": @"",
             @"env_variables": @"",
@@ -74,7 +76,7 @@
         NSDictionary *general = @{
             @"game_directory": @"default",
             @"hidden_sidebar": @(realUIIdiom == UIUserInterfaceIdiomPhone),
-            @"appicon": @"AppIcon-Light"
+            @"appicon": @"AppIcon-BetterLauncher"
         };
         [defaults[@"general"] addEntriesFromDictionary:general];
 
@@ -86,7 +88,11 @@
             @"debug_ipad_ui": @(realUIIdiom == UIUserInterfaceIdiomPad),
             @"debug_auto_correction": @YES,
             @"debug_show_layout_bounds": @NO,
-            @"debug_show_layout_overlap": @NO
+            @"debug_show_layout_overlap": @NO,
+            @"debug_server_enabled": @NO,
+            @"debug_server_port": @(9090),
+            @"debug_server_token": @"",
+            @"debug_server_localhost_only": @NO
         }.mutableCopy;
         defaults[@"warnings"] = @{
             @"local_warn": @YES,
@@ -133,10 +139,10 @@
 
 - (id)initWithAutomaticMigrator {
     self = [super init];
-    self.globalPath = [@(getenv("AME_HOME")) stringByAppendingPathComponent:@"launcher_preferences_v2.plist"];
+    self.globalPath = [@(getenv("POJAV_HOME")) stringByAppendingPathComponent:@"launcher_preferences_v2.plist"];
     NSMutableDictionary *pref = [NSMutableDictionary dictionaryWithContentsOfFile:self.globalPath];
 
-    NSString *oldPath = [@(getenv("AME_HOME")) stringByAppendingPathComponent:@"launcher_preferences.plist"];
+    NSString *oldPath = [@(getenv("POJAV_HOME")) stringByAppendingPathComponent:@"launcher_preferences.plist"];
     NSMutableDictionary *oldPref = [NSMutableDictionary dictionaryWithContentsOfFile:oldPath];
 
     if (pref || !oldPref[@"env_vars"]) {

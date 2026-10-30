@@ -8,6 +8,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <mach/mach.h>
+#include <mach/task.h>
+#include <mach/thread_status.h>
+#include <mach/exception_types.h>
 
 #include "utils.h"
 
@@ -99,6 +103,27 @@ void init_loadCustomJvmFlags(int* argc, const char** argv) {
     }
 }
 
+// Minecraft 26.3 and newer moved from GLFW to SDL3 and require LWJGL 3.4.x (org.lwjgl.sdl) on Java 25.
+// Older versions keep the existing GLFW bridge and bundled LWJGL 3.3.x path.
+// The id is scanned for any "<major>.<minor>" pair so decorated ids such as "26.3-snapshot-9",
+// "26.4-pre-1", "26.3-rc-1" or "fabric-loader-0.19.5-26.3" classify correctly.
+static BOOL versionRequiresSDL(NSString *versionId) {
+    if (versionId.length == 0) return NO;
+    NSRegularExpression *re = [NSRegularExpression regularExpressionWithPattern:@"(?<![0-9.])([0-9]+)\\.([0-9]+)(?![0-9])" options:0 error:nil];
+    __block BOOL requiresSDL = NO;
+    [re enumerateMatchesInString:versionId options:0 range:NSMakeRange(0, versionId.length) usingBlock:^(NSTextCheckingResult *m, NSMatchingFlags f, BOOL *stop) {
+        int major = [versionId substringWithRange:[m rangeAtIndex:1]].intValue;
+        int minor = [versionId substringWithRange:[m rangeAtIndex:2]].intValue;
+        // Only the first token that looks like a Minecraft version decides ("1.x" or "26.x" and up).
+        // This skips loader versions such as Fabric's "0.19" and Forge's "49.0".
+        if (major == 1 || major >= 26) {
+            requiresSDL = (major > 26 || (major == 26 && minor >= 3));
+            *stop = YES;
+        }
+    }];
+    return requiresSDL;
+}
+
 int launchJVM(NSString *username, id launchTarget, int width, int height, int minVersion) {
     NSLog(@"[JavaLauncher] Beginning JVM launch");
 
@@ -149,6 +174,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
 
     BOOL launchJar = NO;
+    BOOL useSDLRuntime = NO;
     NSString *gameDir;
     NSString *defaultJRETag;
     NSCAssert(launchTarget, @"Unexpected nil launchTarget");
@@ -161,6 +187,22 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
             } else {
                 NSDebugLog(@"[PLProfiles] Applying javaVersion");
                 minVersion = preferredJavaVersion;
+            }
+        }
+        // Pick the runtime stack per game version: 26.3+ needs Java 25 and the SDL3/LWJGL 3.4.x stack
+        NSString *versionId = PLProfiles.current.selectedProfile[@"lastVersionId"];
+        if (versionRequiresSDL(versionId)) {
+            useSDLRuntime = YES;
+            if (minVersion < 25) {
+                minVersion = 25;
+            }
+            NSString *sdlRuntime = [NSString stringWithFormat:@"%@/libs/lwjgl34/lwjgl.jar", NSBundle.mainBundle.bundlePath];
+            if (![fm fileExistsAtPath:sdlRuntime]) {
+                // Fail early with a clear message instead of NoClassDefFoundError: org/lwjgl/sdl/SDLPlatform
+                NSLog(@"[JavaLauncher] %@ requires the SDL3/LWJGL 3.4.x runtime, which is not bundled in this build", versionId);
+                UIKit_returnToSplitView();
+                showDialog(localize(@"Error", nil), [NSString stringWithFormat:@"Minecraft %@ needs the SDL3 + LWJGL 3.4.3 runtime. This app package is missing that runtime; rebuild and reinstall BetterLauncher.", versionId]);
+                return 1;
             }
         }
         if (minVersion <= 8) {
@@ -238,7 +280,11 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     }
     margv[++margc] = "-Xms128M";
     margv[++margc] = [NSString stringWithFormat:@"-Xmx%dM", allocmem].UTF8String;
-    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@/Frameworks", NSBundle.mainBundle.bundlePath].UTF8String;
+    NSString *frameworksPath = [NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"Frameworks"];
+    NSString *javaLibraryPath = useSDLRuntime
+        ? [NSString stringWithFormat:@"%@:%@", [frameworksPath stringByAppendingPathComponent:@"lwjgl34"], frameworksPath]
+        : frameworksPath;
+    margv[++margc] = [NSString stringWithFormat:@"-Djava.library.path=%@", javaLibraryPath].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.dir=%@", gameDir].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.home=%s", getenv("AME_HOME")].UTF8String;
     margv[++margc] = [NSString stringWithFormat:@"-Duser.timezone=%@", NSTimeZone.localTimeZone.name].UTF8String;
@@ -358,7 +404,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     init_loadCustomJvmFlags(&margc, (const char **)margv);
     NSLog(@"[Init] Found JLI lib");
 
-    NSString *classpath = [NSString stringWithFormat:@"%@/*", librariesPath];
+    NSString *classpath = useSDLRuntime
+        ? [NSString stringWithFormat:@"%@/lwjgl34/*:%@/*", librariesPath, librariesPath]
+        : [NSString stringWithFormat:@"%@/*", librariesPath];
     if (launchJar) {
         classpath = [classpath stringByAppendingFormat:@":%@", launchTarget];
     }

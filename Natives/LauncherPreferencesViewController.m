@@ -85,7 +85,7 @@
                   return UIApplication.sharedApplication.supportsAlternateIcons;
               },
               @"action": ^void(NSString *iconName) {
-                  if ([iconName isEqualToString:@"AppIcon-Light"]) {
+                  if ([iconName isEqualToString:@"AppIcon-BetterLauncher"]) {
                       iconName = nil;
                   }
                   [UIApplication.sharedApplication setAlternateIconName:iconName completionHandler:^(NSError * _Nullable error) {
@@ -95,7 +95,7 @@
                   }];
               },
               @"pickKeys": @[
-                  @"AppIcon-Light",
+                  @"AppIcon-BetterLauncher",
               ],
               @"pickList": @[
                   localize(@"preference.title.appicon-default", nil)
@@ -131,14 +131,14 @@
               @"icon": @"trash",
               @"type": self.typeButton,
               @"enableCondition": ^BOOL(){
-                  NSString *demoPath = [NSString stringWithFormat:@"%s/.demo", getenv("AME_HOME")];
+                  NSString *demoPath = [NSString stringWithFormat:@"%s/.demo", getenv("POJAV_HOME")];
                   int count = [NSFileManager.defaultManager contentsOfDirectoryAtPath:demoPath error:nil].count;
                   return whenNotInGame() && count > 0;
               },
               @"showConfirmPrompt": @YES,
               @"destructive": @YES,
               @"action": ^void(){
-                  NSString *demoPath = [NSString stringWithFormat:@"%s/.demo", getenv("AME_HOME")];
+                  NSString *demoPath = [NSString stringWithFormat:@"%s/.demo", getenv("POJAV_HOME")];
                   NSError *error;
                   if([NSFileManager.defaultManager removeItemAtPath:demoPath error:&error]) {
                       [NSFileManager.defaultManager createDirectoryAtPath:demoPath
@@ -216,9 +216,24 @@
               @"icon": @"mic",
               @"type": self.typeSwitch
             },
-        ], @[
+            @{@"key": @"fix_simple_voice_chat_mod",
+              @"hasDetail": @YES,
+              @"icon": @"waveform",
+              @"type": self.typeSwitch
+            },
+        ], @[ 
             // Control settings
             @{@"icon": @"gamecontroller"},
+            // --- [修改] TouchController 模组支持 ---
+            @{@"key": @"mod_touch_enable",
+              @"icon": @"hand.point.up.left", // SF Symbols 图标
+              @"hasDetail": @YES,
+              @"type": self.typeChildPane,
+              @"enableCondition": whenNotInGame,
+              @"canDismissWithSwipe": @NO,
+              @"class": NSClassFromString(@"TouchControllerPreferencesViewController")
+            },
+            // ------------------------------------------
             @{@"key": @"default_gamepad_ctrl",
                 @"icon": @"hammer",
                 @"type": self.typeChildPane,
@@ -254,7 +269,11 @@
             @{@"key": @"slideable_hotbar",
                 @"hasDetail": @YES,
                 @"icon": @"slider.horizontal.below.rectangle",
-                @"type": self.typeSwitch
+                @"type": self.typeSwitch,
+                @"enableCondition": ^BOOL(){
+                    // 当 TouchController 启用时，禁用此选项（返回 NO 表示禁用/变灰）
+                    return ![self.getPreference(@"control", @"mod_touch_enable") boolValue];
+                }
             },
             @{@"key": @"press_duration",
                 @"hasDetail": @YES,
@@ -434,7 +453,7 @@
         return [NSString stringWithFormat:@"Angel Aura Amethyst %@-%s (%s/%s)\n%@ on %@ (%s)\nPID: %d",
             NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"],
             CONFIG_TYPE, CONFIG_BRANCH, CONFIG_COMMIT,
-            UIDevice.currentDevice.completeOSVersion, [HostManager GetModelName], getenv("AME_DETECTEDINST"), getpid()];
+            UIDevice.currentDevice.completeOSVersion, [HostManager GetModelName], getenv("POJAV_DETECTEDINST"), getpid()];
     }
 
     NSString *footer = NSLocalizedStringWithDefaultValue(([NSString stringWithFormat:@"preference.section.footer.%@", self.prefSections[section]]), @"Localizable", NSBundle.mainBundle, @" ", nil);

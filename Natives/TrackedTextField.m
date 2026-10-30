@@ -104,6 +104,18 @@ extern bool isUseStackQueueCall;
     return YES;
 }
 
+- (void)insertText:(NSString *)text {
+    int cursorPos = [super offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
+    int off = self.lastTextPos - cursorPos;
+    if (off > 0) {
+        [self sendMultiBackspaces:off];
+    }
+
+    self.lastTextPos = cursorPos + text.length;
+    [self sendText:text];
+    [super insertText:text];
+}
+
 // Old name: insertText
 - (NSRange)insertFilteredText:(NSString *)text {
     int cursorPos = [super offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];

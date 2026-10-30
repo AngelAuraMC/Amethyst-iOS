@@ -54,8 +54,8 @@
     }
     NSArray *rendererKeys = getRendererKeys(YES);
     NSArray *rendererList = getRendererNames(YES);
-    NSArray *touchControlList = [self listFilesAtPath:[NSString stringWithFormat:@"%s/controlmap", getenv("AME_HOME")]];
-    NSArray *gamepadControlList = [self listFilesAtPath:[NSString stringWithFormat:@"%s/controlmap/gamepads", getenv("AME_HOME")]];
+    NSArray *touchControlList = [self listFilesAtPath:[NSString stringWithFormat:@"%s/controlmap", getenv("POJAV_HOME")]];
+    NSArray *gamepadControlList = [self listFilesAtPath:[NSString stringWithFormat:@"%s/controlmap/gamepads", getenv("POJAV_HOME")]];
     NSMutableArray *javaList = [getPrefObject(@"java.java_homes") allKeys].mutableCopy;
     [javaList sortUsingSelector:@selector(compare:)];
     javaList[0] = @"(default)";
