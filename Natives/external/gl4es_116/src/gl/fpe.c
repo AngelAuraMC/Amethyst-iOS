@@ -95,11 +95,7 @@ void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state
             if (dest->texgen[i].texgen_q==0)
                 dest->texgen[i].texgen_q_mode = 0;
         }
-        if(dest->texture[i].textype == 0) {
-            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
-            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
-            dest->texcombine[i] = 0;
-        } else if(dest->texenv[i].texenv < FPE_COMBINE) {
+        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
             dest->texcombine[i] = 0;
             dest->texenv[i].texsrcrgb0 = 0;
             dest->texenv[i].texsrcalpha0 = 0;
@@ -208,11 +204,7 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
             if (dest->texgen[i].texgen_q==0)
                 dest->texgen[i].texgen_q_mode = 0;
         }
-        if(dest->texture[i].textype == 0) {
-            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
-            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
-            dest->texcombine[i] = 0;
-        } else if(dest->texenv[i].texenv < FPE_COMBINE) {
+        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
             dest->texcombine[i] = 0;
             dest->texenv[i].texsrcrgb0 = 0;
             dest->texenv[i].texsrcalpha0 = 0;
@@ -444,26 +436,26 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
                 GLint status;
                 // no old program, using regular FPE
                 glstate->fpe->vert = gl4es_glCreateShader(GL_VERTEX_SHADER);
-                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, &state), NULL);
+                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, glstate->fpe_state), NULL);
                 gl4es_glCompileShader(glstate->fpe->vert);
                 gl4es_glGetShaderiv(glstate->fpe->vert, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->vert, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, &state)[0], buff);
+                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, glstate->fpe_state)[0], buff);
                     else
                         printf("LIBGL: FPE Vertex shader compile failed: %s\n", buff);
                 }
                 glstate->fpe->frag = gl4es_glCreateShader(GL_FRAGMENT_SHADER);
-                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, &state), NULL);
+                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, glstate->fpe_state), NULL);
                 gl4es_glCompileShader(glstate->fpe->frag);
                 gl4es_glGetShaderiv(glstate->fpe->frag, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->frag, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, &state)[0], buff);
+                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, glstate->fpe_state)[0], buff);
                     else
                         printf("LIBGL: FPE Fragment shader compile failed: %s\n", buff);
                 }
@@ -1455,7 +1447,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     // fpe
     if(glprogram->fpe_alpharef!=-1)
     {
-        float alpharef = glstate->alpharef;
+        float alpharef = floorf(glstate->alpharef*255.f);
         GoUniformfv(glprogram, glprogram->fpe_alpharef, 1, 1, &alpharef);
     }
     if(glprogram->has_builtin_texsampler)

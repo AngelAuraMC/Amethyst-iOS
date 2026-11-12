@@ -1401,10 +1401,9 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
                 }
             }
             
-            GLenum gles_internalformat = (format == GL_BGRA) ? GL_RGBA : format;
             if (height != nheight || width != nwidth) {
                 errorGL();
-                gles_glTexImage2D(rtarget, level, gles_internalformat, nwidth, nheight, border,
+                gles_glTexImage2D(rtarget, level, format, nwidth, nheight, border,
                                 format, type, NULL);
                 DBG(CheckGLError(1);)
                 if (pixels) {
@@ -1420,13 +1419,13 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
                     if(height==1) {gles_glTexSubImage2D(rtarget, level, 0, 1, width, height, format, type, pixels); nheight=1;}
                     if(width==1 && height==1) {   // create a manual mipmap just in case_state
                         gles_glTexSubImage2D(rtarget, level, 1, 1, width, height, format, type, pixels);
-                        gles_glTexImage2D(rtarget, 1, gles_internalformat, 1, 1, 0, format, type, pixels);
+                        gles_glTexImage2D(rtarget, 1, format, 1, 1, 0, format, type, pixels);
                     }
                 }
 #endif
             } else {
                 errorGL();
-                gles_glTexImage2D(rtarget, level, gles_internalformat, width, height, border,
+                gles_glTexImage2D(rtarget, level, format, width, height, border,
                                 format, type, pixels);
                 DBG(CheckGLError(1);)
             }
@@ -1749,9 +1748,7 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
         }
     }
 
-    if (bound->mipmap_need && (hardext.esversion >= 2)) {
-        bound->mipmap_done = 0;
-    }
+
 
     if ((target==GL_TEXTURE_2D) && globals4es.texcopydata && ((globals4es.texstream && !bound->streamed) || !globals4es.texstream)) {
     //printf("*texcopy* glTexSubImage2D, xy=%i,%i, size=%i,%i=>%i,%i, format=%s, type=%s, tex=%u\n", xoffset, yoffset, width, height, bound->width, bound->height, PrintEnum(format), PrintEnum(type), bound->glname);

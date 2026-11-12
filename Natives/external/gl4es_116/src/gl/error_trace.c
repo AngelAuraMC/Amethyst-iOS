@@ -53,9 +53,9 @@ static amethyst_backend_op_t s_backend_ring[AMETHYST_BACKEND_RING_SIZE];
 int amethyst_is_error_trace_enabled(void) {
     if (__builtin_expect(amethyst_trace_state == -1, 0)) {
         const char *env = GetEnvVar("AMETHYST_GL4ES_ERROR_TRACE");
-        amethyst_trace_state = (env && strcmp(env, "1") == 0) ? 1 : 0;
+        amethyst_trace_state = (!env || strcmp(env, "0") != 0) ? 1 : 0;
         if (amethyst_trace_state) {
-            printf("[Amethyst ErrorTrace] Diagnostics activated (AMETHYST_GL4ES_ERROR_TRACE=1)\n");
+            printf("[Amethyst ErrorTrace] Diagnostics activated\n");
         }
     }
     return amethyst_trace_state;

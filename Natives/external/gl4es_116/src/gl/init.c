@@ -697,7 +697,7 @@ void initialize_gl4es() {
             if(psa_base && psa_base[0]) {
                 size_t base_len = strlen(psa_base);
                 const char* separator = (psa_base[base_len-1]=='/' || psa_base[base_len-1]==':') ? "" : "/";
-                int path_len = snprintf(cwd, sizeof(cwd), "%s%s.gl4es.psa", psa_base, separator);
+                int path_len = snprintf(cwd, sizeof(cwd), "%s%s.gl4es_116.psa", psa_base, separator);
                 if(path_len < 0 || (size_t)path_len >= sizeof(cwd))
                     cwd[0] = '\0';
             }

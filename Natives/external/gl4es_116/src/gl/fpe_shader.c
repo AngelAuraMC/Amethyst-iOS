@@ -1333,7 +1333,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
             // FPE_LESS FPE_EQUAL FPE_LEQUAL FPE_GREATER FPE_NOTEQUAL FPE_GEQUAL
             // but need to negate the operator
             const char* alpha_test_op[] = {">=","!=",">","<=","==","<"}; 
-            sprintf(buff, "if (fColor.a %s _gl4es_AlphaRef) discard;\n", alpha_test_op[alpha_func-FPE_LESS]);
+            sprintf(buff, "if (floor(fColor.a*255.) %s _gl4es_AlphaRef) discard;\n", alpha_test_op[alpha_func-FPE_LESS]);
             ShadAppend(buff);
         }
     }
@@ -1775,7 +1775,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
                 // FPE_LESS FPE_EQUAL FPE_LEQUAL FPE_GREATER FPE_NOTEQUAL FPE_GEQUAL
                 // but need to negate the operator
                 const char* alpha_test_op[] = {">=","!=",">","<=","==","<"}; 
-                sprintf(buff, " if (%s.a %s _gl4es_AlphaRef) discard;\n", is_fragcolor?"_gl4es_FragColor":"gl_FragData[0]", alpha_test_op[alpha_func-FPE_LESS]);
+                sprintf(buff, " if (floor(%s.a*255.) %s _gl4es_AlphaRef) discard;\n", is_fragcolor?"_gl4es_FragColor":"gl_FragData[0]", alpha_test_op[alpha_func-FPE_LESS]);
                 ShadAppend(buff);
             }
         }
