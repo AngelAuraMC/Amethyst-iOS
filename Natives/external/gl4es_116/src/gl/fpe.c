@@ -41,6 +41,7 @@ void fpe_Dispose(glstate_t *glstate) {
 void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state_t *src, shaderconv_need_t* need)
 {
     // filter out some non relevant state (like texture stuff if texture is disabled)
+    memset(dest, 0, sizeof(fpe_state_t));
     memcpy(dest, src, sizeof(fpe_state_t));
     // alpha test
     if(!dest->alphatest) {
@@ -72,19 +73,10 @@ void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state
     // individual textures
     for (int i=0; i<MAX_TEX; i++) {
         if(!(need->need_texs&(1<<i))) { // texture is off
-            dest->texture[i].texmat = 0;
-            dest->texture[i].texformat = 0;
-            dest->texture[i].texadjust = 0;
-            dest->texgen[i].texgen_s = 0;
-            dest->texgen[i].texgen_s_mode = 0;
-            dest->texgen[i].texgen_t = 0;
-            dest->texgen[i].texgen_t_mode = 0;
-            dest->texgen[i].texgen_r = 0;
-            dest->texgen[i].texgen_r_mode = 0;
-            dest->texgen[i].texgen_q = 0;
-            dest->texgen[i].texgen_q_mode = 0;
-            dest->texenv[i].texrgbscale = 0;
-            dest->texenv[i].texalphascale = 0;
+            memset(&dest->texture[i], 0, sizeof(dest->texture[i]));
+            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
+            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
+            dest->texcombine[i] = 0;
         } else {    // texture is on
             if (dest->texgen[i].texgen_s==0)
                 dest->texgen[i].texgen_s_mode = 0;
@@ -94,30 +86,30 @@ void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state
                 dest->texgen[i].texgen_r_mode = 0;
             if (dest->texgen[i].texgen_q==0)
                 dest->texgen[i].texgen_q_mode = 0;
-        }
-        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
-            dest->texcombine[i] = 0;
-            dest->texenv[i].texsrcrgb0 = 0;
-            dest->texenv[i].texsrcalpha0 = 0;
-            dest->texenv[i].texoprgb0 = 0;
-            dest->texenv[i].texopalpha0 = 0;
-            dest->texenv[i].texsrcrgb1 = 0;
-            dest->texenv[i].texsrcalpha1 = 0;
-            dest->texenv[i].texoprgb1 = 0;
-            dest->texenv[i].texopalpha1 = 0;
-            dest->texenv[i].texsrcrgb2 = 0;
-            dest->texenv[i].texsrcalpha2 = 0;
-            dest->texenv[i].texoprgb2 = 0;
-            dest->texenv[i].texopalpha2 = 0;
-            dest->texenv[i].texsrcrgb3 = 0;
-            dest->texenv[i].texsrcalpha3 = 0;
-            dest->texenv[i].texoprgb3 = 0;
-            dest->texenv[i].texopalpha3 = 0;
-        } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
-            dest->texenv[i].texsrcrgb3 = 0;
-            dest->texenv[i].texsrcalpha3 = 0;
-            dest->texenv[i].texoprgb3 = 0;
-            dest->texenv[i].texopalpha3 = 0;
+            if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
+                dest->texcombine[i] = 0;
+                dest->texenv[i].texsrcrgb0 = 0;
+                dest->texenv[i].texsrcalpha0 = 0;
+                dest->texenv[i].texoprgb0 = 0;
+                dest->texenv[i].texopalpha0 = 0;
+                dest->texenv[i].texsrcrgb1 = 0;
+                dest->texenv[i].texsrcalpha1 = 0;
+                dest->texenv[i].texoprgb1 = 0;
+                dest->texenv[i].texopalpha1 = 0;
+                dest->texenv[i].texsrcrgb2 = 0;
+                dest->texenv[i].texsrcalpha2 = 0;
+                dest->texenv[i].texoprgb2 = 0;
+                dest->texenv[i].texopalpha2 = 0;
+                dest->texenv[i].texsrcrgb3 = 0;
+                dest->texenv[i].texsrcalpha3 = 0;
+                dest->texenv[i].texoprgb3 = 0;
+                dest->texenv[i].texopalpha3 = 0;
+            } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
+                dest->texenv[i].texsrcrgb3 = 0;
+                dest->texenv[i].texsrcalpha3 = 0;
+                dest->texenv[i].texoprgb3 = 0;
+                dest->texenv[i].texopalpha3 = 0;
+            }
         }
     }
     if(dest->fog && dest->fogsource==FPE_FOG_SRC_COORD)
@@ -181,30 +173,15 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
     // individual textures
     for (int i=0; i<MAX_TEX; i++) {
         if(dest->texture[i].textype==0) { // texture is off
-            dest->texture[i].texmat = 0;
+            if (glstate->texture_matrix && glstate->texture_matrix[i] && !glstate->texture_matrix[i]->identity) {
+                dest->texture[i].texmat = 1;
+            } else {
+                dest->texture[i].texmat = 0;
+            }
             dest->texture[i].texformat = 0;
             dest->texture[i].texadjust = 0;
-            dest->texgen[i].texgen_s = 0;
-            dest->texgen[i].texgen_s_mode = 0;
-            dest->texgen[i].texgen_t = 0;
-            dest->texgen[i].texgen_t_mode = 0;
-            dest->texgen[i].texgen_r = 0;
-            dest->texgen[i].texgen_r_mode = 0;
-            dest->texgen[i].texgen_q = 0;
-            dest->texgen[i].texgen_q_mode = 0;
-            dest->texenv[i].texrgbscale = 0;
-            dest->texenv[i].texalphascale = 0;
-        } else {    // texture is on
-            if (dest->texgen[i].texgen_s==0)
-                dest->texgen[i].texgen_s_mode = 0;
-            if (dest->texgen[i].texgen_t==0)
-                dest->texgen[i].texgen_t_mode = 0;
-            if (dest->texgen[i].texgen_r==0)
-                dest->texgen[i].texgen_r_mode = 0;
-            if (dest->texgen[i].texgen_q==0)
-                dest->texgen[i].texgen_q_mode = 0;
-        }
-        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
+            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
+            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
             dest->texcombine[i] = 0;
             dest->texenv[i].texsrcrgb0 = 0;
             dest->texenv[i].texsrcalpha0 = 0;
@@ -222,11 +199,39 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
             dest->texenv[i].texsrcalpha3 = 0;
             dest->texenv[i].texoprgb3 = 0;
             dest->texenv[i].texopalpha3 = 0;
-        } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
-            dest->texenv[i].texsrcrgb3 = 0;
-            dest->texenv[i].texsrcalpha3 = 0;
-            dest->texenv[i].texoprgb3 = 0;
-            dest->texenv[i].texopalpha3 = 0;
+        } else {    // texture is on
+            if (dest->texgen[i].texgen_s==0)
+                dest->texgen[i].texgen_s_mode = 0;
+            if (dest->texgen[i].texgen_t==0)
+                dest->texgen[i].texgen_t_mode = 0;
+            if (dest->texgen[i].texgen_r==0)
+                dest->texgen[i].texgen_r_mode = 0;
+            if (dest->texgen[i].texgen_q==0)
+                dest->texgen[i].texgen_q_mode = 0;
+            if(dest->texenv[i].texenv < FPE_COMBINE) {
+                dest->texcombine[i] = 0;
+                dest->texenv[i].texsrcrgb0 = 0;
+                dest->texenv[i].texsrcalpha0 = 0;
+                dest->texenv[i].texoprgb0 = 0;
+                dest->texenv[i].texopalpha0 = 0;
+                dest->texenv[i].texsrcrgb1 = 0;
+                dest->texenv[i].texsrcalpha1 = 0;
+                dest->texenv[i].texoprgb1 = 0;
+                dest->texenv[i].texopalpha1 = 0;
+                dest->texenv[i].texsrcrgb2 = 0;
+                dest->texenv[i].texsrcalpha2 = 0;
+                dest->texenv[i].texoprgb2 = 0;
+                dest->texenv[i].texopalpha2 = 0;
+                dest->texenv[i].texsrcrgb3 = 0;
+                dest->texenv[i].texsrcalpha3 = 0;
+                dest->texenv[i].texoprgb3 = 0;
+                dest->texenv[i].texopalpha3 = 0;
+            } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
+                dest->texenv[i].texsrcrgb3 = 0;
+                dest->texenv[i].texsrcalpha3 = 0;
+                dest->texenv[i].texoprgb3 = 0;
+                dest->texenv[i].texopalpha3 = 0;
+            }
         }
     }
     if(dest->fog && dest->fogsource==FPE_FOG_SRC_COORD)
@@ -422,7 +427,7 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
         glstate->fpe = cached;
     }   
     if(glstate->fpe->glprogram==NULL) {
-        fpe_state_t state;
+        fpe_state_t state = {0};
         memcpy(&state, rel, sizeof(fpe_state_t));
         glstate->fpe->prog = gl4es_glCreateProgram();
         DBG(int from_psa = 1;)
@@ -436,26 +441,26 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
                 GLint status;
                 // no old program, using regular FPE
                 glstate->fpe->vert = gl4es_glCreateShader(GL_VERTEX_SHADER);
-                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, glstate->fpe_state), NULL);
+                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, &state), NULL);
                 gl4es_glCompileShader(glstate->fpe->vert);
                 gl4es_glGetShaderiv(glstate->fpe->vert, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->vert, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, glstate->fpe_state)[0], buff);
+                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, &state)[0], buff);
                     else
                         printf("LIBGL: FPE Vertex shader compile failed: %s\n", buff);
                 }
                 glstate->fpe->frag = gl4es_glCreateShader(GL_FRAGMENT_SHADER);
-                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, glstate->fpe_state), NULL);
+                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, &state), NULL);
                 gl4es_glCompileShader(glstate->fpe->frag);
                 gl4es_glGetShaderiv(glstate->fpe->frag, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->frag, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, glstate->fpe_state)[0], buff);
+                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, &state)[0], buff);
                     else
                         printf("LIBGL: FPE Fragment shader compile failed: %s\n", buff);
                 }
@@ -468,8 +473,8 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
                     char buff[1000];
                     gles_glGetProgramInfoLog(glstate->fpe->prog, 1000, NULL, buff);
                     if(globals4es.logshader) {
-                        printf("LIBGL: FPE Program link failed: source of vertex shader is\n%s\n\n", fpe_VertexShader(NULL, glstate->fpe_state)[0]);
-                        printf("source of fragment shader is \n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, glstate->fpe_state)[0], buff);
+                        printf("LIBGL: FPE Program link failed: source of vertex shader is\n%s\n\n", fpe_VertexShader(NULL, &state)[0]);
+                        printf("source of fragment shader is \n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, &state)[0], buff);
                     } else
                         printf("LIBGL: FPE Program link failed: %s\n", buff);
                 }
@@ -1156,7 +1161,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         GLuint program = glstate->glsl->program;
         program_t *glprogram = glstate->glsl->glprogram;
         if(glprogram->default_vertex) {
-            fpe_state_t vertex_state;
+            fpe_state_t vertex_state = {0};
             fpe_ReleventState_DefaultVertex(&vertex_state, glstate->fpe_state, glprogram->default_need);
             if(!glprogram->fpe_cache)
                 glprogram->fpe_cache = fpe_NewCache();
@@ -1164,7 +1169,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
             program = glprogram->id;
         } else if(!fpe_IsEmpty_cached())
         {
-            fpe_state_t state;
+            fpe_state_t state = {0};
             memcpy(&state, fpe_CachedReleventState(0, NULL), sizeof(fpe_state_t));
             // need to create a new program for that...
             DBG(printf("GLSL program %d need customization => ", program);)
@@ -1447,13 +1452,14 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     // fpe
     if(glprogram->fpe_alpharef!=-1)
     {
-        float alpharef = floorf(glstate->alpharef*255.f);
+        float alpharef = glstate->alpharef;
         GoUniformfv(glprogram, glprogram->fpe_alpharef, 1, 1, &alpharef);
     }
-    if(glprogram->has_builtin_texsampler)
+    if(glprogram->has_builtin_texsampler && !glprogram->builtin_texsampler_initialized)
     {
         for (int i=0; i<hardext.maxtex; i++)
             GoUniformiv(glprogram, glprogram->builtin_texsampler[i], 1, 1, &i); // very basic stuff here, but sampler needs to be a uniform...
+        glprogram->builtin_texsampler_initialized = 1;
     }
     if(glprogram->has_builtin_texadjust)
     {
@@ -1758,6 +1764,8 @@ void builtin_Init(program_t *glprogram) {
     glprogram->builtin_blendcolor = -1;
     // fpe uniform
     glprogram->fpe_alpharef = -1;
+    glprogram->has_builtin_texsampler = 0;
+    glprogram->builtin_texsampler_initialized = 0;
     // initialise emulated builtin attrib to -1
     for (int i=0; i<ATT_MAX; i++)
         glprogram->builtin_attrib[i] = -1;

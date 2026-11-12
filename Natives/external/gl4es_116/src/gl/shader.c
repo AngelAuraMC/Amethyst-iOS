@@ -279,7 +279,7 @@ int isShaderCompatible(GLuint shader, shaderconv_need_t *need) {
     if(!glshader->converted)
         return 0;
     #define GO(A) if(need->need_##A > glshader->need.need_##A) return 0;
-    #define GO2(A) if(need->need_##A & glshader->need.need_##A) return 0;
+    #define GO2(A) if((need->need_##A & ~glshader->need.need_##A) != 0) return 0;
     SUPER()
     #undef GO
     #undef GO2

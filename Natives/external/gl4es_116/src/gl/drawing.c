@@ -286,6 +286,8 @@ GLuint len_indices(const GLushort *sindices, const GLuint *iindices, GLsizei cou
     return len+1;  // lenght is max(indices) + 1 !
 }
 
+static int quad_ibo_ready(void);
+
 static void glDrawElementsCommon(GLenum mode, GLint first, GLsizei count, GLuint len, const GLushort *sindices, const GLuint *iindices, int instancecount) {
     if (glstate->raster.bm_drawing)
         bitmap_flush();
@@ -326,6 +328,38 @@ if(count>500000) return;
     if (mode == GL_QUADS) {
         mode = GL_TRIANGLES;
         int ilen = (count*3)/2;
+        if (sindices && !glstate->bind_buffer.want_index && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+            && sindices[0] == 0 && sindices[count - 1] == (GLushort)(count - 1)) {
+            int is_seq = 1;
+            for (int k = 1; k < count - 1; k++) {
+                if (sindices[k] != (GLushort)k) {
+                    is_seq = 0;
+                    break;
+                }
+            }
+            if (is_seq && !glstate->bind_buffer.want_index) {
+                if (!len) len = count;
+                sindices = glstate->quad_idx;
+                count = ilen;
+                goto quads_done;
+            }
+        } else if (iindices && !glstate->bind_buffer.want_index && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+            && iindices[0] == 0 && iindices[count - 1] == (GLuint)(count - 1)) {
+            int is_seq = 1;
+            for (int k = 1; k < count - 1; k++) {
+                if (iindices[k] != (GLuint)k) {
+                    is_seq = 0;
+                    break;
+                }
+            }
+            if (is_seq && !glstate->bind_buffer.want_index) {
+                if (!len) len = count;
+                sindices = glstate->quad_idx;
+                iindices = NULL;
+                count = ilen;
+                goto quads_done;
+            }
+        }
         if (iindices) {
             gl4es_scratch(ilen*sizeof(GLuint));
             GLuint *tmp = (GLuint*)glstate->scratch;
@@ -354,6 +388,7 @@ if(count>500000) return;
             sindices = tmp;
         }
         count = ilen;
+quads_done: ;
     }
     // of course, GL_SELECT with shader will just not work if not using standard transformation method... Instance count is ignored also
     if (glstate->render_mode == GL_SELECT) {
@@ -457,11 +492,9 @@ static int quad_ibo_ready(void) {
     if (glstate->quad_ibo_state)
         return glstate->quad_ibo_state > 0;
     glstate->quad_ibo_state = -1;
-    // Opt-in experimental fast path (DEFAULT OFF). Set AMETHYST_GL4ES_QUAD_IBO=1 to enable.
-    // When OFF, GL_QUADS uses the stock gl4es client-index path (known-good, e.g. Forge
-    // 1.12.2 splash / loading screen), so a broken IBO path can never affect the default build.
+    // Quad IBO fast path (DEFAULT ON). Set AMETHYST_GL4ES_QUAD_IBO=0 to disable.
     const char *qenv = GetEnvVar("AMETHYST_GL4ES_QUAD_IBO");
-    if (!qenv || strcmp(qenv, "1") != 0)
+    if (qenv && strcmp(qenv, "0") == 0)
         return 0;
     if (hardext.esversion < 2 || !globals4es.usevbo)
         return 0;
@@ -488,7 +521,7 @@ static int quad_ibo_ready(void) {
     GLuint want = glstate->bind_buffer.want_index;
     bindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     gles_glBufferData(GL_ELEMENT_ARRAY_BUFFER, QUAD_IDX_COUNT * sizeof(GLushort), tbl, GL_STATIC_DRAW);
-    glstate->bind_buffer.want_index = want;
+    bindBuffer(GL_ELEMENT_ARRAY_BUFFER, want);
     glstate->quad_idx = tbl;
     glstate->quad_ibo = ibo;
     glstate->quad_ibo_state = 1;
@@ -496,12 +529,13 @@ static int quad_ibo_ready(void) {
 }
 
 static void draw_quad_arrays(GLint first, GLsizei count) {
+    GLsizei len = first + count;
     if (first >= 0 && (first & 3) == 0 && count > 0 && (count & 3) == 0
         && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
         && quad_ibo_ready()) {
         GLuint old_buffer = glstate->bind_buffer.want_index;
         bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, count, glstate->quad_idx + (first*3/2), NULL, 1);
+        glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, glstate->quad_idx + (first*3/2), NULL, 1);
         bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
         return;
     }
@@ -530,7 +564,7 @@ static void draw_quad_arrays(GLint first, GLsizei count) {
     }
     GLuint old_buffer = glstate->bind_buffer.want_index;
     bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, count, indices+(first-indfirst)*3/2, NULL, 1);
+    glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, indices+(first-indfirst)*3/2, NULL, 1);
     wantBufferIndex(old_buffer);
 }
 
@@ -1398,12 +1432,13 @@ void APIENTRY_GL4ES gl4es_glDrawArraysInstanced(GLenum mode, GLint first, GLsize
         free_renderlist(list);
     } else {
         if (mode==GL_QUADS) {
+            GLsizei len = first + count;
             if (first >= 0 && (first & 3) == 0 && count > 0 && (count & 3) == 0
                 && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
                 && quad_ibo_ready()) {
                 GLuint old_buffer = glstate->bind_buffer.want_index;
                 bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, count,
+                glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len,
                                      glstate->quad_idx + (first*3/2), NULL, primcount);
                 bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
                 return;
@@ -1434,7 +1469,7 @@ void APIENTRY_GL4ES gl4es_glDrawArraysInstanced(GLenum mode, GLint first, GLsize
             }
             GLuint old_buffer = glstate->bind_buffer.want_index;
             bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, count, indices+(first-indfirst)*3/2, NULL, primcount);
+            glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, indices+(first-indfirst)*3/2, NULL, primcount);
             wantBufferIndex(old_buffer);
             return;
         }

@@ -5,7 +5,7 @@
 #include "glcase.h"
 #include "light.h"
 #include "state.h"
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
 #include <arm_neon.h>
 #endif
 
@@ -151,6 +151,45 @@ GLvoid *copy_gl_array_quickconvert(const GLvoid *src,
     int j;
     
     GLfloat *out = (GLfloat*)dst;
+    if (from == GL_UNSIGNED_BYTE) {
+        const GLubyte *in_b = (const GLubyte*)in;
+        const GLfloat maxf = 1.0f / 255.0f;
+        int i = skip;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+        if (stride == 4) {
+            const float32x4_t vscale = vdupq_n_f32(maxf);
+            for (; i + 4 <= count; i += 4) {
+                uint8x16_t raw = vld1q_u8(in_b);
+
+                uint8x8_t low8 = vget_low_u8(raw);
+                uint16x8_t low16 = vmovl_u8(low8);
+                uint32x4_t v0_u32 = vmovl_u16(vget_low_u16(low16));
+                uint32x4_t v1_u32 = vmovl_u16(vget_high_u16(low16));
+                vst1q_f32(out, vmulq_f32(vcvtq_f32_u32(v0_u32), vscale));
+                vst1q_f32(out + 4, vmulq_f32(vcvtq_f32_u32(v1_u32), vscale));
+
+                uint8x8_t high8 = vget_high_u8(raw);
+                uint16x8_t high16 = vmovl_u8(high8);
+                uint32x4_t v2_u32 = vmovl_u16(vget_low_u16(high16));
+                uint32x4_t v3_u32 = vmovl_u16(vget_high_u16(high16));
+                vst1q_f32(out + 8, vmulq_f32(vcvtq_f32_u32(v2_u32), vscale));
+                vst1q_f32(out + 12, vmulq_f32(vcvtq_f32_u32(v3_u32), vscale));
+
+                out += 16;
+                in_b += 16;
+            }
+        }
+#endif
+        for (; i < count; i++) {
+            out[0] = ((GLfloat)in_b[0]) * maxf;
+            out[1] = ((GLfloat)in_b[1]) * maxf;
+            out[2] = ((GLfloat)in_b[2]) * maxf;
+            out[3] = ((GLfloat)in_b[3]) * maxf;
+            out += 4;
+            in_b += stride;
+        }
+        return dst;
+    }
     GL_TYPE_SWITCH2(input, in, from,
         const GLfloat maxf = 1.0f/gl_max_value(from);
         for (int i = skip; i < count; i++)

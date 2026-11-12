@@ -226,8 +226,8 @@ void APIENTRY_GL4ES gl4es_glBindTexture(GLenum target, GLuint texture) {
             case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
                 if (glstate->bound_changed < glstate->texture.active+1)
                     glstate->bound_changed = glstate->texture.active+1;
-                if (glstate->fpe_state && glstate->fpe_bound_changed < glstate->texture.active+1)
-                    glstate->fpe_bound_changed = glstate->texture.active+1;
+                if (glstate->fpe_state)
+                    glstate->fpe_bound_changed = hardext.maxtex;
                 realize_active();
                 gles_glBindTexture(GL_TEXTURE_CUBE_MAP, tex?tex->glname:0);
                 glstate->actual_tex2d[glstate->texture.active] = 0;
@@ -238,8 +238,8 @@ void APIENTRY_GL4ES gl4es_glBindTexture(GLenum target, GLuint texture) {
             case GL_TEXTURE_RECTANGLE_ARB:
                 if (glstate->bound_changed < glstate->texture.active+1)
                     glstate->bound_changed = glstate->texture.active+1;
-                if (glstate->fpe_state && glstate->fpe_bound_changed < glstate->texture.active+1)
-                    glstate->fpe_bound_changed = glstate->texture.active+1;
+                if (glstate->fpe_state)
+                    glstate->fpe_bound_changed = hardext.maxtex;
                 break;
         }
     }

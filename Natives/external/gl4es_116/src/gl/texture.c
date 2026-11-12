@@ -209,7 +209,7 @@ static void *swizzle_texture(GLsizei width, GLsizei height,
     if (internalformat==GL_COMPRESSED_LUMINANCE) internalformat=GL_LUMINANCE;
 
     if(*format != intermediaryformat || intermediaryformat!=internalformat) {
-        internal2format_type(intermediaryformat, &dest_format, &dest_type);
+        internal2format_type(internalformat, &dest_format, &dest_type);
         convert = 1;
         check = 0;
     } else {
@@ -494,25 +494,6 @@ static void *swizzle_texture(GLsizei width, GLsizei height,
             }
             *type = dest_type;
             *format = dest_format;
-            if(dest_format!=internalformat) {
-                GLvoid *pix2 = (GLvoid *)pixels;
-                internal2format_type(internalformat, &dest_format, &dest_type);
-                bound->format = dest_format;
-                bound->type = dest_type;
-                if (! pixel_convert(pixels, &pix2, width, height,
-                                *format, *type, dest_format, dest_type, 0, glstate->texture.unpack_align)) {
-                    printf("LIBGL: swizzle error: (%s, %s -> %s, %s)\n",
-                        PrintEnum(dest_format), PrintEnum(dest_type), PrintEnum(internalformat), PrintEnum(dest_type));
-                    return NULL;
-                }
-                if(pix2!=pixels) {
-                    if (pixels!=data)
-                        free(pixels);
-                    pixels = pix2;
-                }
-                *type = dest_type;
-                *format = dest_format;
-            }
             GLvoid *pix2 = pixels;
             if (raster_need_transform())
                 if (!pixel_transform(data, &pixels, width, height,
@@ -534,7 +515,6 @@ static void *swizzle_texture(GLsizei width, GLsizei height,
         bound->inter_format = dest_format;
         bound->inter_type = dest_type;
         if (convert) {
-            internal2format_type(internalformat, &dest_format, &dest_type); // in case they are differents
             *type = dest_type;
             *format = dest_format;
         }
@@ -597,6 +577,7 @@ GLenum swizzle_internalformat(GLenum *internalformat, GLenum format, GLenum type
             }
             if(format==GL_BGRA && hardext.bgra8888) {
                 sret = ret = GL_BGRA;
+                break;
             }
         case GL_RGBA8:
         case GL_RGBA16:
@@ -1602,24 +1583,14 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
     } else  
 #endif
     {
-        if (!pixel_convert(old, &pixels, width, height, format, type, bound->inter_format, bound->inter_type, 0, glstate->texture.unpack_align)) {
+        GLenum target_format = bound->format ? bound->format : bound->inter_format;
+        GLenum target_type = bound->type ? bound->type : bound->inter_type;
+        if (!pixel_convert(old, &pixels, width, height, format, type, target_format, target_type, 0, glstate->texture.unpack_align)) {
             printf("LIBGL: Error in pixel_convert while glTexSubImage2D\n");
         } else {
-            format = bound->inter_format;
-            type = bound->inter_type;
-            if(bound->inter_format!=bound->format || bound->inter_type!=bound->type) {
-                GLvoid* pix2 = pixels;
-                if (!pixel_convert(pixels, &pix2, width, height, format, type, bound->format, bound->type, 0, glstate->texture.unpack_align)) {
-                    printf("LIBGL: Error in pixel_convert while glTexSubImage2D\n");
-                }
-                if (pixels != pix2 && pixels != old)
-                    free(pixels);
-                pixels = pix2;
-                format = bound->format;
-                type = bound->type;
-            }
+            format = target_format;
+            type = target_type;
         }
-        
     }
     if (old != pixels && old != datab)
         free(old);

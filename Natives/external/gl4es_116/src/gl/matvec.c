@@ -1,25 +1,27 @@
 #include "matvec.h"
 
 #include <string.h>
+#include <math.h>
+
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#include <arm_neon.h>
+#endif
 
 float FASTMATH dot(const float *a, const float *b) {
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 }
 
 float FASTMATH dot4(const float *a, const float *b) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-    register float ret;
-    asm volatile (
-    "vld1.f32 {d0-d1}, [%1]        \n" //q0 = a(0..3)
-    "vld1.f32 {d2-d3}, [%2]        \n" //q1 = b(0..3)
-    "vmul.f32 q0, q0, q1           \n" //q0 = a(0)*b(0),a(1)*b(1),a(2)*b(2),a(3)*b(3)
-    "vadd.f32 d0, d0, d1           \n" //d0 = a(0)*b(0)+a(2)*b(2),a(1)*b(1)+a(3)*b(3)
-    "vpadd.f32 d0,d0               \n" //d0 = a(0)*b(0)+a(2)*b(2)+a(1)*b(1)+a(3)*b(3),a(0)*b(0)+a(2)*b(2)+a(1)*b(1)+a(3)*b(3)
-    "vmov.f32 %0, s0               \n"
-    :"=w"(ret): "r"(a), "r"(b)
-    : "q0", "q1"
-        );
-    return ret;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4_t va = vld1q_f32(a);
+    float32x4_t vb = vld1q_f32(b);
+    float32x4_t prod = vmulq_f32(va, vb);
+#if defined(__aarch64__) || defined(_M_ARM64)
+    return vaddvq_f32(prod);
+#else
+    float32x2_t sum = vadd_f32(vget_low_f32(prod), vget_high_f32(prod));
+    return vget_lane_f32(vpadd_f32(sum, sum), 0);
+#endif
 #else
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
 #endif
@@ -33,20 +35,13 @@ void cross3(const float *a, const float *b, float* c) {
 }
 
 void matrix_vector(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-    const float* a1 = a+8;
-    asm volatile (
-    "vld4.f32 {d0,d2,d4,d6}, [%1]        \n" 
-    "vld4.f32 {d1,d3,d5,d7}, [%2]        \n" // q0-q3 = a(0,4,8,12/1,5,9,13/2,6,10,14/3,7,11,15)
-    "vld1.f32 {q4}, [%3]       \n" // q4 = b
-    "vmul.f32 q0, q0, d8[0]    \n" // q0 = a(0,4,8,12)*b[0]
-    "vmla.f32 q0, q1, d8[1]    \n" // q0 = q0 + a(1,5,9,13)*b[1]
-    "vmla.f32 q0, q2, d9[0]    \n" // q0 = q0 + a(2,6,10,14)*b[2]
-    "vmla.f32 q0, q3, d9[1]    \n" // q0 = q0 + a(3,7,11,15)*b[3]
-    "vst1.f32 {q0}, [%0]       \n"
-    ::"r"(c), "r"(a), "r"(a1), "r"(b)
-    : "q0", "q1", "q2", "q3", "q4", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4x4_t mat = vld4q_f32(a);
+    float32x4_t res = vmulq_n_f32(mat.val[0], b[0]);
+    res = vmlaq_n_f32(res, mat.val[1], b[1]);
+    res = vmlaq_n_f32(res, mat.val[2], b[2]);
+    res = vmlaq_n_f32(res, mat.val[3], b[3]);
+    vst1q_f32(c, res);
 #else
     c[0] = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
     c[1] = a[4] * b[0] + a[5] * b[1] + a[6] * b[2] + a[7] * b[3];
@@ -56,24 +51,16 @@ void matrix_vector(const float *a, const float *b, float *c) {
 }
 
 void vector_matrix(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-    const float* b2=b+4;
-    const float* b3=b+8;
-    const float* b4=b+12;
-    asm volatile (
-    "vld1.f32 {q0}, [%1]        \n" // %q0 = a(0..3)
-    "vld1.f32 {q1}, [%2]        \n" // %q1 = b(0..3)
-    "vmul.f32 q1, q1, d0[0]     \n" // %q1 = b(0..3)*a[0]
-    "vld1.f32 {q2}, [%3]        \n" // %q2 = b(4..7)
-    "vmla.f32 q1, q2, d0[1]     \n" // %q1 = %q1 + b(4..7)*a[1]
-    "vld1.f32 {q2}, [%4]        \n" // %q2 = b(8..11)
-    "vmla.f32 q1, q2, d1[0]     \n" // %q1 = %q1 + b(8..11)*a[2]
-    "vld1.f32 {q2}, [%5]        \n" // %q2 = b(12..15)
-    "vmla.f32 q1, q2, d1[1]     \n" // %q1 = %q1 + b(12..15)*a[3]
-    "vst1.f32 {q1}, [%0]        \n"
-    ::"r"(c), "r"(a), "r"(b), "r"(b2), "r"(b3), "r"(b4)
-    : "%2", "q0", "q1", "q2", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4_t row0 = vld1q_f32(b);
+    float32x4_t row1 = vld1q_f32(b + 4);
+    float32x4_t row2 = vld1q_f32(b + 8);
+    float32x4_t row3 = vld1q_f32(b + 12);
+    float32x4_t res = vmulq_n_f32(row0, a[0]);
+    res = vmlaq_n_f32(res, row1, a[1]);
+    res = vmlaq_n_f32(res, row2, a[2]);
+    res = vmlaq_n_f32(res, row3, a[3]);
+    vst1q_f32(c, res);
 #else
     const float a0=a[0], a1=a[1], a2=a[2], a3=a[3];
     c[0] = a0 * b[0] + a1 * b[4] + a2 * b[8] + a3 * b[12];
@@ -84,27 +71,15 @@ void vector_matrix(const float *a, const float *b, float *c) {
 }
 
 void vector3_matrix(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-    const float* b2=b+4;
-    const float* b3=b+8;
-    const float* b4=b+12;
-    asm volatile (
-    //"vld1.f32 {q0}, [%1]        \n" // %q0 = a(0..2)
-    "vld1.32  {d0}, [%1]        \n"
-    "flds     s2, [%1, #8]      \n"
-    "vsub.f32 s3, s3, s3        \n"
-    "vld1.f32 {q1}, [%2]        \n" // %q1 = b(0..3)
-    "vmul.f32 q1, q1, d0[0]    \n" // %q1 = b(0..3)*a[0]
-    "vld1.f32 {q2}, [%3]   \n" // %q2 = b(4..7)
-    "vmla.f32 q1, q2, d0[1]    \n" // %q1 = %q1 + b(4..7)*a[1]
-    "vld1.f32 {q2}, [%4]   \n" // %q2 = b(8..11)
-    "vmla.f32 q1, q2, d1[0]    \n" // %q1 = %q1 + b(8..11)*a[2]
-    "vld1.f32 {q2}, [%5]   \n" // %q2 = b(12..15)
-    "vadd.f32 q1, q1, q2    \n" // %q1 = %q1 + b(12..15)
-    "vst1.f32 {q1}, [%0]        \n"
-    ::"r"(c), "r"(a), "r"(b), "r"(b2), "r"(b3), "r"(b4)
-    : "q0", "q1", "q2", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4_t row0 = vld1q_f32(b);
+    float32x4_t row1 = vld1q_f32(b + 4);
+    float32x4_t row2 = vld1q_f32(b + 8);
+    float32x4_t row3 = vld1q_f32(b + 12);
+    float32x4_t res = vmlaq_n_f32(row3, row0, a[0]);
+    res = vmlaq_n_f32(res, row1, a[1]);
+    res = vmlaq_n_f32(res, row2, a[2]);
+    vst1q_f32(c, res);
 #else
     c[0] = a[0] * b[0] + a[1] * b[4] + a[2] * b[8] + b[12];
     c[1] = a[0] * b[1] + a[1] * b[5] + a[2] * b[9] + b[13];
@@ -126,32 +101,18 @@ void vector3_matrix3(const float *a, const float *b, float *c) {
 }
 
 void vector_normalize(float *a) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-        asm volatile (
-        "vld1.32                {d4}, [%0]                      \n\t"   //d4={x0,y0}
-        "flds                   s10, [%0, #8]                   \n\t"   //d5[0]={z0}
-        "vsub.f32               s11, s11, s11                   \n\t"
-
-        "vmul.f32               d0, d4, d4                      \n\t"   //d0= d4*d4
-        "vpadd.f32              d0, d0                          \n\t"   //d0 = d[0] + d[1]
-        "vmla.f32               d0, d5, d5                      \n\t"   //d0 = d0 + d5*d5 
-        
-        "vmov.f32               d1, d0                          \n\t"   //d1 = d0
-        "vrsqrte.f32    		d0, d0                          \n\t"   //d0 = ~ 1.0 / sqrt(d0)
-        "vmul.f32               d2, d0, d1                      \n\t"   //d2 = d0 * d1
-        "vrsqrts.f32    		d3, d2, d0                      \n\t"   //d3 = (3 - d0 * d2) / 2        
-        "vmul.f32               d0, d0, d3                      \n\t"   //d0 = d0 * d3
-/*        "vmul.f32               d2, d0, d1                      \n\t"   //d2 = d0 * d1  
-        "vrsqrts.f32    		d3, d2, d0                      \n\t"   //d4 = (3 - d0 * d3) / 2        
-        "vmul.f32               d0, d0, d3                      \n\t"   //d0 = d0 * d4  */  // 1 iteration should be enough
-
-        "vmul.f32               q2, q2, d0[0]                   \n\t"   //d0= d2*d4
-        "vst1.32                {d4}, [%0]                     	\n\t"   //
-        "fsts                   s10, [%0, #8]                   \n\t"   //
-        
-        :"+&r"(a): 
-    : "d0", "d1", "d2", "d3", "d4", "d5", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float dot_val = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+    if (dot_val > 0.0f) {
+        float32x2_t v_dot = vdup_n_f32(dot_val);
+        float32x2_t v_rsqrt = vrsqrte_f32(v_dot);
+        v_rsqrt = vmul_f32(v_rsqrt, vrsqrts_f32(vmul_f32(v_dot, v_rsqrt), v_rsqrt));
+        v_rsqrt = vmul_f32(v_rsqrt, vrsqrts_f32(vmul_f32(v_dot, v_rsqrt), v_rsqrt));
+        float det = vget_lane_f32(v_rsqrt, 0);
+        a[0] *= det;
+        a[1] *= det;
+        a[2] *= det;
+    }
 #else
     float det=1.0f/sqrtf(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
     a[0]*=det;
@@ -161,29 +122,18 @@ void vector_normalize(float *a) {
 }
 
 void vector4_normalize(float *a) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-        asm volatile (
-        "vld1.32                {q2}, [%0]                      \n\t"   //q2={x0,y0,z0,00}
-
-        "vmul.f32               d0, d4, d4                      \n\t"   //d0= d4*d4
-        "vpadd.f32              d0, d0                          \n\t"   //d0 = d[0] + d[1]
-        "vmla.f32               d0, d5, d5                      \n\t"   //d0 = d0 + d5*d5 
-        
-        "vmov.f32               d1, d0                          \n\t"   //d1 = d0
-        "vrsqrte.f32    		d0, d0                          \n\t"   //d0 = ~ 1.0 / sqrt(d0)
-        "vmul.f32               d2, d0, d1                      \n\t"   //d2 = d0 * d1
-        "vrsqrts.f32    		d3, d2, d0                      \n\t"   //d3 = (3 - d0 * d2) / 2        
-        "vmul.f32               d0, d0, d3                      \n\t"   //d0 = d0 * d3
-/*        "vmul.f32               d2, d0, d1                      \n\t"   //d2 = d0 * d1  
-        "vrsqrts.f32    		d3, d2, d0                      \n\t"   //d4 = (3 - d0 * d3) / 2        
-        "vmul.f32               d0, d0, d3                      \n\t"   //d0 = d0 * d4  */  // 1 iteration should be enough
-
-        "vmul.f32               q2, q2, d0[0]                   \n\t"   //d0= d2*d4
-        "vst1.32                {q2}, [%0]                    	\n\t"   //
-        
-        :"+&r"(a): 
-    : "d0", "d1", "d2", "d3", "d4", "d5", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float dot_val = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+    if (dot_val > 0.0f) {
+        float32x2_t v_dot = vdup_n_f32(dot_val);
+        float32x2_t v_rsqrt = vrsqrte_f32(v_dot);
+        v_rsqrt = vmul_f32(v_rsqrt, vrsqrts_f32(vmul_f32(v_dot, v_rsqrt), v_rsqrt));
+        v_rsqrt = vmul_f32(v_rsqrt, vrsqrts_f32(vmul_f32(v_dot, v_rsqrt), v_rsqrt));
+        float det = vget_lane_f32(v_rsqrt, 0);
+        a[0] *= det;
+        a[1] *= det;
+        a[2] *= det;
+    }
 #else
     float det=1.0f/sqrtf(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
     a[0]*=det;
@@ -196,17 +146,12 @@ void vector4_normalize(float *a) {
 void FASTMATH matrix_transpose(const float *a, float *b) {
     // column major -> row major
     // a(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) -> b(0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15)
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-   const float* a1 = a+8;
-	float* b1=b+8;
-    asm volatile (
-    "vld4.f32 {d0,d2,d4,d6}, [%1]        \n" 
-    "vld4.f32 {d1,d3,d5,d7}, [%2]        \n" // %q0-%q3 = a(0,4,8,12/1,5,9,13/2,6,10,14/3,7,11,15)
-    "vst1.f32 {d0-d3}, [%0]        \n"
-    "vst1.f32 {d4-d7}, [%3]        \n"
-    ::"r"(b), "r"(a), "r"(a1), "r"(b1)
-    : "q0", "q1", "q2", "q3", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4x4_t mat = vld4q_f32(a);
+    vst1q_f32(b,      mat.val[0]);
+    vst1q_f32(b + 4,  mat.val[1]);
+    vst1q_f32(b + 8,  mat.val[2]);
+    vst1q_f32(b + 12, mat.val[3]);
 #else
     for (int i=0; i<4; i++)
         for (int j=0; j<4; j++)
@@ -259,37 +204,21 @@ void matrix_inverse3_transpose(const float *m, float *r) {
 }
     
 void matrix_mul(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON__) && !defined(__APPLE__)
-    const float* a1 = a+8;
-	const float* b1=b+8;
-    float* c1=c+8;
-    asm volatile (
-    "vld1.32  {d16-d19}, [%2]       \n" 
-    "vld1.32  {d20-d23}, [%3]       \n"
-    "vld1.32  {d0-d3}, [%4]         \n"
-    "vld1.32  {d4-d7}, [%5]         \n"
-    "vmul.f32 q12, q8, d0[0]        \n"
-    "vmul.f32 q13, q8, d2[0]        \n"
-    "vmul.f32 q14, q8, d4[0]        \n"
-    "vmul.f32 q15, q8, d6[0]        \n"
-    "vmla.f32 q12, q9, d0[1]        \n"
-    "vmla.f32 q13, q9, d2[1]        \n"
-    "vmla.f32 q14, q9, d4[1]        \n"
-    "vmla.f32 q15, q9, d6[1]        \n"
-    "vmla.f32 q12, q10, d1[0]       \n"
-    "vmla.f32 q13, q10, d3[0]       \n"
-    "vmla.f32 q14, q10, d5[0]       \n"
-    "vmla.f32 q15, q10, d7[0]       \n"
-    "vmla.f32 q12, q11, d1[1]       \n"
-    "vmla.f32 q13, q11, d3[1]       \n"
-    "vmla.f32 q14, q11, d5[1]       \n"
-    "vmla.f32 q15, q11, d7[1]       \n"
-    "vst1.32  {d24-d27}, [%0]       \n"
-    "vst1.32  {d28-d31}, [%1]       \n"
-    ::"r"(c), "r"(c1), "r"(a), "r"(a1), "r"(b), "r"(b1)
-    : "q0", "q1", "q2", "q3", 
-      "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15", "memory"
-        );
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    float32x4_t row_a0 = vld1q_f32(a);
+    float32x4_t row_a1 = vld1q_f32(a + 4);
+    float32x4_t row_a2 = vld1q_f32(a + 8);
+    float32x4_t row_a3 = vld1q_f32(a + 12);
+
+    float32x4_t res0 = vmlaq_n_f32(vmlaq_n_f32(vmlaq_n_f32(vmulq_n_f32(row_a0, b[0]), row_a1, b[1]), row_a2, b[2]), row_a3, b[3]);
+    float32x4_t res1 = vmlaq_n_f32(vmlaq_n_f32(vmlaq_n_f32(vmulq_n_f32(row_a0, b[4]), row_a1, b[5]), row_a2, b[6]), row_a3, b[7]);
+    float32x4_t res2 = vmlaq_n_f32(vmlaq_n_f32(vmlaq_n_f32(vmulq_n_f32(row_a0, b[8]), row_a1, b[9]), row_a2, b[10]), row_a3, b[11]);
+    float32x4_t res3 = vmlaq_n_f32(vmlaq_n_f32(vmlaq_n_f32(vmulq_n_f32(row_a0, b[12]), row_a1, b[13]), row_a2, b[14]), row_a3, b[15]);
+
+    vst1q_f32(c, res0);
+    vst1q_f32(c + 4, res1);
+    vst1q_f32(c + 8, res2);
+    vst1q_f32(c + 12, res3);
 #else
    float a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
         a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
@@ -323,21 +252,30 @@ void matrix_mul(const float *a, const float *b, float *c) {
 }
 
 void vector4_mult(const float *a, const float *b, float *c) {
-//TODO: NEON version of this
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    vst1q_f32(c, vmulq_f32(vld1q_f32(a), vld1q_f32(b)));
+#else
     for (int i=0; i<4; i++)
         c[i] = a[i]*b[i];
+#endif
 }
 
 void vector4_add(const float *a, const float *b, float *c) {
-//TODO: NEON version of this
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    vst1q_f32(c, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
+#else
     for (int i=0; i<4; i++)
         c[i] = a[i]+b[i];
+#endif
 }
 
 void vector4_sub(const float *a, const float *b, float *c) {
-    //TODO: NEON version of this
-        for (int i=0; i<4; i++)
-            c[i] = a[i]-b[i];
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+    vst1q_f32(c, vsubq_f32(vld1q_f32(a), vld1q_f32(b)));
+#else
+    for (int i=0; i<4; i++)
+        c[i] = a[i]-b[i];
+#endif
 }
     
 void set_identity(float* mat) {

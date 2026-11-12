@@ -6,7 +6,7 @@
 #include "gl4es.h"
 #include "glstate.h"
 #include "debug.h"
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
 #include <arm_neon.h>
 #endif
 
@@ -794,10 +794,11 @@ bool pixel_convert(const GLvoid *src, GLvoid **dst,
         }
         if (*dst == NULL)        // alloc dst only if dst==NULL
             *dst = malloc(dst_size);
-        if (stride)	// for in-place conversion
-			for (int yy=0; yy<height; yy++)
-				memcpy((char*)(*dst)+yy*dst_width2, (char*)src+yy*src_width, src_width);
-        else
+        if (stride || src_widthadj) {
+            GLsizei row_copy = width * pixel_sizeof(src_format, src_type);
+            for (int yy = 0; yy < height; yy++)
+                memcpy((char*)(*dst) + yy * dst_width2, (const char*)src + yy * src_width, row_copy);
+        } else
 			memcpy(*dst, src, dst_size);
         return true;
     }
@@ -823,7 +824,7 @@ bool pixel_convert(const GLvoid *src, GLvoid **dst,
             const unsigned char *s = (const unsigned char*)src_pos;
             unsigned char *d = (unsigned char*)dst_pos;
             GLuint j = 0;
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
             for (; j + 16 <= width; j += 16) {
                 uint8x16x4_t pix = vld4q_u8(s + (size_t)j * 4);
                 uint8x16x4_t swizzled;

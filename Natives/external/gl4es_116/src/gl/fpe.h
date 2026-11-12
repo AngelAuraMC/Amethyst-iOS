@@ -11,6 +11,7 @@
 
 */
 
+#include <stdint.h>
 #include "gles.h"
 #include "program.h"
 
@@ -133,48 +134,48 @@
 #define FPE_BLENDEQ_MIN                     3
 #define FPE_BLENDEQ_MAX                     4
 
+#pragma pack(push, 1)
 typedef struct fpe_texgen_s {
-  unsigned int texgen_s:1;              // texgen S enabled on 1 bit
-  unsigned int texgen_s_mode:3;         // texgen S on 3 bits
-  unsigned int texgen_t:1;              // texgen T enabled on 1 bit
-  unsigned int texgen_t_mode:3;         // texgen T on 3 bits
-  unsigned int texgen_r:1;              // texgen R enabled on 1 bit
-  unsigned int texgen_r_mode:3;         // texgen R on 3 bits
-  unsigned int texgen_q:1;              // texgen Q enabled on 1 bit
-  unsigned int texgen_q_mode:3;         // texgen Q on 3 bits
+  uint16_t texgen_s:1;              // texgen S enabled on 1 bit
+  uint16_t texgen_s_mode:3;         // texgen S on 3 bits
+  uint16_t texgen_t:1;              // texgen T enabled on 1 bit
+  uint16_t texgen_t_mode:3;         // texgen T on 3 bits
+  uint16_t texgen_r:1;              // texgen R enabled on 1 bit
+  uint16_t texgen_r_mode:3;         // texgen R on 3 bits
+  uint16_t texgen_q:1;              // texgen Q enabled on 1 bit
+  uint16_t texgen_q_mode:3;         // texgen Q on 3 bits
 } fpe_texgen_t;
 
 typedef struct fpe_texture_s {
-  unsigned int texmat:1;                // flags if texture matrix is not identity
-  unsigned int textype:3;               // textures type stored on 3 bits
-  unsigned int texadjust:1;             // flags if texture need adjustement
-  unsigned int texformat:3;             // textures (simplified) internal format on 3 bits
+  uint8_t texmat:1;                // flags if texture matrix is not identity
+  uint8_t textype:3;               // textures type stored on 3 bits
+  uint8_t texadjust:1;             // flags if texture need adjustement
+  uint8_t texformat:3;             // textures (simplified) internal format on 3 bits
 } fpe_texture_t;
 
 typedef struct fpe_texenv_s {
-  unsigned int texenv:4;                // texenv flag
-  unsigned int texoprgb0:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  unsigned int texoprgb1:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  unsigned int texoprgb2:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  unsigned int texoprgb3:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  unsigned int texopalpha0:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  unsigned int texopalpha1:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  unsigned int texopalpha2:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  unsigned int texopalpha3:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  unsigned int texsrcrgb0:5;            // texenv src rgb n
-  unsigned int texsrcrgb1:5;            // texenv src rgb n
-  unsigned int texsrcrgb2:5;            // texenv src rgb n
-  unsigned int texsrcrgb3:5;            // texenv src rgb n
-  unsigned int texsrcalpha0:5;          // texenv src alpha n
-  unsigned int texsrcalpha1:5;          // texenv src alpha n
-  unsigned int texsrcalpha2:5;          // texenv src alpha n
-  unsigned int texsrcalpha3:5;          // texenv src alpha n
-  unsigned int texrgbscale:1;           // flag if RGB_SCALE for texture is != 1.0
-  unsigned int texalphascale:1;         // flag if ALPHA_SCALE for texture is != 1.0
-  unsigned int dummy:6;                 // align sturture to 64bits...
+  uint64_t texenv:4;                // texenv flag
+  uint64_t texoprgb0:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  uint64_t texoprgb1:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  uint64_t texoprgb2:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  uint64_t texoprgb3:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  uint64_t texopalpha0:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  uint64_t texopalpha1:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  uint64_t texopalpha2:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  uint64_t texopalpha3:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  uint64_t texsrcrgb0:5;            // texenv src rgb n
+  uint64_t texsrcrgb1:5;            // texenv src rgb n
+  uint64_t texsrcrgb2:5;            // texenv src rgb n
+  uint64_t texsrcrgb3:5;            // texenv src rgb n
+  uint64_t texsrcalpha0:5;          // texenv src alpha n
+  uint64_t texsrcalpha1:5;          // texenv src alpha n
+  uint64_t texsrcalpha2:5;          // texenv src alpha n
+  uint64_t texsrcalpha3:5;          // texenv src alpha n
+  uint64_t texrgbscale:1;           // flag if RGB_SCALE for texture is != 1.0
+  uint64_t texalphascale:1;         // flag if ALPHA_SCALE for texture is != 1.0
+  uint64_t dummy:6;                 // align sturture to 64bits...
 } fpe_texenv_t;
 
-#pragma pack(1)
 typedef struct fpe_state_s {
     fpe_texture_t texture[MAX_TEX];      // 16 texture flags
     fpe_texgen_t texgen[MAX_TEX];        // 16 texgen flags
@@ -215,15 +216,17 @@ typedef struct fpe_state_s {
     unsigned int blenddstalpha:4;
     unsigned int blendeqrgb:3;
     unsigned int blendeqalpha:3;
+    unsigned int reserved:3;            // Explicit padding to fill 64-bit unit cleanly
     uint16_t     vertex_prg_id;          // Id of vertex program currently binded (0 most of the time), 16bits is more than enough...
     uint16_t     fragment_prg_id;        // Id of fragment program currently binded (0 most of the time)
 } fpe_state_t;
-#pragma pack()
+#pragma pack(pop)
 
 typedef struct fpe_fpe_s {
-  GLuint  frag, vert, prog;   // shader info
-  fpe_state_t state;          // state relevant to the current fpe program
-  program_t *glprogram;
+  GLuint       frag, vert, prog;   // shader info
+  uint64_t     hash;
+  fpe_state_t  state;              // state relevant to the current fpe program
+  program_t   *glprogram;
 } fpe_fpe_t;
 
 typedef struct fpe_cache_s fpe_cache_t;

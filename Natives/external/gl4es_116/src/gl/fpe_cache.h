@@ -6,7 +6,7 @@ typedef fpe_state_t *kh_fpe_t;
 typedef struct fpe_fpe_s fpe_fpe_t;
 struct kh_fpecachelist_s;
 
-#define FPE_MRU_SIZE 8
+#define FPE_MRU_SIZE 16
 
 typedef struct fpe_cache_s {
     struct kh_fpecachelist_s *map;

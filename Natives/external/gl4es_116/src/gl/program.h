@@ -248,6 +248,7 @@ typedef struct {
     int                             has_fpe;
     GLint                           builtin_texsampler[MAX_TEX];
     int                             has_builtin_texsampler;
+    int                             builtin_texsampler_initialized;
     GLint                           builtin_texenvrgbscale[MAX_TEX];
     GLint                           builtin_texenvalphascale[MAX_TEX];
     GLint                           builtin_texadjust[MAX_TEX];

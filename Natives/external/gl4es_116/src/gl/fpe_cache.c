@@ -33,9 +33,9 @@
 #endif
 
 static const char PSA_SIGN[] = "GL4ES PrecompiledShaderArchive";
-#define CACHE_VERSION 113
+#define CACHE_VERSION 114
 
-static kh_inline khint_t _hash_fpe(fpe_state_t *p)
+static kh_inline uint64_t _hash_fpe(fpe_state_t *p)
 {
     const unsigned char* s = (const unsigned char*)p;
     uint64_t h = 1469598103934665603ULL;
@@ -48,10 +48,16 @@ static kh_inline khint_t _hash_fpe(fpe_state_t *p)
     }
     for (; i<sizeof(fpe_state_t); ++i)
         h = (h ^ s[i]) * 1099511628211ULL;
+    return h;
+}
+
+static kh_inline khint_t _hash_fpe_kh(fpe_state_t *p)
+{
+    uint64_t h = _hash_fpe(p);
     return (khint_t)(h ^ (h >> 32));
 }
 
-#define kh_fpe_hash_func(key) _hash_fpe(key)
+#define kh_fpe_hash_func(key) _hash_fpe_kh(key)
 
 #define kh_fpe_hash_equal(a, b) (memcmp(a, b, sizeof(fpe_state_t)) == 0)
 
@@ -93,9 +99,11 @@ void fpe_disposeCache(fpe_cache_t* cache, int freeprog) {
 fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
     if(!cur || !state || !cur->map) return NULL;
 
+    uint64_t key_hash = _hash_fpe(state);
+
     for(int i = 0; i < cur->mru_count; ++i) {
         fpe_fpe_t *entry = cur->mru[i];
-        if(entry && memcmp(&entry->state, state, sizeof(fpe_state_t)) == 0) {
+        if(entry && entry->hash == key_hash && memcmp(&entry->state, state, sizeof(fpe_state_t)) == 0) {
             if(i > 0) {
                 for(int j = i; j > 0; --j) {
                     cur->mru[j] = cur->mru[j-1];
@@ -110,9 +118,12 @@ fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
     fpe_fpe_t *result = NULL;
     if(k != kh_end(cur->map)) {
         result = kh_value(cur->map, k);
+        if(!result->hash)
+            result->hash = key_hash;
     } else {
         result = (fpe_fpe_t*)calloc(1, sizeof(fpe_fpe_t));
         if(!result) return NULL;
+        result->hash = key_hash;
         memcpy(&result->state, state, sizeof(fpe_state_t));
         int r;
         k = kh_put(fpecachelist, cur->map, &result->state, &r);
