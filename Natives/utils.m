@@ -14,13 +14,17 @@ void* SecTaskCreateFromSelf(CFAllocatorRef allocator);
 
 BOOL getEntitlementValue(NSString *key) {
     void *secTask = SecTaskCreateFromSelf(NULL);
-    CFTypeRef value = SecTaskCopyValueForEntitlement(SecTaskCreateFromSelf(NULL), key, nil);
+    if (!secTask) {
+        return NO;
+    }
+    CFTypeRef value = SecTaskCopyValueForEntitlement(secTask, (__bridge CFStringRef)key, nil);
     CFRelease(secTask);
     if (value == nil) {
         return NO;
     }
+    BOOL result = ![(__bridge id)value isKindOfClass:NSNumber.class] || [(__bridge id)value boolValue];
     CFRelease(value);
-    return ![(__bridge id)value isKindOfClass:NSNumber.class] || [(__bridge id)value boolValue];
+    return result;
 }
 
 BOOL isJITEnabled(BOOL checkCSFlags) {
@@ -199,21 +203,43 @@ BOOL JIT26IsLikelyDebuggerKeepAttached(void) {
 }
 
 BOOL DeviceCanCreateRXMap(void) {
-    // This is only guaranteed to be accurate when JIT is already enabled. Obviously this is only useful for vphone and similar internal environments where JIT is always enabled.
-    uint32_t *map = mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
-    assert(map != MAP_FAILED);
+    // This is only guaranteed to be accurate when JIT is already enabled.
+    size_t pagesize = getpagesize();
+    uint32_t *map = mmap(NULL, pagesize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    if (map == MAP_FAILED) {
+        return NO;
+    }
     *map = 0xFFFFFFFF;
-    int ret = mprotect(map, getpagesize(), PROT_READ | PROT_EXEC) | mprotect(map, getpagesize(), PROT_READ | PROT_EXEC);
-    munmap(map, getpagesize());
+    int ret = mprotect(map, pagesize, PROT_READ | PROT_EXEC) | mprotect(map, pagesize, PROT_READ | PROT_EXEC);
+    munmap(map, pagesize);
     return ret == 0;
 }
 
 BOOL DeviceHasTXMReal(void) {
     DIR *d = opendir("/private/preboot");
-    if(!d) {
-        // /private/preboot is not accessible in 27.0 and 26.6?, fallback to speculation
-        NSUInteger (*MGGetSInt64Answer)(NSString *) = dlsym(RTLD_DEFAULT, "MGGetSInt64Answer");
-        NSUInteger chipID = MGGetSInt64Answer(@"ChipID");
+    if(d) {
+        struct dirent *dir;
+        char txmPath[PATH_MAX] = {0};
+        BOOL found = NO;
+        while ((dir = readdir(d)) != NULL) {
+            if(strlen(dir->d_name) == 96) {
+                snprintf(txmPath, sizeof(txmPath), "/private/preboot/%s/usr/standalone/firmware/FUD/Ap,TrustedExecutionMonitor.img4", dir->d_name);
+                found = (access(txmPath, F_OK) == 0);
+                break;
+            }
+        }
+        closedir(d);
+        if (found) {
+            return YES;
+        }
+        return NO;
+    }
+
+    // /private/preboot is not accessible (sandboxed/jailed app), fallback to speculation
+    void *gestalt = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_GLOBAL | RTLD_LAZY);
+    uint64_t (*MGGetSInt64Answer)(CFStringRef, uint64_t) = dlsym(gestalt ? gestalt : RTLD_DEFAULT, "MGGetSInt64Answer");
+    if (MGGetSInt64Answer) {
+        uint64_t chipID = MGGetSInt64Answer((__bridge CFStringRef)@"ChipID", 0);
         switch(chipID) {
             case 0x8020: // A12
             case 0x8027: // A12X/Z
@@ -226,17 +252,7 @@ BOOL DeviceHasTXMReal(void) {
                 if (@available(iOS 19.0, *)) return YES; return NO;
         }
     }
-    // deterministically detect TXM for 17.0-26.5?
-    struct dirent *dir;
-    char txmPath[PATH_MAX];
-    while ((dir = readdir(d)) != NULL) {
-        if(strlen(dir->d_name) == 96) {
-            snprintf(txmPath, sizeof(txmPath), "/private/preboot/%s/usr/standalone/firmware/FUD/Ap,TrustedExecutionMonitor.img4", dir->d_name);
-            break;
-        }
-    }
-    closedir(d);
-    return access(txmPath, F_OK) == 0;
+    return NO;
 }
 // Thin wrapper of DeviceHasJITFlags to respect overriden flag
 __exported BOOL DeviceHasTXM(void) {

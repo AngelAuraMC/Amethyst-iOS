@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
                    JNI_TRUE, JNI_FALSE, JNI_TRUE);
     }
 
-    if (!isJITEnabled(true) && argc == 2) {
+    if (argc == 2 && !isJITEnabled(true)) {
         NSLog(@"calling ptrace(PT_TRACE_ME)");
         // Child process can call to PT_TRACE_ME
         // then both parent and child processes get CS_DEBUGGED

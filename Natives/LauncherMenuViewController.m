@@ -137,7 +137,7 @@
     [self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
     self.lastSelectedIndex = 1;
     
-    if (getEntitlementValue(@"get-task-allow")) {
+    if (getEntitlementValue(@"get-task-allow") || isJITEnabled(false)) {
         [self displayProgress:localize(@"login.jit.checking", nil)];
         if (isJITEnabled(false)) {
             [self displayProgress:localize(@"login.jit.enabled", nil)];
