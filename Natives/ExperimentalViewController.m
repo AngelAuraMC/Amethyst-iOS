@@ -94,54 +94,6 @@
             }
         ],
         @[
-            // Renderer Optimizations (GL4ES)
-            @{@"icon": @"cpu"},
-            @{
-                @"key": @"draw_batching",
-                @"hasDetail": @YES,
-                @"icon": @"square.stack.3d.up",
-                @"type": self.typePickField,
-                @"pickKeys": @[@"default", @"off", @"1", @"10", @"100"],
-                @"pickList": @[@"Default", @"Off (0)", @"Low (100)", @"Medium (1,000)", @"High (10,000)"]
-            },
-            @{
-                @"key": @"use_vbo",
-                @"hasDetail": @YES,
-                @"icon": @"memorychip",
-                @"type": self.typePickField,
-                @"pickKeys": @[@"default", @"0", @"1", @"2"],
-                @"pickList": @[@"Default", @"0 - Disabled", @"1 - Standard VBO", @"2 - VBO + glLockArrays"]
-            },
-            @{
-                @"key": @"mipmap_mode",
-                @"hasDetail": @YES,
-                @"icon": @"photo.stack",
-                @"type": self.typePickField,
-                @"pickKeys": @[@"default", @"1", @"2", @"3", @"4"],
-                @"pickList": @[@"Default", @"1 - Force AutoMipMap", @"2 - Guess AutoMipMap", @"3 - Disable MipMaps", @"4 - Non-Square Ignored"]
-            },
-            @{
-                @"key": @"no_shader_lod",
-                @"hasDetail": @YES,
-                @"icon": @"camera.filters",
-                @"type": self.typeSwitch
-            },
-            @{
-                @"key": @"shrink_texture",
-                @"hasDetail": @YES,
-                @"icon": @"arrow.down.right.and.arrow.up.left",
-                @"type": self.typePickField,
-                @"pickKeys": @[@"default", @"1", @"2", @"3", @"7"],
-                @"pickList": @[@"Default (No Shrink)", @"1 - Half All Textures (/2)", @"2 - Half Textures >512 (/2)", @"3 - Half Textures >256 (/2)", @"7 - Half >512 (Keep Empty)"]
-            },
-            @{
-                @"key": @"no_vao_cache",
-                @"hasDetail": @YES,
-                @"icon": @"internaldrive",
-                @"type": self.typeSwitch
-            }
-        ],
-        @[
             // Engine & Runtime
             @{@"icon": @"gearshape.2"},
             @{

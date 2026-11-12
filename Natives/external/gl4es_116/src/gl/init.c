@@ -93,9 +93,15 @@ void initialize_gl4es() {
     if(inited++) return;
     // default init of globals
     memset(&globals4es, 0, sizeof(globals4es));
+#if defined(__APPLE__) || defined(IOS) || defined(DARWIN)
+    globals4es.mergelist = 0;
+    globals4es.queries = 1;
+    globals4es.beginend = 0;
+#else
     globals4es.mergelist = 1;
     globals4es.queries = 1;
     globals4es.beginend = 1;
+#endif
     #ifdef PYRA
     GetEnvVarInt("LIBGL_DEEPBIND", &globals4es.deepbind, 0);
     #else

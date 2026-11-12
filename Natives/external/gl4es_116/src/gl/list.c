@@ -619,6 +619,10 @@ renderlist_t* append_calllist(renderlist_t *list, renderlist_t *a)
             }
             // batch copy first
             memcpy(new, a, sizeof(renderlist_t));
+            new->vbo_array = 0;
+            new->vbo_indices = 0;
+            new->use_vbo_array = 0;
+            new->use_vbo_indices = 0;
             list->next = new;
             new->prev = list;
             // ok, now on new list

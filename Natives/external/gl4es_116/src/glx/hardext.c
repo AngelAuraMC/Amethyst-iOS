@@ -260,6 +260,10 @@ void GetHardwareExtensions(int notest)
     if(strstr(Exts, "GL_APPLE_texture_2D_limited_npot ")) hardext.npot = 1;
     if(strstr(Exts, "GL_IMG_texture_npot ")) hardext.npot = 1; // it should enable mipmap (so hardext.npot=2), but mipmap (so level > 0) needs to be POT-sized?!!
     if(strstr(Exts, "GL_ARB_texture_non_power_of_two ") || strstr(Exts, "GL_OES_texture_npot ")) hardext.npot = 3;
+    if(hardext.esversion>=3) hardext.npot = 3;
+#if defined(__APPLE__) || defined(IOS) || defined(DARWIN)
+    if(hardext.esversion>=2) hardext.npot = 3;
+#endif
     if(hardext.npot>0) {
         SHUT_LOGD("Hardware %s NPOT detected and used\n", hardext.npot==3?"Full":(hardext.npot==2?"Limited+Mipmap":"Limited"));
     }
@@ -313,7 +317,10 @@ void GetHardwareExtensions(int notest)
     S("GL_OES_rgb8_rgba8 ", rgba8, 1);
     S("GL_EXT_multi_draw_arrays ", multidraw, 0);
     if(!globals4es.nobgra) {
-        S("GL_EXT_texture_format_BGRA8888 ", bgra8888, 1);
+        if(strstr(Exts, "GL_EXT_texture_format_BGRA8888") || strstr(Exts, "GL_APPLE_texture_format_BGRA8888")) {
+            hardext.bgra8888 = 1;
+            SHUT_LOGD("Extension BGRA8888 detected and used\n");
+        }
     }
     if(!globals4es.nodepthtex) {
         S("GL_OES_depth_texture ", depthtex, 1);

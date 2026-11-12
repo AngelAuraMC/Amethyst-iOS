@@ -13,10 +13,21 @@
 static EGLDisplay g_EglDisplay;
 static egl_library handle;
 static void* g_tinygl4angle_handle = NULL;
+static void* g_gles2_backend_handle = NULL;
 
 void dlsym_EGL() {
     g_tinygl4angle_handle = dlopen("@rpath/libtinygl4angle.dylib", RTLD_GLOBAL);
     NSCAssert(g_tinygl4angle_handle, @(dlerror()));
+
+    // Nạp trực tiếp ANGLE libGLESv2 backend cho GL4ES (tránh qua tinygl4angle shim)
+    g_gles2_backend_handle = dlopen("@rpath/libGLESv2.framework/libGLESv2", RTLD_LOCAL);
+    if (!g_gles2_backend_handle) {
+        g_gles2_backend_handle = dlopen("@rpath/libGLESv2.dylib", RTLD_LOCAL);
+    }
+    if (!g_gles2_backend_handle) {
+        NSLog(@"[Amethyst] Info: libGLESv2 direct dlopen failed, falling back to RTLD_DEFAULT");
+        g_gles2_backend_handle = RTLD_DEFAULT;
+    }
     handle.eglBindAPI = dlsym(g_tinygl4angle_handle, "eglBindAPI");
     handle.eglChooseConfig = dlsym(g_tinygl4angle_handle, "eglChooseConfig");
     handle.eglCreateContext = dlsym(g_tinygl4angle_handle, "eglCreateContext");
@@ -123,11 +134,11 @@ extern void* get_gl4es_116_handle(void);
 static void* amethyst_gles_proc_address(const char* name) {
     if (!name) return NULL;
     void* sym = NULL;
-    // 1. Tìm trực tiếp trong ANGLE backend dylib (tránh đụng độ với OpenGL symbol của GL4ES)
-    if (g_tinygl4angle_handle) {
-        sym = dlsym(g_tinygl4angle_handle, name);
+    // 1. Tìm trực tiếp trong ANGLE libGLESv2 backend (tránh hoàn toàn tinygl4angle vì tinygl4angle chặn #version es)
+    if (g_gles2_backend_handle) {
+        sym = dlsym(g_gles2_backend_handle, name);
     }
-    // 2. Nếu là extension runtime, gọi eglGetProcAddress từ ANGLE
+    // 2. Nếu là extension runtime, gọi eglGetProcAddress từ ANGLE EGL
     if (!sym && handle.eglGetProcAddress) {
         sym = (void*)handle.eglGetProcAddress(name);
     }

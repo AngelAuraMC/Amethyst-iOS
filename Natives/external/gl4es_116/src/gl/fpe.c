@@ -95,7 +95,11 @@ void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state
             if (dest->texgen[i].texgen_q==0)
                 dest->texgen[i].texgen_q_mode = 0;
         }
-        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
+        if(dest->texture[i].textype == 0) {
+            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
+            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
+            dest->texcombine[i] = 0;
+        } else if(dest->texenv[i].texenv < FPE_COMBINE) {
             dest->texcombine[i] = 0;
             dest->texenv[i].texsrcrgb0 = 0;
             dest->texenv[i].texsrcalpha0 = 0;
@@ -109,6 +113,10 @@ void APIENTRY_GL4ES fpe_ReleventState_DefaultVertex(fpe_state_t *dest, fpe_state
             dest->texenv[i].texsrcalpha2 = 0;
             dest->texenv[i].texoprgb2 = 0;
             dest->texenv[i].texopalpha2 = 0;
+            dest->texenv[i].texsrcrgb3 = 0;
+            dest->texenv[i].texsrcalpha3 = 0;
+            dest->texenv[i].texoprgb3 = 0;
+            dest->texenv[i].texopalpha3 = 0;
         } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
             dest->texenv[i].texsrcrgb3 = 0;
             dest->texenv[i].texsrcalpha3 = 0;
@@ -200,7 +208,11 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
             if (dest->texgen[i].texgen_q==0)
                 dest->texgen[i].texgen_q_mode = 0;
         }
-        if((dest->texenv[i].texenv < FPE_COMBINE) || (dest->texture[i].textype==0)) {
+        if(dest->texture[i].textype == 0) {
+            memset(&dest->texenv[i], 0, sizeof(dest->texenv[i]));
+            memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
+            dest->texcombine[i] = 0;
+        } else if(dest->texenv[i].texenv < FPE_COMBINE) {
             dest->texcombine[i] = 0;
             dest->texenv[i].texsrcrgb0 = 0;
             dest->texenv[i].texsrcalpha0 = 0;
@@ -214,6 +226,10 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
             dest->texenv[i].texsrcalpha2 = 0;
             dest->texenv[i].texoprgb2 = 0;
             dest->texenv[i].texopalpha2 = 0;
+            dest->texenv[i].texsrcrgb3 = 0;
+            dest->texenv[i].texsrcalpha3 = 0;
+            dest->texenv[i].texoprgb3 = 0;
+            dest->texenv[i].texopalpha3 = 0;
         } else if(dest->texenv[i].texenv != FPE_COMBINE4) {
             dest->texenv[i].texsrcrgb3 = 0;
             dest->texenv[i].texsrcalpha3 = 0;
@@ -391,6 +407,16 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
     if(glstate==NULL || glstate->fpe_state==NULL)
         return;
     glstate->fpe_state->point = ispoint;
+    if(ispoint) {
+        int ps_coord = 0;
+        for (int i=0; i<hardext.maxtex; i++) {
+            if (glstate->texture.pscoordreplace[i]) {
+                ps_coord = 1;
+                break;
+            }
+        }
+        glstate->fpe_state->pointsprite_coord = ps_coord;
+    }
     const fpe_state_t *rel = fpe_CachedReleventState(1, NULL);
     if(glstate->fpe_cache==NULL)
         glstate->fpe_cache = fpe_NewCache();
@@ -418,26 +444,26 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
                 GLint status;
                 // no old program, using regular FPE
                 glstate->fpe->vert = gl4es_glCreateShader(GL_VERTEX_SHADER);
-                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, glstate->fpe_state), NULL);
+                gl4es_glShaderSource(glstate->fpe->vert, 1, fpe_VertexShader(NULL, &state), NULL);
                 gl4es_glCompileShader(glstate->fpe->vert);
                 gl4es_glGetShaderiv(glstate->fpe->vert, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->vert, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, glstate->fpe_state)[0], buff);
+                        printf("LIBGL: FPE Vertex shader compile failed: source is\n%s\n\nError is: %s\n", fpe_VertexShader(NULL, &state)[0], buff);
                     else
                         printf("LIBGL: FPE Vertex shader compile failed: %s\n", buff);
                 }
                 glstate->fpe->frag = gl4es_glCreateShader(GL_FRAGMENT_SHADER);
-                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, glstate->fpe_state), NULL);
+                gl4es_glShaderSource(glstate->fpe->frag, 1, fpe_FragmentShader(NULL, &state), NULL);
                 gl4es_glCompileShader(glstate->fpe->frag);
                 gl4es_glGetShaderiv(glstate->fpe->frag, GL_COMPILE_STATUS, &status);
                 if(status!=GL_TRUE) {
                     char buff[1000];
                     gles_glGetShaderInfoLog(glstate->fpe->frag, 1000, NULL, buff);
                     if(globals4es.logshader)
-                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, glstate->fpe_state)[0], buff);
+                        printf("LIBGL: FPE Fragment shader compile failed: source is\n%s\n\nError is: %s\n", fpe_FragmentShader(NULL, &state)[0], buff);
                     else
                         printf("LIBGL: FPE Fragment shader compile failed: %s\n", buff);
                 }
@@ -848,6 +874,7 @@ void APIENTRY_GL4ES fpe_glDrawElements(GLenum mode, GLsizei count, GLenum type, 
     if(type==GL_UNSIGNED_SHORT && glstate->quad_ibo_state>0
         && (uintptr_t)indices>=(uintptr_t)glstate->quad_idx
         && (uintptr_t)indices<(uintptr_t)(glstate->quad_idx+QUAD_IDX_COUNT)) {
+        // static GL_QUADS index table: draw from its element buffer (the CPU copy is only the offset base)
         use_vbo = 1;
         bindBuffer(GL_ELEMENT_ARRAY_BUFFER, glstate->quad_ibo);
         indices = (GLvoid*)((uintptr_t)indices - (uintptr_t)glstate->quad_idx);
@@ -1428,7 +1455,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     // fpe
     if(glprogram->fpe_alpharef!=-1)
     {
-        float alpharef = floorf(glstate->alpharef*255.f);
+        float alpharef = glstate->alpharef;
         GoUniformfv(glprogram, glprogram->fpe_alpharef, 1, 1, &alpharef);
     }
     if(glprogram->has_builtin_texsampler)

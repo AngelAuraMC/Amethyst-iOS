@@ -769,7 +769,7 @@ void APIENTRY_GL4ES gl4es_glDrawArrays(GLenum mode, GLint first, GLsizei count) 
         int cnt = 4*8000;
         for (int i=0; i<count; i+=4*8000) {
             if (i+cnt>count) cnt = count-i;
-            gl4es_glDrawArrays(mode, i, cnt);
+            gl4es_glDrawArrays(mode, first + i, cnt);
         }
         return;
     }
@@ -1356,7 +1356,7 @@ void APIENTRY_GL4ES gl4es_glDrawArraysInstanced(GLenum mode, GLint first, GLsize
         int cnt = 4*8000;
         for (int i=0; i<count; i+=4*8000) {
             if (i+cnt>count) cnt = count-i;
-            gl4es_glDrawArrays(mode, i, cnt);
+            gl4es_glDrawArraysInstanced(mode, first + i, cnt, primcount);
         }
         return;
     }

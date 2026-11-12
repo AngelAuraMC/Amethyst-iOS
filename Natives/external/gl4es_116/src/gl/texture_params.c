@@ -1003,7 +1003,7 @@ void realize_textures(int drawing) {
             if((globals4es.automipmap==3) || ((globals4es.automipmap==1) && (tex->mipmap_auto==0)) || (tex->compressed && (tex->mipmap_auto==0)))
                 tex->mipmap_need = 0;
             else
-                tex->mipmap_need = (is_mipmap_needed(&tex->sampler) && (hardext.esversion!=1) && !tex->npot)?1:0;
+                tex->mipmap_need = (is_mipmap_needed(&tex->sampler) && (hardext.esversion!=1) && (!tex->npot || hardext.npot==3))?1:0;
             if(tex->mipmap_need && !tex->mipmap_done) {
                 if(!tex->mipmap_auto) {
                     // should check if glGenerateMipmap exist, and fall back to no mipmap if not

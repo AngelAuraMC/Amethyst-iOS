@@ -170,6 +170,9 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                                 case GL_CONSTANT: state=FPE_SRC_CONSTANT; break;
                                 case GL_PRIMARY_COLOR: state=FPE_SRC_PRIMARY_COLOR; break;
                                 case GL_PREVIOUS: state=FPE_SRC_PREVIOUS; break;
+                                case GL_ONE: state=FPE_SRC_ONE; break;
+                                case GL_ZERO: state=FPE_SRC_ZERO; break;
+                                case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
                             }
                         glstate->fpe_state->texenv[tmu].texsrcrgb0 = state;
                     }
@@ -199,6 +202,9 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                                 case GL_CONSTANT: state=FPE_SRC_CONSTANT; break;
                                 case GL_PRIMARY_COLOR: state=FPE_SRC_PRIMARY_COLOR; break;
                                 case GL_PREVIOUS: state=FPE_SRC_PREVIOUS; break;
+                                case GL_ONE: state=FPE_SRC_ONE; break;
+                                case GL_ZERO: state=FPE_SRC_ZERO; break;
+                                case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
                             }
                         glstate->fpe_state->texenv[tmu].texsrcrgb1 = state;
                     }
@@ -291,7 +297,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                                 case GL_PREVIOUS: state=FPE_SRC_PREVIOUS; break;
                                 case GL_ONE: state=FPE_SRC_ONE; break;
                                 case GL_ZERO: state=FPE_SRC_ZERO; break;
-                                //case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
+                                case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
                                 //case GL_TEXTUTRE_OUTPUT: unknown, so fall back to texture...
                             }
                         glstate->fpe_state->texenv[tmu].texsrcalpha0 = state;
@@ -324,7 +330,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                                 case GL_PREVIOUS: state=FPE_SRC_PREVIOUS; break;
                                 case GL_ONE: state=FPE_SRC_ONE; break;
                                 case GL_ZERO: state=FPE_SRC_ZERO; break;
-                                //case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
+                                case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
                                 //case GL_TEXTUTRE_OUTPUT: unknown, so fall back to texture...
                             }
                         glstate->fpe_state->texenv[tmu].texsrcalpha1 = state;
@@ -357,7 +363,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                                 case GL_PREVIOUS: state=FPE_SRC_PREVIOUS; break;
                                 case GL_ONE: state=FPE_SRC_ONE; break;
                                 case GL_ZERO: state=FPE_SRC_ZERO; break;
-                                //case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
+                                case GL_SECONDARY_COLOR_ATIX: state=FPE_SRC_SECONDARY_COLOR; break;
                                 //case GL_TEXTUTRE_OUTPUT: unknown, so fall back to texture...
                             }
                         glstate->fpe_state->texenv[tmu].texsrcalpha2 = state;

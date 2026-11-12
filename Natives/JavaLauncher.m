@@ -96,50 +96,6 @@ void init_applyExperimentalSettings() {
             setenv("AMETHYST_GL4ES_ERROR_TRACE", "1", 1);
             NSLog(@"[Amethyst Experimental] Enabled Shader Error & Stub Diagnostics + GL4ES Texture, Shader & Error Trace");
         }
-
-        // 4. Draw Call Batching
-        NSString *batch = getPrefObject(@"experimental.draw_batching");
-        if (batch && ![batch isEqualToString:@"default"]) {
-            if ([batch isEqualToString:@"off"]) {
-                setenv("LIBGL_BATCH", "0", 1);
-            } else {
-                setenv("LIBGL_BATCH", batch.UTF8String, 1);
-            }
-            NSLog(@"[Amethyst Experimental] LIBGL_BATCH set to: %@", batch);
-        }
-
-        // 5. VBO Compatibility / Performance
-        NSString *vbo = getPrefObject(@"experimental.use_vbo");
-        if (vbo && ![vbo isEqualToString:@"default"]) {
-            setenv("LIBGL_USEVBO", vbo.UTF8String, 1);
-            NSLog(@"[Amethyst Experimental] LIBGL_USEVBO set to: %@", vbo);
-        }
-
-        // 6. Texture & Mipmap Compatibility
-        NSString *mipmap = getPrefObject(@"experimental.mipmap_mode");
-        if (mipmap && ![mipmap isEqualToString:@"default"]) {
-            setenv("LIBGL_MIPMAP", mipmap.UTF8String, 1);
-            NSLog(@"[Amethyst Experimental] LIBGL_MIPMAP set to: %@", mipmap);
-        }
-
-        // 7. Shader Compatibility Mode
-        if (getPrefBool(@"experimental.no_shader_lod")) {
-            setenv("LIBGL_NOSHADERLOD", "1", 1);
-            NSLog(@"[Amethyst Experimental] Enabled LIBGL_NOSHADERLOD=1");
-        }
-
-        // 8. Texture Memory Saver
-        NSString *shrink = getPrefObject(@"experimental.shrink_texture");
-        if (shrink && ![shrink isEqualToString:@"default"]) {
-            setenv("LIBGL_SHRINK", shrink.UTF8String, 1);
-            NSLog(@"[Amethyst Experimental] LIBGL_SHRINK set to: %@", shrink);
-        }
-
-        // 9. VAO Cache Compatibility
-        if (getPrefBool(@"experimental.no_vao_cache")) {
-            setenv("LIBGL_NOVAOCACHE", "1", 1);
-            NSLog(@"[Amethyst Experimental] Enabled LIBGL_NOVAOCACHE=1");
-        }
     }
 }
 
