@@ -68,32 +68,41 @@ void hooked_exit(int code) {
 }
 
 void* hooked_dlopen(const char* path, int mode) {
-    if (!path) {
-        return orig_dlopen ? orig_dlopen(path, mode) : NULL;
-    }
-
-    // Only patch Mach-O and use dyld bypass if dylib is in the home dir
-    // or tmp dir: LiveContainer makes a symlink to its own tmp dir so checking home dir alone would fail
+    // Resolve the path before consulting JIT flags. DeviceHasTXMReal() may
+    // dlopen libMobileGestalt while DeviceGetJITFlags() is inside dispatch_once.
+    // Calling DeviceHasJITFlags() for that system library would re-enter the
+    // same dispatch_once token and can deadlock during app startup.
     const char *home = getenv("HOME");
     const char *tmp = getenv("TMPDIR");
     char fullpath[PATH_MAX];
-    BOOL shouldUseDyldBypass = realpath(path, fullpath) && ((home && strstr(fullpath, home)) || (tmp && strstr(fullpath, tmp)));
+    BOOL shouldUseDyldBypass = path && realpath(path, fullpath) &&
+        ((home && strstr(fullpath, home)) || (tmp && strstr(fullpath, tmp)));
+
+    // System/framework libraries do not need the app-container dyld bypass.
+    // In particular, keep the TXM-detection fallback dlopen out of JIT flag
+    // evaluation so it cannot recursively enter DeviceGetJITFlags().
     if (!shouldUseDyldBypass) {
-        return orig_dlopen ? orig_dlopen(path, mode) : NULL;
+        __attribute__((musttail)) return orig_dlopen(path, mode);
     }
 
     BOOL shouldUseDyldBypass26PPL = NO;
     if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED)) {
         shouldUseDyldBypass26PPL = hwRedirectOrig[0] && !DeviceHasJITFlags(JIT_FLAG_HAS_TXM);
     }
-    PLPatchMachOPlatformForFile(path);
+    shouldUseDyldBypass26PPL &= shouldUseDyldBypass;
+
+    if (shouldUseDyldBypass) {
+        PLPatchMachOPlatformForFile(path);
+    }
     if (shouldUseDyldBypass26PPL) {
         __attribute__((musttail)) return hooked_dlopen_26_ppl(path, mode);
-    } else {
+    } else if (shouldUseDyldBypass) {
         /// Special case for LiveContainer multitask mode where it hooks dlopen to hook mmap, which will break this dyld bypass, so we redirect calls to the original dlopen.
         static void *(*sys_dlopen)(const char *, int);
         if(!sys_dlopen) sys_dlopen = dlsym(RTLD_NEXT, "dlopen");
-        __attribute__((musttail)) return sys_dlopen ? sys_dlopen(path, mode) : orig_dlopen(path, mode);
+        __attribute__((musttail)) return sys_dlopen(path, mode);
+    } else {
+        __attribute__((musttail)) return orig_dlopen(path, mode);
     }
 }
 // hack dlopen for non-TXM 26.x

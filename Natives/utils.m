@@ -235,16 +235,9 @@ BOOL DeviceHasTXMReal(void) {
         return NO;
     }
 
-    // /private/preboot is not accessible (sandboxed/jailed app)
-    // On iOS 18 and below, speculative fallback is guaranteed to return NO.
-    if (!@available(iOS 19.0, *)) {
-        return NO;
-    }
-
-    extern void* (*orig_dlopen)(const char* path, int mode);
-    void *gestalt = orig_dlopen ? orig_dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_GLOBAL | RTLD_LAZY) : dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_GLOBAL | RTLD_LAZY);
-    if (!gestalt) return NO;
-    uint64_t (*MGGetSInt64Answer)(CFStringRef, uint64_t) = dlsym(gestalt, "MGGetSInt64Answer");
+    // /private/preboot is not accessible (sandboxed/jailed app), fallback to speculation
+    void *gestalt = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_GLOBAL | RTLD_LAZY);
+    uint64_t (*MGGetSInt64Answer)(CFStringRef, uint64_t) = dlsym(gestalt ? gestalt : RTLD_DEFAULT, "MGGetSInt64Answer");
     if (MGGetSInt64Answer) {
         uint64_t chipID = MGGetSInt64Answer((__bridge CFStringRef)@"ChipID", 0);
         switch(chipID) {
@@ -268,15 +261,9 @@ __exported BOOL DeviceHasTXM(void) {
 
 JITFlags DeviceGetJITFlags(BOOL refresh) {
     static JITFlags cachedFlags = 0;
-    static BOOL initialized = NO;
-    static BOOL evaluating = NO;
-
-    if (evaluating) {
-        return cachedFlags;
-    }
-
-    if (!initialized || refresh) {
-        evaluating = YES;
+    static dispatch_once_t onceToken;
+    if (refresh) onceToken = 0;
+    dispatch_once(&onceToken, ^{
         const char *s = getenv("JIT_FLAGS");
         if (s) {
             if (s[0] == '0' && tolower(s[1]) == 'b') {
@@ -285,27 +272,21 @@ JITFlags DeviceGetJITFlags(BOOL refresh) {
                 cachedFlags = strtoul(s, NULL, 0);
             }
             NSLog(@"[JIT] Using overridden JIT flags: 0x%X", cachedFlags);
-            evaluating = NO;
-            initialized = YES;
-            return cachedFlags;
+            return;
         }
-
-        JITFlags flags = 0;
+        
         if (@available(iOS 26.0, *)) {
-            flags |= JIT_FLAG_IS_IOS_26;
+            cachedFlags |= JIT_FLAG_IS_IOS_26;
             if (!DeviceCanCreateRXMap()) {
-                flags |= JIT_FLAG_FORCE_MIRRORED;
+                cachedFlags |= JIT_FLAG_FORCE_MIRRORED;
             }
         }
         if (DeviceHasTXMReal()) {
-            flags |= JIT_FLAG_HAS_TXM;
+            cachedFlags |= JIT_FLAG_HAS_TXM;
         }
-
-        cachedFlags = flags;
-        initialized = YES;
-        evaluating = NO;
+        
         if (refresh) NSLog(@"[JIT] Using computed JIT flags: 0x%X", cachedFlags);
-    }
+    });
     return cachedFlags;
 }
 BOOL DeviceHasJITFlags(JITFlags flags) {
