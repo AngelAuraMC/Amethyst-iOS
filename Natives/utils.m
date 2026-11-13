@@ -32,17 +32,19 @@ BOOL isJITEnabled(BOOL checkCSFlags) {
         return YES;
     }
 
-    int flags;
+    int flags = 0;
     csops(getpid(), 0, &flags, sizeof(flags));
     if ((flags & CS_DEBUGGED) == 0) {
         return NO;
     }
-    if (!DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM)) {
-        // Device below iOS 26 or without TXM is sufficient at this point
-        return YES;
+    if (@available(iOS 26.0, *)) {
+        if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM)) {
+            // Device with iOS 26+ and TXM requires a debugger attached for JIT script to bypass TXM restrictions
+            return JIT26IsLikelyDebuggerKeepAttached();
+        }
     }
-    // Device with iOS 26+ and TXM requires a debugger attached for JIT script to bypass TXM restrictions
-    return JIT26IsLikelyDebuggerKeepAttached();
+    // Below iOS 26, having CS_DEBUGGED is sufficient for JIT execution
+    return YES;
 }
 
 void openLink(UIViewController* sender, NSURL* link) {
@@ -216,6 +218,11 @@ BOOL DeviceCanCreateRXMap(void) {
 }
 
 BOOL DeviceHasTXMReal(void) {
+    // TXM detection is only meaningful for iOS 19+ / future releases
+    if (!@available(iOS 19.0, *)) {
+        return NO;
+    }
+
     DIR *d = opendir("/private/preboot");
     if(d) {
         struct dirent *dir;
@@ -235,9 +242,9 @@ BOOL DeviceHasTXMReal(void) {
         return NO;
     }
 
-    // /private/preboot is not accessible (sandboxed/jailed app), fallback to speculation
-    void *gestalt = dlopen("/usr/lib/libMobileGestalt.dylib", RTLD_GLOBAL | RTLD_LAZY);
-    uint64_t (*MGGetSInt64Answer)(CFStringRef, uint64_t) = dlsym(gestalt ? gestalt : RTLD_DEFAULT, "MGGetSInt64Answer");
+    // /private/preboot is not accessible (sandboxed/jailed app), fallback to speculation via MobileGestalt.
+    // Query via RTLD_DEFAULT without dlopen to prevent hook interception or recursion.
+    uint64_t (*MGGetSInt64Answer)(CFStringRef, uint64_t) = dlsym(RTLD_DEFAULT, "MGGetSInt64Answer");
     if (MGGetSInt64Answer) {
         uint64_t chipID = MGGetSInt64Answer((__bridge CFStringRef)@"ChipID", 0);
         switch(chipID) {
@@ -261,9 +268,15 @@ __exported BOOL DeviceHasTXM(void) {
 
 JITFlags DeviceGetJITFlags(BOOL refresh) {
     static JITFlags cachedFlags = 0;
-    static dispatch_once_t onceToken;
-    if (refresh) onceToken = 0;
-    dispatch_once(&onceToken, ^{
+    static BOOL initialized = NO;
+    static BOOL evaluating = NO;
+
+    if (evaluating) {
+        return cachedFlags;
+    }
+
+    if (!initialized || refresh) {
+        evaluating = YES;
         const char *s = getenv("JIT_FLAGS");
         if (s) {
             if (s[0] == '0' && tolower(s[1]) == 'b') {
@@ -272,21 +285,27 @@ JITFlags DeviceGetJITFlags(BOOL refresh) {
                 cachedFlags = strtoul(s, NULL, 0);
             }
             NSLog(@"[JIT] Using overridden JIT flags: 0x%X", cachedFlags);
-            return;
+            evaluating = NO;
+            initialized = YES;
+            return cachedFlags;
         }
-        
+
+        JITFlags flags = 0;
         if (@available(iOS 26.0, *)) {
-            cachedFlags |= JIT_FLAG_IS_IOS_26;
+            flags |= JIT_FLAG_IS_IOS_26;
             if (!DeviceCanCreateRXMap()) {
-                cachedFlags |= JIT_FLAG_FORCE_MIRRORED;
+                flags |= JIT_FLAG_FORCE_MIRRORED;
             }
         }
         if (DeviceHasTXMReal()) {
-            cachedFlags |= JIT_FLAG_HAS_TXM;
+            flags |= JIT_FLAG_HAS_TXM;
         }
-        
+
+        cachedFlags = flags;
+        initialized = YES;
+        evaluating = NO;
         if (refresh) NSLog(@"[JIT] Using computed JIT flags: 0x%X", cachedFlags);
-    });
+    }
     return cachedFlags;
 }
 BOOL DeviceHasJITFlags(JITFlags flags) {
