@@ -329,7 +329,7 @@ if(count>500000) return;
     if (mode == GL_QUADS) {
         mode = GL_TRIANGLES;
         int ilen = (count*3)/2;
-        if (sindices && !glstate->bind_buffer.want_index && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+        if (sindices && !glstate->bind_buffer.want_index && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
             && sindices[0] == 0 && sindices[count - 1] == (GLushort)(count - 1)) {
             int is_seq = 1;
             for (int k = 1; k < count - 1; k++) {
@@ -344,7 +344,7 @@ if(count>500000) return;
                 count = ilen;
                 goto quads_done;
             }
-        } else if (iindices && !glstate->bind_buffer.want_index && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+        } else if (iindices && !glstate->bind_buffer.want_index && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
             && iindices[0] == 0 && iindices[count - 1] == (GLuint)(count - 1)) {
             int is_seq = 1;
             for (int k = 1; k < count - 1; k++) {

@@ -166,6 +166,7 @@ typedef struct fpe_texenv_s {
   unsigned int texsrcrgb0:5;            // texenv src rgb n
   unsigned int texsrcrgb1:5;            // texenv src rgb n
   unsigned int texsrcrgb2:5;            // texenv src rgb n
+  unsigned int dummy1:1;                // align first 32-bit unit
   unsigned int texsrcrgb3:5;            // texenv src rgb n
   unsigned int texsrcalpha0:5;          // texenv src alpha n
   unsigned int texsrcalpha1:5;          // texenv src alpha n
@@ -173,7 +174,7 @@ typedef struct fpe_texenv_s {
   unsigned int texsrcalpha3:5;          // texenv src alpha n
   unsigned int texrgbscale:1;           // flag if RGB_SCALE for texture is != 1.0
   unsigned int texalphascale:1;         // flag if ALPHA_SCALE for texture is != 1.0
-  unsigned int dummy:6;                 // align sturture to 64bits...
+  unsigned int dummy2:5;                // align second 32-bit unit to 64bits total
 } fpe_texenv_t;
 
 typedef struct fpe_state_s {
@@ -219,6 +220,7 @@ typedef struct fpe_state_s {
     unsigned int reserved:3;            // Explicit padding to fill 64-bit unit cleanly
     uint16_t     vertex_prg_id;          // Id of vertex program currently binded (0 most of the time), 16bits is more than enough...
     uint16_t     fragment_prg_id;        // Id of fragment program currently binded (0 most of the time)
+    uint8_t      reserved_pad;           // Explicit padding to make sizeof(fpe_state_t) exactly 208 bytes (26 * 8)
 } fpe_state_t;
 #pragma pack(pop)
 

@@ -145,6 +145,8 @@ GLvoid *copy_gl_array_quickconvert(const GLvoid *src,
         stride = 4 * gl_sizeof(from);
     const char *unknown_str = "LIBGL: copy_gl_array_quickconvert -> unknown type: %x\n";
     GLvoid *dst = (dest)?dest:malloc((count-skip) * 4 * gl_sizeof(GL_FLOAT));
+    if (!dst)
+        return NULL;
 
     uintptr_t in = (uintptr_t)src;
     in += stride*skip;
