@@ -68,7 +68,7 @@ KHASH_MAP_INIT_FPE(fpecachelist, fpe_fpe_t *);
 
 // ********* Cache handling *********
 
-fpe_cache_t* fpe_NewCache() {
+fpe_cache_t* fpe_NewCache(void) {
     fpe_cache_t *cache = (fpe_cache_t*)calloc(1, sizeof(fpe_cache_t));
     if (cache) {
         cache->map = kh_init(fpecachelist);
@@ -205,7 +205,7 @@ static uint64_t psa_identity(void)
 
 static uint64_t psa_id = 0;
 
-void fpe_readPSA()
+void fpe_readPSA(void)
 {
     if(!psa || !psa_name || !psa->cache)
         return;
@@ -380,7 +380,7 @@ static void psa_join(void)
 }
 #endif
 
-void fpe_PSATick()
+void fpe_PSATick(void)
 {
 #ifdef PSA_BG_SAVE
     if(!psa || !PSA_LD(psa->dirty) || PSA_LD(psa->busy))
@@ -416,7 +416,7 @@ void fpe_PSATick()
 #endif
 }
 
-void fpe_writePSA()
+void fpe_writePSA(void)
 {
     if(!psa || !psa_name)
         return;
@@ -464,7 +464,7 @@ void fpe_InitPSA(const char* name)
 #endif
 }
 
-void fpe_FreePSA()
+void fpe_FreePSA(void)
 {
 #ifdef PSA_BG_SAVE
     psa_join();

@@ -94,6 +94,7 @@ SET(GL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/face.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/fog.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/fpe.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl/fpe_cache.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/fpe_shader.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/framebuffers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl_lookup.h

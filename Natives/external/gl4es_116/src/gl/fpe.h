@@ -154,26 +154,26 @@ typedef struct fpe_texture_s {
 } fpe_texture_t;
 
 typedef struct fpe_texenv_s {
-  uint64_t texenv:4;                // texenv flag
-  uint64_t texoprgb0:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  uint64_t texoprgb1:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  uint64_t texoprgb2:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  uint64_t texoprgb3:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
-  uint64_t texopalpha0:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  uint64_t texopalpha1:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  uint64_t texopalpha2:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  uint64_t texopalpha3:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
-  uint64_t texsrcrgb0:5;            // texenv src rgb n
-  uint64_t texsrcrgb1:5;            // texenv src rgb n
-  uint64_t texsrcrgb2:5;            // texenv src rgb n
-  uint64_t texsrcrgb3:5;            // texenv src rgb n
-  uint64_t texsrcalpha0:5;          // texenv src alpha n
-  uint64_t texsrcalpha1:5;          // texenv src alpha n
-  uint64_t texsrcalpha2:5;          // texenv src alpha n
-  uint64_t texsrcalpha3:5;          // texenv src alpha n
-  uint64_t texrgbscale:1;           // flag if RGB_SCALE for texture is != 1.0
-  uint64_t texalphascale:1;         // flag if ALPHA_SCALE for texture is != 1.0
-  uint64_t dummy:6;                 // align sturture to 64bits...
+  unsigned int texenv:4;                // texenv flag
+  unsigned int texoprgb0:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  unsigned int texoprgb1:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  unsigned int texoprgb2:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  unsigned int texoprgb3:2;             // texenv src op (OPERATION_n_RGB is 2 bits)
+  unsigned int texopalpha0:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  unsigned int texopalpha1:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  unsigned int texopalpha2:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  unsigned int texopalpha3:1;           // texenv src op (OPERATION_n_ALPHA is 1 bits)
+  unsigned int texsrcrgb0:5;            // texenv src rgb n
+  unsigned int texsrcrgb1:5;            // texenv src rgb n
+  unsigned int texsrcrgb2:5;            // texenv src rgb n
+  unsigned int texsrcrgb3:5;            // texenv src rgb n
+  unsigned int texsrcalpha0:5;          // texenv src alpha n
+  unsigned int texsrcalpha1:5;          // texenv src alpha n
+  unsigned int texsrcalpha2:5;          // texenv src alpha n
+  unsigned int texsrcalpha3:5;          // texenv src alpha n
+  unsigned int texrgbscale:1;           // flag if RGB_SCALE for texture is != 1.0
+  unsigned int texalphascale:1;         // flag if ALPHA_SCALE for texture is != 1.0
+  unsigned int dummy:6;                 // align sturture to 64bits...
 } fpe_texenv_t;
 
 typedef struct fpe_state_s {
@@ -224,6 +224,7 @@ typedef struct fpe_state_s {
 
 typedef struct fpe_fpe_s {
   GLuint       frag, vert, prog;   // shader info
+  uint32_t     dummy_align;
   uint64_t     hash;
   fpe_state_t  state;              // state relevant to the current fpe program
   program_t   *glprogram;
@@ -255,7 +256,6 @@ void APIENTRY_GLES fpe_glFogCoordPointer(GLenum type, GLsizei stride, const GLvo
 void APIENTRY_GLES fpe_glEnable(GLenum cap);
 void APIENTRY_GLES fpe_glDisable(GLenum cap);
 void APIENTRY_GLES fpe_glDrawArrays(GLenum mode, GLint first, GLsizei count);
-void APIENTRY_GLES fpe_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 void APIENTRY_GLES fpe_glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
 void APIENTRY_GLES fpe_glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 void APIENTRY_GLES fpe_glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);

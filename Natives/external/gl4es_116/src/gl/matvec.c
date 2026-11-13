@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
 #include <arm_neon.h>
 #endif
 
@@ -12,11 +12,11 @@ float FASTMATH dot(const float *a, const float *b) {
 }
 
 float FASTMATH dot4(const float *a, const float *b) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4_t va = vld1q_f32(a);
     float32x4_t vb = vld1q_f32(b);
     float32x4_t prod = vmulq_f32(va, vb);
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     return vaddvq_f32(prod);
 #else
     float32x2_t sum = vadd_f32(vget_low_f32(prod), vget_high_f32(prod));
@@ -35,7 +35,7 @@ void cross3(const float *a, const float *b, float* c) {
 }
 
 void matrix_vector(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4x4_t mat = vld4q_f32(a);
     float32x4_t res = vmulq_n_f32(mat.val[0], b[0]);
     res = vmlaq_n_f32(res, mat.val[1], b[1]);
@@ -51,7 +51,7 @@ void matrix_vector(const float *a, const float *b, float *c) {
 }
 
 void vector_matrix(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4_t row0 = vld1q_f32(b);
     float32x4_t row1 = vld1q_f32(b + 4);
     float32x4_t row2 = vld1q_f32(b + 8);
@@ -71,7 +71,7 @@ void vector_matrix(const float *a, const float *b, float *c) {
 }
 
 void vector3_matrix(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4_t row0 = vld1q_f32(b);
     float32x4_t row1 = vld1q_f32(b + 4);
     float32x4_t row2 = vld1q_f32(b + 8);
@@ -101,7 +101,7 @@ void vector3_matrix3(const float *a, const float *b, float *c) {
 }
 
 void vector_normalize(float *a) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float dot_val = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
     if (dot_val > 0.0f) {
         float32x2_t v_dot = vdup_n_f32(dot_val);
@@ -122,7 +122,7 @@ void vector_normalize(float *a) {
 }
 
 void vector4_normalize(float *a) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float dot_val = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
     if (dot_val > 0.0f) {
         float32x2_t v_dot = vdup_n_f32(dot_val);
@@ -146,7 +146,7 @@ void vector4_normalize(float *a) {
 void FASTMATH matrix_transpose(const float *a, float *b) {
     // column major -> row major
     // a(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15) -> b(0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15)
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4x4_t mat = vld4q_f32(a);
     vst1q_f32(b,      mat.val[0]);
     vst1q_f32(b + 4,  mat.val[1]);
@@ -204,7 +204,7 @@ void matrix_inverse3_transpose(const float *m, float *r) {
 }
     
 void matrix_mul(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     float32x4_t row_a0 = vld1q_f32(a);
     float32x4_t row_a1 = vld1q_f32(a + 4);
     float32x4_t row_a2 = vld1q_f32(a + 8);
@@ -252,7 +252,7 @@ void matrix_mul(const float *a, const float *b, float *c) {
 }
 
 void vector4_mult(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     vst1q_f32(c, vmulq_f32(vld1q_f32(a), vld1q_f32(b)));
 #else
     for (int i=0; i<4; i++)
@@ -261,7 +261,7 @@ void vector4_mult(const float *a, const float *b, float *c) {
 }
 
 void vector4_add(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     vst1q_f32(c, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
 #else
     for (int i=0; i<4; i++)
@@ -270,7 +270,7 @@ void vector4_add(const float *a, const float *b, float *c) {
 }
 
 void vector4_sub(const float *a, const float *b, float *c) {
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     vst1q_f32(c, vsubq_f32(vld1q_f32(a), vld1q_f32(b)));
 #else
     for (int i=0; i<4; i++)

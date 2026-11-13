@@ -9,6 +9,7 @@
 #include "list.h"
 #include "loader.h"
 #include "render.h"
+#include "buffers.h"
 #include "envvars.h"
 
 //#define DEBUG

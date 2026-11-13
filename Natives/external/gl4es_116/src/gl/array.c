@@ -5,7 +5,7 @@
 #include "glcase.h"
 #include "light.h"
 #include "state.h"
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
 #include <arm_neon.h>
 #endif
 
@@ -155,7 +155,7 @@ GLvoid *copy_gl_array_quickconvert(const GLvoid *src,
         const GLubyte *in_b = (const GLubyte*)in;
         const GLfloat maxf = 1.0f / 255.0f;
         int i = skip;
-#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
         if (stride == 4) {
             const float32x4_t vscale = vdupq_n_f32(maxf);
             for (; i + 4 <= count; i += 4) {
@@ -523,7 +523,7 @@ void *copy_gl_array_bgra(void* dest, const void *ptr, GLint stride, GLsizei widt
     int n = count - skip;
     int i = 0;
 
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
     if (stride == 4) {
         const float32x4_t vscale = vdupq_n_f32(1.0f / 255.0f);
         static const uint8_t bgra_to_rgba_tbl[16] = {

@@ -210,7 +210,7 @@ else()
     add_definitions("-Dinline=__inline" "-D__func__=__FUNCTION__") # for VC<=13
 endif()
 
-if (CMAKE_CC_COMPILER_ID MATCHES "Clang" OR CMAKE_SYSTEM_NAME MATCHES "Emscripten")
+if (CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_SYSTEM_NAME MATCHES "Emscripten")
     add_definitions(-Wno-pointer-sign -Wno-dangling-else)
 endif()
 
