@@ -28,10 +28,13 @@ float FASTMATH dot4(const float *a, const float *b) {
 }
 
 void cross3(const float *a, const float *b, float* c) {
-    //TODO Neonize? Cross product doesn't seems NEON friendly, and this is not much used.
-    c[0] = a[1]*b[2] - a[2]*b[1];
-    c[1] = a[2]*b[0] - a[0]*b[2];
-    c[2] = a[0]*b[1] - a[1]*b[0];
+    // Local temporaries avoid corrupting calculations if c aliases a or b
+    float c0 = a[1]*b[2] - a[2]*b[1];
+    float c1 = a[2]*b[0] - a[0]*b[2];
+    float c2 = a[0]*b[1] - a[1]*b[0];
+    c[0] = c0;
+    c[1] = c1;
+    c[2] = c2;
 }
 
 void matrix_vector(const float *a, const float *b, float *c) {
@@ -43,10 +46,11 @@ void matrix_vector(const float *a, const float *b, float *c) {
     res = vmlaq_n_f32(res, mat.val[3], b[3]);
     vst1q_f32(c, res);
 #else
-    c[0] = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
-    c[1] = a[4] * b[0] + a[5] * b[1] + a[6] * b[2] + a[7] * b[3];
-    c[2] = a[8] * b[0] + a[9] * b[1] + a[10] * b[2] + a[11] * b[3];
-    c[3] = a[12] * b[0] + a[13] * b[1] + a[14] * b[2] + a[15] * b[3];
+    const float b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+    c[0] = a[0] * b0 + a[1] * b1 + a[2] * b2 + a[3] * b3;
+    c[1] = a[4] * b0 + a[5] * b1 + a[6] * b2 + a[7] * b3;
+    c[2] = a[8] * b0 + a[9] * b1 + a[10] * b2 + a[11] * b3;
+    c[3] = a[12] * b0 + a[13] * b1 + a[14] * b2 + a[15] * b3;
 #endif
 }
 

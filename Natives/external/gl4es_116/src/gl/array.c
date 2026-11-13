@@ -140,7 +140,8 @@ GLvoid *copy_gl_array_texcoord(const GLvoid *src,
 GLvoid *copy_gl_array_quickconvert(const GLvoid *src,
                       GLenum from, GLsizei stride,
                       GLsizei skip, GLsizei count, void* dest) {
-                          
+    if (!src || count <= skip)
+        return NULL;
     if (! stride)
         stride = 4 * gl_sizeof(from);
     const char *unknown_str = "LIBGL: copy_gl_array_quickconvert -> unknown type: %x\n";
@@ -510,7 +511,7 @@ void *copy_gl_array_bgra(void* dest, const void *ptr, GLint stride, GLsizei widt
 	// this one only convert from BGRA (unsigned byte) to RGBA FLOAT
     GLubyte* src = (GLubyte*)ptr;
 
-    if (! src || !(count-skip))
+    if (!src || count <= skip)
         return NULL;
 						  
     if (! stride)
@@ -518,6 +519,8 @@ void *copy_gl_array_bgra(void* dest, const void *ptr, GLint stride, GLsizei widt
 
     if(!dest)
         dest = malloc(4*sizeof(GLfloat)*(count-skip));
+    if(!dest)
+        return NULL;
     GLfloat* dst = dest;
     src += skip*(stride);
 

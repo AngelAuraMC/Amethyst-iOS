@@ -794,6 +794,8 @@ bool pixel_convert(const GLvoid *src, GLvoid **dst,
         }
         if (*dst == NULL)        // alloc dst only if dst==NULL
             *dst = malloc(dst_size);
+        if (*dst == NULL)
+            return false;
         if (stride || src_widthadj) {
             GLsizei row_copy = width * pixel_sizeof(src_format, src_type);
             for (int yy = 0; yy < height; yy++)
@@ -813,6 +815,8 @@ bool pixel_convert(const GLvoid *src, GLvoid **dst,
     GLsizei dst_stride = pixel_sizeof(dst_format, dst_type);
     if (*dst == src || *dst == NULL)
         *dst = malloc(dst_size);
+    if (*dst == NULL)
+        return false;
     uintptr_t src_pos = widthalign((uintptr_t)src, align);
     uintptr_t dst_pos = widthalign((uintptr_t)*dst, align);
     // fast optimized loop for common conversion cases first...
