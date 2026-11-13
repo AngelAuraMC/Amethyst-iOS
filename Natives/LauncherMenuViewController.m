@@ -7,6 +7,7 @@
 #import "LauncherNewsViewController.h"
 #import "LauncherPreferences.h"
 #import "LauncherPreferencesViewController.h"
+#import "ExperimentalViewController.h"
 #import "LauncherProfilesViewController.h"
 #import "PLProfiles.h"
 #import "UIButton+AFNetworking.h"
@@ -63,6 +64,7 @@
         [LauncherMenuCustomItem vcClass:LauncherNewsViewController.class],
         [LauncherMenuCustomItem vcClass:LauncherProfilesViewController.class],
         [LauncherMenuCustomItem vcClass:LauncherPreferencesViewController.class],
+        [LauncherMenuCustomItem vcClass:ExperimentalViewController.class],
     ].mutableCopy;
     if (realUIIdiom != UIUserInterfaceIdiomTV) {
         [self.options addObject:(id)[LauncherMenuCustomItem
@@ -135,7 +137,7 @@
     [self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
     self.lastSelectedIndex = 1;
     
-    if (getEntitlementValue(@"get-task-allow")) {
+    if (getEntitlementValue(@"get-task-allow") || isJITEnabled(false)) {
         [self displayProgress:localize(@"login.jit.checking", nil)];
         if (isJITEnabled(false)) {
             [self displayProgress:localize(@"login.jit.enabled", nil)];

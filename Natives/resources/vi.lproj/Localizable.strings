@@ -7,6 +7,7 @@
 "game.menu.confirm.force_close" = "Bạn có chắc muốn bắt buộc thoát?";
 "game.menu.log_output" = "Nhật ký ra ";
 "game.menu.custom_controls" = "Tùy chỉnh điều khiển";
+"game.menu.diagnostics" = "Đo đạc";
 
 "game.note.airplay" = "Minecraft đang được hiển thị trên màn hình AirPlay";
 
@@ -164,11 +165,13 @@
 
 "preference.title.renderer.release.auto" = "Tự động";
 "preference.title.renderer.release.gl4es" = "gl4es Thần Thánh";
+"preference.title.renderer.release.gl4es_116" = "GL4ES 1.1.6 (ptitSeb)";
 "preference.title.renderer.release.angle" = "GÓC";
 "preference.title.renderer.release.zink" = "Kẽm";
 
 "preference.title.renderer.debug.auto" = "Tự động: gl4es hoặc ANGLE";
 "preference.title.renderer.debug.gl4es" = "gl4es 1.1.4 - xuất ra OpenGL 2.1";
+"preference.title.renderer.debug.gl4es_116" = "GL4ES 1.1.6 (ptitSeb) - xuất ra OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "tinygl4angle (1.17+) - xuất ra OpenGL 3.2 (Core Profile, bị giới hạn)";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - xuất ra OpenGL 4.1";
 
@@ -284,3 +287,66 @@
 "controller_configurator.section.footer.menu_mappings" = "Các ràng buộc khi chuột không bị khóa, chẳng hạn như trên màn hình tiêu đề hoặc trong menu tạm dừng.";
 "controller_configurator.section.controller_style" = "Loại Bộ điều khiển";
 "controller_configurator.section.footer.controller_style" = "Hiển thị các tên nút điều khiển khác nhau trong bộ cấu hình này.";
+
+// Experimental Tab
+"launcher.menu.experimental" = "Thử nghiệm";
+
+// Experimental Sections
+"preference.section.diagnostics" = "Chẩn đoán & Đo lường";
+"preference.section.renderer_opt" = "Tối ưu hóa Renderer (GL4ES)";
+"preference.section.runtime_exp" = "Engine & Runtime";
+"preference.section.reset" = "Khôi phục";
+
+// 1. Render Benchmark
+"preference.title.benchmark" = "Render Benchmark";
+"preference.detail.benchmark" = "Đo đạc chu kỳ hoán đổi khung hình EGL thực tế (swap-completion cadence), ước tính FPS, số lần rớt khung >33.3ms và giật lag >50ms. Tổng hợp ghi log mỗi 5 giây. Tự động cập nhật ở lần khởi chạy Minecraft kế tiếp. Không tốn tài nguyên khi tắt.";
+
+// 2. FPS Log
+"preference.title.fps_log" = "Thống kê FPS (Log)";
+"preference.detail.fps_log" = "Ghi thống kê FPS trung bình và khoảng cách khung hình tối đa vào log hệ thống mỗi 5 giây. Lưu ý: Chỉ xuất ra log, không phải HUD hiển thị trên màn hình. Tự động cập nhật ở lần khởi chạy Minecraft kế tiếp.";
+
+// 3. Shader Error Diagnostics
+"preference.title.shader_error_log" = "Chẩn đoán lỗi Shader";
+"preference.detail.shader_error_log" = "Kích hoạt LIBGL_LOGSHADERERROR=1, LIBGL_SILENTSTUB=0 và chẩn đoán texture có giới hạn (AMETHYST_GL4ES_TEXTURE_TRACE=1) trong GL4ES. Tăng lượng log và tiêu tốn CPU. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// Kích cỡ chữ nhật ký
+"preference.title.log_text_size" = "Kích cỡ chữ nhật ký";
+"preference.detail.log_text_size" = "Điều chỉnh cỡ chữ và chiều cao dòng của bảng nhật ký (mức 1-9). Mức 5 là kích cỡ mặc định ban đầu. Áp dụng ngay khi kéo.";
+
+// 4. Draw Call Batching
+"preference.title.draw_batching" = "Gộp lệnh vẽ (Batching)";
+"preference.detail.draw_batching" = "Điều khiển LIBGL_BATCH. Gộp các lệnh vẽ glDraw liên tiếp theo ngưỡng đỉnh (vertices). Có thể tăng hiệu năng vẽ hoặc gây lỗi hình ảnh tùy thuộc vào mod. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 5. VBO Compatibility / Performance
+"preference.title.use_vbo" = "Chế độ VBO";
+"preference.detail.use_vbo" = "Điều khiển LIBGL_USEVBO. 0 = Tắt, 1 = VBO tiêu chuẩn (mặc định), 2 = VBO kèm glLockArrays. Chế độ nâng cao có thể tăng tốc nếu backend hỗ trợ. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 6. Texture & Mipmap Compatibility
+"preference.title.mipmap_mode" = "Tương thích Mipmap";
+"preference.detail.mipmap_mode" = "Điều khiển LIBGL_MIPMAP. 1 = Ép AutoMipMap, 2 = Đoán AutoMipMap, 3 = Tắt hoàn toàn MipMap, 4 = Bỏ qua texture không vuông. Có thể làm mờ hoặc nhấp nháy vân bề mặt. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 7. Shader Compatibility Mode
+"preference.title.no_shader_lod" = "Chế độ tương thích Shader";
+"preference.detail.no_shader_lod" = "Bật LIBGL_NOSHADERLOD=1 để bỏ texture2DLod trong shader chuyển đổi. Công tắc thử nghiệm tương thích shader mod (như sương mù/hiệu ứng Dynamic Surroundings); không đảm bảo sửa hết lỗi. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 8. Texture Memory Saver
+"preference.title.shrink_texture" = "Tiết kiệm RAM vân bề mặt";
+"preference.detail.shrink_texture" = "Điều khiển LIBGL_SHRINK. Thu nhỏ kích thước texture để tiết kiệm RAM/VRAM nhưng làm giảm độ sắc nét và chất lượng hình ảnh. Mặc định giữ nguyên chất lượng gốc. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 9. VAO Cache Compatibility
+"preference.title.no_vao_cache" = "Tắt bộ nhớ đệm VAO";
+"preference.detail.no_vao_cache" = "Bật LIBGL_NOVAOCACHE=1. Tắt bộ nhớ đệm VAO trong GL4ES. Có thể tăng tải CPU và giảm FPS; dùng để điều tra lỗi bộ nhớ VAO. Yêu cầu thoát hẳn và mở lại Amethyst nếu đã từng vào game.";
+
+// 10. Low-Stutter JVM Profile
+"preference.title.low_stutter_jvm" = "Cấu hình JVM giảm giật lag";
+"preference.detail.low_stutter_jvm" = "Áp dụng cấu hình G1 GC giảm giật lag (-XX:+UseG1GC -XX:MaxGCPauseMillis=20). Lưu ý: 20ms là mục tiêu định hướng của bộ dọn rác GC, không phải cam kết tuyệt đối. Không thay đổi RAM hay JIT. Áp dụng ở lần khởi chạy Minecraft kế tiếp.";
+
+// 11. Adaptive Render Scale
+"preference.title.adaptive_render_scale" = "Co giãn độ phân giải động";
+"preference.detail.adaptive_render_scale" = "Đang nghiên cứu. Cơ chế co giãn độ phân giải động đòi hỏi theo dõi nhịp khung hình, độ trễ thích ứng và đồng bộ vòng đời framebuffer với các mod. Tạm hoãn trong bản này để tránh lỗi hiển thị.";
+
+// Reset
+"preference.title.reset_defaults" = "Khôi phục mặc định an toàn";
+"preference.detail.reset_defaults" = "Khôi phục toàn bộ các thiết lập Thử nghiệm về giá trị an toàn mặc định.";
+"preference.title.confirm.reset_defaults" = "Bạn có chắc chắn muốn đặt lại tất cả tùy chọn Thử nghiệm về mặc định an toàn không?";
+"preference.title.done.reset_defaults" = "Đã khôi phục các thiết lập Thử nghiệm về mặc định an toàn.";

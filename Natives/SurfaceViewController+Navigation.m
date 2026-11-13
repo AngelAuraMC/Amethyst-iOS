@@ -25,9 +25,9 @@ static UIView *menuSwipeView;
     [menuSwipeView addSubview:menuSwipeLineView];
     [self.rootView addSubview:menuSwipeView];
 
-    self.menuArray = @[@"game.menu.force_close", @"game.menu.log_output", @"game.menu.custom_controls", @"Settings"];
+    self.menuArray = @[@"game.menu.force_close", @"game.menu.log_output", @"game.menu.custom_controls", @"Settings", @"game.menu.diagnostics"];
 
-    self.menuView = [[UITableView alloc] initWithFrame:CGRectMake(self.view.frame.size.width + 30.0, 0, 
+    self.menuView = [[UITableView alloc] initWithFrame:CGRectMake(self.view.frame.size.width + 30.0, 0,
         self.view.frame.size.width * 0.3 - 36.0 * 0.7, self.view.frame.size.height)];
 
     //menuView.backgroundColor = [UIColor colorWithRed:240.0/255.0 green:240.0/255.0 blue:240.0/255.0 alpha:1];
@@ -179,11 +179,19 @@ static CGPoint lastCenterPoint;
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
 
     if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"cell"];
     }
     cell.backgroundColor = UIColor.systemFillColor;
 
     cell.textLabel.text = localize(self.menuArray[indexPath.row], nil);
+
+    if (indexPath.row == 4) {
+        cell.accessoryType = self.isDiagnosticsHUDEnabled ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        cell.detailTextLabel.text = self.isDiagnosticsHUDEnabled ? @"ON" : @"OFF";
+    } else {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        cell.detailTextLabel.text = nil;
+    }
 
     return cell;
 }
@@ -206,6 +214,10 @@ static CGPoint lastCenterPoint;
             break;
         case 3:
             [self actionOpenPreferences];
+            break;
+        case 4:
+            [self actionToggleDiagnosticsHUD];
+            [self.menuView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:4 inSection:0]] withRowAnimation:UITableViewRowAnimationNone];
             break;
     }
 }

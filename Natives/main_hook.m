@@ -68,17 +68,29 @@ void hooked_exit(int code) {
 }
 
 void* hooked_dlopen(const char* path, int mode) {
+    // Resolve the path before consulting JIT flags. DeviceHasTXMReal() may
+    // dlopen libMobileGestalt while DeviceGetJITFlags() is inside dispatch_once.
+    // Calling DeviceHasJITFlags() for that system library would re-enter the
+    // same dispatch_once token and can deadlock during app startup.
+    const char *home = getenv("HOME");
+    const char *tmp = getenv("TMPDIR");
+    char fullpath[PATH_MAX];
+    BOOL shouldUseDyldBypass = path && realpath(path, fullpath) &&
+        ((home && strstr(fullpath, home)) || (tmp && strstr(fullpath, tmp)));
+
+    // System/framework libraries do not need the app-container dyld bypass.
+    // In particular, keep the TXM-detection fallback dlopen out of JIT flag
+    // evaluation so it cannot recursively enter DeviceGetJITFlags().
+    if (!shouldUseDyldBypass) {
+        __attribute__((musttail)) return orig_dlopen(path, mode);
+    }
+
     BOOL shouldUseDyldBypass26PPL = NO;
     if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED)) {
         shouldUseDyldBypass26PPL = hwRedirectOrig[0] && !DeviceHasJITFlags(JIT_FLAG_HAS_TXM);
     }
-    // Only patch Mach-O and use dyld bypass dylib is in the home dir
-    // or tmp dir: LiveContainer makes a symlink to its own tmp dir so checking home dir alone would fail
-    const char *home = getenv("HOME");
-    const char *tmp = getenv("TMPDIR");
-    char fullpath[PATH_MAX];
-    BOOL shouldUseDyldBypass = path && realpath(path, fullpath) && (strstr(fullpath, home) || strstr(fullpath, tmp));
     shouldUseDyldBypass26PPL &= shouldUseDyldBypass;
+
     if (shouldUseDyldBypass) {
         PLPatchMachOPlatformForFile(path);
     }

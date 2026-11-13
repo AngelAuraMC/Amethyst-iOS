@@ -354,7 +354,7 @@
                 @"icon": @"memorychip",
                 @"type": self.typeSlider,
                 @"min": @(250),
-                @"max": @((NSProcessInfo.processInfo.physicalMemory / 1048576) * 0.85),
+                @"max": @(4608),
                 @"enableCondition": ^BOOL(){
                     return !getPrefBool(@"java.auto_ram") && whenNotInGame();
                 },
