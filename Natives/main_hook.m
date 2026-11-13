@@ -68,29 +68,32 @@ void hooked_exit(int code) {
 }
 
 void* hooked_dlopen(const char* path, int mode) {
-    BOOL shouldUseDyldBypass26PPL = NO;
-    if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED)) {
-        shouldUseDyldBypass26PPL = hwRedirectOrig[0] && !DeviceHasJITFlags(JIT_FLAG_HAS_TXM);
+    if (!path) {
+        return orig_dlopen ? orig_dlopen(path, mode) : NULL;
     }
-    // Only patch Mach-O and use dyld bypass dylib is in the home dir
+
+    // Only patch Mach-O and use dyld bypass if dylib is in the home dir
     // or tmp dir: LiveContainer makes a symlink to its own tmp dir so checking home dir alone would fail
     const char *home = getenv("HOME");
     const char *tmp = getenv("TMPDIR");
     char fullpath[PATH_MAX];
-    BOOL shouldUseDyldBypass = path && realpath(path, fullpath) && (strstr(fullpath, home) || strstr(fullpath, tmp));
-    shouldUseDyldBypass26PPL &= shouldUseDyldBypass;
-    if (shouldUseDyldBypass) {
-        PLPatchMachOPlatformForFile(path);
+    BOOL shouldUseDyldBypass = realpath(path, fullpath) && ((home && strstr(fullpath, home)) || (tmp && strstr(fullpath, tmp)));
+    if (!shouldUseDyldBypass) {
+        return orig_dlopen ? orig_dlopen(path, mode) : NULL;
     }
+
+    BOOL shouldUseDyldBypass26PPL = NO;
+    if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED)) {
+        shouldUseDyldBypass26PPL = hwRedirectOrig[0] && !DeviceHasJITFlags(JIT_FLAG_HAS_TXM);
+    }
+    PLPatchMachOPlatformForFile(path);
     if (shouldUseDyldBypass26PPL) {
         __attribute__((musttail)) return hooked_dlopen_26_ppl(path, mode);
-    } else if (shouldUseDyldBypass) {
+    } else {
         /// Special case for LiveContainer multitask mode where it hooks dlopen to hook mmap, which will break this dyld bypass, so we redirect calls to the original dlopen.
         static void *(*sys_dlopen)(const char *, int);
         if(!sys_dlopen) sys_dlopen = dlsym(RTLD_NEXT, "dlopen");
-        __attribute__((musttail)) return sys_dlopen(path, mode);
-    } else {
-        __attribute__((musttail)) return orig_dlopen(path, mode);
+        __attribute__((musttail)) return sys_dlopen ? sys_dlopen(path, mode) : orig_dlopen(path, mode);
     }
 }
 // hack dlopen for non-TXM 26.x

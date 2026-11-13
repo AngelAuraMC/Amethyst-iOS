@@ -313,7 +313,7 @@ int main(int argc, char *argv[]) {
     init_setupCustomControls();
 
     // If sandbox is disabled, W^X JIT can be enabled by Amethyst itself
-    if (!isJITEnabled(true) && getEntitlementValue(@"com.apple.private.security.no-sandbox")) {
+    if (getEntitlementValue(@"com.apple.private.security.no-sandbox") && !isJITEnabled(true)) {
         NSLog(@"[Pre-init] no-sandbox: YES, trying to enable JIT");
         int pid;
         int ret = posix_spawnp(&pid, argv[0], NULL, NULL, (char *[]){argv[0], "", NULL}, environ);
