@@ -67,7 +67,11 @@ final class ScriptRunner {
         context.setObject(log,     forKeyedSubscript: "log" as NSString)
 
         progress("Running \(script.name) against pid \(targetPID)…")
-        context.evaluateScript(source)
+        // JITSession invokes run() on a temporary ScriptRunner. Keep it alive
+        // across the C/JS call so optimized builds cannot clear weak callbacks.
+        withExtendedLifetime(self) {
+            _ = context.evaluateScript(source)
+        }
         if let executionError { throw executionError }
         progress("JIT script finished (region blessed, detached).")
     }

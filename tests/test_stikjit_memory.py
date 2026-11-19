@@ -3,6 +3,7 @@
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -20,6 +21,23 @@ class StikJITMemoryTests(unittest.TestCase):
             build = subprocess.run([SWIFTC, str(ROOT / "JITHelper/StikJIT/JITMemory.swift"),
                                     str(ROOT / "tests/stikjit_memory_tests.swift"), "-o", executable],
                                    capture_output=True, text=True, timeout=120)
+            self.assertEqual(build.returncode, 0, build.stdout + build.stderr)
+            run = subprocess.run([executable], capture_output=True, text=True, timeout=30)
+            self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+
+    @unittest.skipUnless(sys.platform == "darwin", "JavaScriptCore callbacks require macOS")
+    def test_optimized_script_runner_callbacks_and_errors(self):
+        with tempfile.TemporaryDirectory(prefix="amethyst-jit-script-") as temp:
+            # Replace only the C transport import; run the actual ScriptRunner
+            # with JavaScriptCore and the transport doubles in the Swift harness.
+            runner = Path(temp) / "ScriptRunner.swift"
+            source = (ROOT / "JITHelper/StikJIT/ScriptRunner.swift").read_text(encoding="utf-8")
+            runner.write_text(source.replace("@_implementationOnly import idevice", ""), encoding="utf-8")
+            executable = str(Path(temp) / "jit-script-tests")
+            build = subprocess.run([SWIFTC, "-O", "-swift-version", "5", "-framework", "JavaScriptCore",
+                str(ROOT / "JITHelper/StikJIT/JITMemory.swift"), str(runner),
+                str(ROOT / "tests/stikjit_script_runner_tests.swift"), "-o", executable],
+                capture_output=True, text=True, timeout=120)
             self.assertEqual(build.returncode, 0, build.stdout + build.stderr)
             run = subprocess.run([executable], capture_output=True, text=True, timeout=30)
             self.assertEqual(run.returncode, 0, run.stdout + run.stderr)

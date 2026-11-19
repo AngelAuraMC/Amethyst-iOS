@@ -195,7 +195,9 @@ tests use toolchain doubles to check archive rejection, replacement source,
 helper metadata, runpaths, Swift-runtime staging, and the SideStore layout.
 On macOS, a native Swift regression executable exercises the actual packet and
 batch implementation with high JVM addresses, checksums, unaligned ranges,
-transport errors, and rejected writes. Node.js protocol tests check that the
+transport errors, and rejected writes. An optimized JavaScriptCore test runs
+the actual ScriptRunner with a mock remote transport to verify callback
+lifetime and error propagation through Swift/JavaScript. Node.js protocol tests check that the
 Universal script cannot return an unprepared region or detach after failure.
 These checks do not execute iOS code or establish device compatibility.
 
