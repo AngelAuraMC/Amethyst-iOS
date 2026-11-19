@@ -74,6 +74,23 @@ Amethyst makes use of **just-in-time compilation**, or JIT, to provide usable sp
 (*) AltServer running on the local network is required.
 (#) Only the first time.
 
+## Built-in StikJIT
+
+Directly sideloaded iOS builds can include a StikJIT helper. Open **Settings →
+JIT setup** to import this device's remote pairing file and select **Built-in
+StikJIT**. LocalDevVPN and Developer Mode are required. See the
+[setup and build instructions](docs/builtin-stikjit.md), including SideStore's
+app-extension requirements and validation limits.
+
+### GitHub Actions builds
+
+Pushes, pull requests, and **Actions → Development build → Run workflow** build
+iOS packages with the helper included. Download the
+`org.angelauramc.amethyst-ios.ipa` artifact, extract its IPA, and install it with
+SideStore, keeping app extensions. Apple signing secrets are not needed for
+these packages; SideStore signs them during installation. See the
+[CI details](docs/builtin-stikjit.md#github-actions).
+
 ## Contributors
 Amethyst is amazing, and surprisingly stable, and it wouldn't be this way without the commmunity that helped and contribute to the project! Some notable names:
 

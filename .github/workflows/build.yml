@@ -1,0 +1,130 @@
+name: Build packages
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        required: true
+        type: number
+      platform_name:
+        required: true
+        type: string
+      release:
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      PLATFORM: ${{ inputs.platform }}
+      PLATFORM_NAME: ${{ inputs.platform_name }}
+      RELEASE: ${{ inputs.release && '1' || '0' }}
+      BUILTIN_STIKJIT: ${{ inputs.platform == 2 && '1' || '0' }}
+      SLIMMED: 1
+      RUNNER: 0
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: '8'
+
+      - name: Install build tools
+        run: |
+          brew install make ldid
+          # Keep legacy CMake projects building after the runners adopt CMake 4.
+          python3 -m venv "$RUNNER_TEMP/amethyst-tools"
+          "$RUNNER_TEMP/amethyst-tools/bin/python3" -m pip install --disable-pip-version-check cmake==3.31.10
+          echo "$RUNNER_TEMP/amethyst-tools/bin" >> "$GITHUB_PATH"
+          echo "BOOTJDK=$JAVA_HOME/bin" >> "$GITHUB_ENV"
+
+      - name: Check toolchain and packaging tests
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos swiftc --version
+          cmake --version
+          "$BOOTJDK/javac" -version
+          gmake --version
+          bash -n scripts/build-stikjit-helper.sh
+          python3 -m unittest discover -s tests -v
+
+      - name: Restore Java runtimes and pinned StikJIT archive
+        uses: actions/cache@v6
+        with:
+          path: |
+            depends/java-8-openjdk
+            depends/java-17-openjdk
+            depends/java-21-openjdk
+            depends/java-25-openjdk
+            depends/stikjit/*/StikJIT.xcframework.zip
+          key: amethyst-dependencies-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Makefile', 'scripts/build-stikjit-helper.sh') }}
+
+      - name: Build packages
+        run: |
+          jobs="$(sysctl -n hw.ncpu)"
+          if [ "$PLATFORM" = 2 ]; then
+            gmake -j"$jobs" dsym package
+            gmake -j"$jobs" package TROLLSTORE_JIT_ENT=1
+          elif [ "$PLATFORM" = 3 ]; then
+            gmake -j"$jobs" dsym package TROLLSTORE_JIT_ENT=1
+          else
+            gmake -j"$jobs" dsym package
+          fi
+
+      - name: Verify packaged app and JIT helper
+        run: python3 scripts/verify-ci-packages.py "$PLATFORM_NAME"
+
+      - name: Upload regular IPA
+        if: inputs.platform != 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: org.angelauramc.amethyst-${{ inputs.platform_name }}.ipa
+          path: artifacts/org.angelauramc.amethyst-*-${{ inputs.platform_name }}.ipa
+          if-no-files-found: error
+
+      - name: Upload slimmed IPA
+        if: inputs.platform != 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: org.angelauramc.amethyst.slimmed-${{ inputs.platform_name }}.ipa
+          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ inputs.platform_name }}.ipa
+          if-no-files-found: error
+
+      - name: Upload TrollStore package
+        if: inputs.platform == 2 || inputs.platform == 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: org.angelauramc.amethyst-${{ inputs.platform_name }}-trollstore.tipa
+          path: artifacts/org.angelauramc.amethyst-*-${{ inputs.platform_name }}-trollstore.tipa
+          if-no-files-found: error
+
+      - name: Upload slimmed TrollStore package
+        if: inputs.platform == 2 || inputs.platform == 3
+        uses: actions/upload-artifact@v7
+        with:
+          name: org.angelauramc.amethyst.slimmed-${{ inputs.platform_name }}-trollstore.tipa
+          path: artifacts/org.angelauramc.amethyst.slimmed-*-${{ inputs.platform_name }}-trollstore.tipa
+          if-no-files-found: error
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v7
+        with:
+          name: AngelAuraAmethyst-${{ inputs.platform_name }}.dSYM
+          path: artifacts/AngelAuraAmethyst.dSYM
+          if-no-files-found: error

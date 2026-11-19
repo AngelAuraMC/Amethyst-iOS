@@ -1,0 +1,15 @@
+StikJIT 2.0.1
+Source: https://github.com/StikDebug/StikJIT/tree/2.0.1
+Binary: https://github.com/StikDebug/StikJIT/releases/tag/2.0.1
+License: Mozilla Public License 2.0 (StikJIT-MPL-2.0.txt).
+The upstream framework is redistributed unmodified when built-in JIT is enabled.
+
+The framework includes the idevice library and FFI.
+Source: https://github.com/jkcoxson/idevice
+License: MIT (idevice-MIT.txt).
+
+Amethyst's UniversalJIT26.js and UniversalJIT26Extension.js remain its existing
+debugger protocol. The framework is hosted in a separate AmethystJITHelper
+extension using the classic NSExtension process model also used by LiveContainer
+and iDeck/Madeira. iDeck's integration was consulted as an architecture reference:
+https://github.com/kuscholar/iDeck/tree/main/app/MadeiraJITHelper

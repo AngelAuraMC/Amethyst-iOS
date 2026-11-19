@@ -99,6 +99,7 @@ add_executable(AngelAuraAmethyst
   main.m
   main_hook.m
   JavaLauncher.m
+  jit/BuiltinJIT.m
   external/fishhook/fishhook.c
   UIKit+hook.m
 
@@ -152,6 +153,7 @@ add_executable(AngelAuraAmethyst
   LauncherPrefContCfgViewController.m
   LauncherPrefGameDirViewController.m
   LauncherPrefManageJREViewController.m
+  LauncherPrefJITViewController.m
   LauncherProfileEditorViewController.m
   LauncherProfilesViewController.m
   LauncherSplitViewController.m
@@ -197,6 +199,7 @@ target_link_libraries(AngelAuraAmethyst
   "-framework GameController"
   "-framework IOKit"
   "-framework QuartzCore"
+  "-framework Security"
   "-framework UIKit"
   "-framework UniformTypeIdentifiers"
   "-framework UnzipKit"

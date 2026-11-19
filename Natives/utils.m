@@ -14,13 +14,15 @@ void* SecTaskCreateFromSelf(CFAllocatorRef allocator);
 
 BOOL getEntitlementValue(NSString *key) {
     void *secTask = SecTaskCreateFromSelf(NULL);
-    CFTypeRef value = SecTaskCopyValueForEntitlement(SecTaskCreateFromSelf(NULL), key, nil);
+    if (!secTask) return NO;
+    CFTypeRef value = SecTaskCopyValueForEntitlement(secTask, key, nil);
     CFRelease(secTask);
     if (value == nil) {
         return NO;
     }
+    BOOL enabled = ![(__bridge id)value isKindOfClass:NSNumber.class] || [(__bridge id)value boolValue];
     CFRelease(value);
-    return ![(__bridge id)value isKindOfClass:NSNumber.class] || [(__bridge id)value boolValue];
+    return enabled;
 }
 
 BOOL isJITEnabled(BOOL checkCSFlags) {
