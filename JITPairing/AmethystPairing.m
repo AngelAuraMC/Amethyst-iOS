@@ -96,7 +96,11 @@ static void PairingPIN(const char *pin, void *context) {
                 return;
             }
             self.backgroundTask = [UIApplication.sharedApplication beginBackgroundTaskWithName:@"Amethyst pairing"
-                expirationHandler:^{ [self stopWithError:PairingError(@"jit.pairing.error.background")]; }];
+                expirationHandler:^{
+                    // Background audio owns the longer pairing session. Release
+                    // this finite transition task as soon as the system asks.
+                    [self endBackgroundTask];
+                }];
             // A pairing session is always bounded, including when Settings is open.
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 180 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                 if (!self->_finished) [self stopWithError:PairingError(@"jit.pairing.error.timeout")];
@@ -260,6 +264,13 @@ static void PairingPIN(const char *pin, void *context) {
     [self stopWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
 }
 
+- (void)endBackgroundTask {
+    if (self.backgroundTask == UIBackgroundTaskInvalid) return;
+    UIBackgroundTaskIdentifier task = self.backgroundTask;
+    self.backgroundTask = UIBackgroundTaskInvalid;
+    [UIApplication.sharedApplication endBackgroundTask:task];
+}
+
 - (void)finish:(NSData *)data error:(NSError *)error {
     if (_finished) return;
     _finished = YES;
@@ -276,10 +287,7 @@ static void PairingPIN(const char *pin, void *context) {
     }
     self.player = nil;
     self.audio = nil;
-    if (self.backgroundTask != UIBackgroundTaskInvalid) {
-        [UIApplication.sharedApplication endBackgroundTask:self.backgroundTask];
-        self.backgroundTask = UIBackgroundTaskInvalid;
-    }
+    [self endBackgroundTask];
     UNUserNotificationCenter *notifications = UNUserNotificationCenter.currentNotificationCenter;
     [notifications removePendingNotificationRequestsWithIdentifiers:@[PINNotification]];
     [notifications removeDeliveredNotificationsWithIdentifiers:@[PINNotification]];
