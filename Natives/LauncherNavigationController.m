@@ -17,6 +17,7 @@
 #import "UIKit+hook.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
+#import "jit/BuiltinJIT.h"
 
 #import <objc/runtime.h>
 #include <sys/time.h>
@@ -425,13 +426,21 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)invokeAfterJITEnabled:(void(^)(void))handler {
     localVersionList = remoteVersionList = nil;
     BOOL hasTrollStoreJIT = getEntitlementValue(@"jb.pmap_cs.custom_trust");
-    BOOL isLiveContainer = getenv("LC_HOME_PATH") != NULL;
 
     if (isJITEnabled(false)) {
         [ALTServerManager.sharedManager stopDiscovering];
         handler();
         return;
-    } else if (hasTrollStoreJIT) {
+    }
+
+    NSString *method = getPrefObject(@"jit.method");
+    if ([method isEqualToString:@"builtin"]) {
+        [self invokeBuiltinJIT:handler];
+        return;
+    }
+
+    BOOL waitOnly = [method isEqualToString:@"wait"];
+    if (!waitOnly && hasTrollStoreJIT) {
         NSURL *jitURL = [NSURL URLWithString:[NSString stringWithFormat:@"apple-magnifier://enable-jit?bundle-id=%@", NSBundle.mainBundle.bundleIdentifier]];
         [UIApplication.sharedApplication openURL:jitURL options:@{} completionHandler:nil];
         // Do not return, wait for TrollStore to enable JIT and jump back
@@ -439,16 +448,25 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         NSLog(@"Debug option skipped waiting for JIT. Java might not work.");
         handler();
         return;
-    } else if (@available(iOS 17.4, *)) {
-        NSString *scriptDataString = @"";
-        if(DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM)) {
-            NSData *scriptData = [NSData dataWithContentsOfFile:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"UniversalJIT26.js"]];
-            scriptDataString = [@"&script-data=" stringByAppendingString:[scriptData base64EncodedStringWithOptions:0]];
+    } else if (!waitOnly) {
+        if (@available(iOS 17.4, *)) {
+            NSURLComponents *request = [NSURLComponents new];
+            request.scheme = [UIApplication.sharedApplication canOpenURL:[NSURL URLWithString:@"stikdebug://"]] ? @"stikdebug" : @"stikjit";
+            request.host = @"enable-jit";
+            NSMutableArray *query = [@[
+                [NSURLQueryItem queryItemWithName:@"bundle-id" value:NSBundle.mainBundle.bundleIdentifier],
+                [NSURLQueryItem queryItemWithName:@"pid" value:@(getpid()).stringValue]
+            ] mutableCopy];
+            if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM)) {
+                NSData *scriptData = [NSData dataWithContentsOfFile:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"UniversalJIT26.js"]];
+                [query addObject:[NSURLQueryItem queryItemWithName:@"script-data" value:[scriptData base64EncodedStringWithOptions:0]]];
+            }
+            request.queryItems = query;
+            [UIApplication.sharedApplication openURL:request.URL options:@{} completionHandler:nil];
+        } else {
+            // Compatibility with the existing SideStore activation flow.
+            [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"sidestore://sidejit-enable?pid=%d", getpid()]] options:@{} completionHandler:nil];
         }
-        [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"stikjit://enable-jit?bundle-id=%@&pid=%d%@", NSBundle.mainBundle.bundleIdentifier, getpid(), scriptDataString]] options:@{} completionHandler:nil];
-    } else {
-        // Assuming 16.7-17.3.1. SideStore still lacks this URL scheme at the time of writing, so it only jumps to SideStore.
-        [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"sidestore://sidejit-enable?pid=%d", getpid()]] options:@{} completionHandler:nil];
     }
 
     self.progressText.text = localize(@"launcher.wait_jit.title", nil);
@@ -456,23 +474,59 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:localize(@"launcher.wait_jit.title", nil)
         message:hasTrollStoreJIT ? localize(@"launcher.wait_jit_trollstore.message", nil) : localize(@"launcher.wait_jit.message", nil)
         preferredStyle:UIAlertControllerStyleAlert];
-/* TODO:
-    UIAlertAction *cancel = [UIAlertAction actionWithTitle:localize(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^{
-        
+    __block NSTimer *timer;
+    UIAlertAction *cancel = [UIAlertAction actionWithTitle:localize(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        [timer invalidate];
+        timer = nil;
+        [self setInteractionEnabled:YES forDownloading:YES];
     }];
     [alert addAction:cancel];
-*/
     [self presentViewController:alert animated:YES completion:nil];
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        while (!isJITEnabled(false)) {
-            // Perform check for every 200ms
-            usleep(1000*200);
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:600];
+    timer = [NSTimer scheduledTimerWithTimeInterval:0.2 repeats:YES block:^(NSTimer *poll) {
+        if (isJITEnabled(false)) {
+            [poll invalidate];
+            timer = nil;
             [alert dismissViewControllerAnimated:YES completion:handler];
-        });
-    });
+        } else if (deadline.timeIntervalSinceNow <= 0) {
+            [poll invalidate];
+            timer = nil;
+            [alert dismissViewControllerAnimated:YES completion:^{
+                [self setInteractionEnabled:YES forDownloading:YES];
+                showDialog(localize(@"Error", nil), localize(@"jit.error.timeout", nil));
+            }];
+        }
+    }];
+}
+
+- (void)invokeBuiltinJIT:(void(^)(void))handler {
+    self.progressText.text = localize(@"launcher.wait_jit.title", nil);
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:localize(@"jit.method.builtin", nil)
+        message:localize(@"jit.status.working", nil) preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:localize(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        [BuiltinJIT.shared cancelPendingEnable];
+    }]];
+    [self presentViewController:alert animated:YES completion:^{
+        [BuiltinJIT.shared enableWithReadyHandler:^(NSError *error) {
+            if ([error.domain isEqualToString:NSCocoaErrorDomain] && error.code == NSUserCancelledError) {
+                // UIAlertController dismisses itself for the Cancel action.
+                [self setInteractionEnabled:YES forDownloading:YES];
+                return;
+            }
+            void (^finished)(void) = ^{
+                if (error) {
+                    [self setInteractionEnabled:YES forDownloading:YES];
+                    showDialog(localize(@"Error", nil), error.localizedDescription);
+                } else {
+                    [ALTServerManager.sharedManager stopDiscovering];
+                    handler();
+                }
+            };
+            if (alert.presentingViewController) [alert dismissViewControllerAnimated:YES completion:finished];
+            else finished();
+        }];
+    }];
 }
 
 #pragma mark - UIPopoverPresentationControllerDelegate

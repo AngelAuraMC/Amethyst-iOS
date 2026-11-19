@@ -14,3 +14,4 @@ project.xcworkspace/
 /depends
 /Natives/config.h
 entitlements.codesign.xml
+__pycache__/

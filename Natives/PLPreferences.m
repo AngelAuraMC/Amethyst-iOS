@@ -74,11 +74,16 @@
         NSDictionary *general = @{
             @"game_directory": @"default",
             @"hidden_sidebar": @(realUIIdiom == UIUserInterfaceIdiomPhone),
-            @"appicon": @"AppIcon-Light"
+            @"appicon": @"AppIcon-Light",
+            @"jit_setup": @""
         };
         [defaults[@"general"] addEntriesFromDictionary:general];
 
         defaults[@"java"][@"manage_runtime"] = @""; // stub
+        defaults[@"jit"] = @{
+            @"method": @"external",
+            @"force_script": @NO
+        }.mutableCopy;
         defaults[@"debug"] = @{
             @"debug_always_attached_jit": @NO,
             @"debug_skip_wait_jit": @NO,

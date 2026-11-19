@@ -110,6 +110,15 @@ AME_JRE17_DIR       ?= $(SOURCEDIR)/depends/java-17-openjdk
 AME_JRE21_DIR       ?= $(SOURCEDIR)/depends/java-21-openjdk
 AME_JRE25_DIR       ?= $(SOURCEDIR)/depends/java-25-openjdk
 
+# The optional helper keeps the host compatible with iOS 14. It requires the
+# macOS Swift toolchain; StikJIT's release framework recommends Xcode 27.1+.
+BUILTIN_STIKJIT ?= $(if $(and $(filter Darwin,$(DETECTPLAT)),$(filter 0,$(IOS)),$(filter 2,$(PLATFORM))),1,0)
+ifeq ($(BUILTIN_STIKJIT),1)
+ifneq ($(DETECTPLAT)-$(IOS)-$(PLATFORM),Darwin-0-2)
+$(error BUILTIN_STIKJIT=1 requires building the iOS device target on macOS)
+endif
+endif
+
 # Function to use later for checking dependencies
 METHOD_DEPCHECK   = $(shell $(1) >/dev/null 2>&1 && echo 1)
 
@@ -240,6 +249,7 @@ help:
 	echo '    make all                            Builds the entire app'
 	echo '    make native                         Builds the native app'
 	echo '    make java                           Builds the Java app'
+	echo '    make stikjit                        Builds the optional built-in JIT helper'
 	echo '    make jre                            Downloads/unpacks the iOS JREs'
 	echo '    make assets                         Compiles Assets.xcassets'
 	echo '    make payload                        Makes Payload/AngelAuraAmethyst.app'
@@ -339,7 +349,13 @@ assets:
 	fi
 	echo '[Amethyst v$(VERSION)] assets - end'
 
-payload: native dep_mg java jre assets
+stikjit: native
+ifeq ($(BUILTIN_STIKJIT),1)
+	bash $(SOURCEDIR)/scripts/build-stikjit-helper.sh build $(SOURCEDIR) $(WORKINGDIR) "$(SDKPATH)" $(CMAKE_BUILD_TYPE)
+	bash $(SOURCEDIR)/scripts/build-ondevice-pairing.sh build $(SOURCEDIR) $(WORKINGDIR) "$(SDKPATH)" $(CMAKE_BUILD_TYPE)
+endif
+
+payload: native dep_mg java jre assets stikjit
 	echo '[Amethyst v$(VERSION)] payload - start'
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/AngelAuraAmethyst.app/libs)
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo)
@@ -347,6 +363,12 @@ payload: native dep_mg java jre assets
 	cp -R $(SOURCEDIR)/Natives/resources/en.lproj/LaunchScreen.storyboardc $(WORKINGDIR)/AngelAuraAmethyst.app/Base.lproj/ || exit 1
 	cp -R $(SOURCEDIR)/Natives/resources/* $(WORKINGDIR)/AngelAuraAmethyst.app/ || exit 1
 	cp $(WORKINGDIR)/*.dylib $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/ || exit 1
+ifeq ($(BUILTIN_STIKJIT),1)
+	bash $(SOURCEDIR)/scripts/build-stikjit-helper.sh embed $(SOURCEDIR) $(WORKINGDIR)
+	bash $(SOURCEDIR)/scripts/build-ondevice-pairing.sh embed $(SOURCEDIR) $(WORKINGDIR)
+else
+	rm -rf $(WORKINGDIR)/AngelAuraAmethyst.app/PlugIns/AmethystJITHelper.appex $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/StikJIT.framework $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/AmethystPairing.framework
+endif
 	cp -R $(SOURCEDIR)/JavaApp/libs/others/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	cp $(SOURCEDIR)/JavaApp/build/*.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	cp -R $(SOURCEDIR)/JavaApp/libs/caciocavallo/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo || exit 1
@@ -435,4 +457,4 @@ clean:
 
 		
 
-.PHONY: all clean check native java jre package dsym deploy help
+.PHONY: all clean check native java jre package dsym deploy help stikjit

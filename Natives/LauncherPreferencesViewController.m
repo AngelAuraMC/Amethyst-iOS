@@ -8,6 +8,7 @@
 #import "LauncherPreferencesViewController.h"
 #import "LauncherPrefContCfgViewController.h"
 #import "LauncherPrefManageJREViewController.h"
+#import "LauncherPrefJITViewController.h"
 #import "UIKit+hook.h"
 
 #import "config.h"
@@ -56,6 +57,13 @@
         @[
             // General settings
             @{@"icon": @"cube"},
+            @{@"key": @"jit_setup",
+              @"icon": @"bolt",
+              @"type": self.typeChildPane,
+              @"canDismissWithSwipe": @YES,
+              @"enableCondition": whenNotInGame,
+              @"class": LauncherPrefJITViewController.class
+            },
             @{@"key": @"check_sha",
               @"hasDetail": @YES,
               @"icon": @"lock.shield",

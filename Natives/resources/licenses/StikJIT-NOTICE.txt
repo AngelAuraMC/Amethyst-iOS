@@ -1,0 +1,25 @@
+StikJIT 2.0.1
+Source: https://github.com/StikDebug/StikJIT/tree/b3e01a30ded4cd0b27cf1b6bd42f123bbdf49c3a
+License: Mozilla Public License 2.0 (StikJIT-MPL-2.0.txt).
+The framework is built from pinned source with Amethyst's MPL-2.0 changes in
+JITHelper/StikJIT/: full-width JIT memory addresses, checked page writes, and
+JavaScript error propagation. Corresponding source is available in this
+Amethyst repository at the revision used to build the app:
+https://github.com/LxnChan/Amethyst-iOS/tree/codex/builtin-stikjit-ci/JITHelper/StikJIT
+
+The framework includes the idevice library and FFI.
+Source: https://github.com/jkcoxson/idevice
+License: MIT (idevice-MIT.txt).
+
+On-device pairing also links an unmodified MIT idevice FFI static library,
+with a matching header, from StikDebug commit:
+7a80dfce28eeb501faca6498d1746949ac921e74
+https://github.com/StikDebug/StikDebug/tree/7a80dfce28eeb501faca6498d1746949ac921e74/StikDebug/idevice
+It is linked into the separately signed AmethystPairing framework. Amethyst's
+pairing coordinator and interface are implemented in JITPairing/.
+
+Amethyst's UniversalJIT26.js and UniversalJIT26Extension.js remain its existing
+debugger protocol. The framework is hosted in a separate AmethystJITHelper
+extension using the classic NSExtension process model also used by LiveContainer
+and iDeck/Madeira. iDeck's integration was consulted as an architecture reference:
+https://github.com/kuscholar/iDeck/tree/main/app/MadeiraJITHelper

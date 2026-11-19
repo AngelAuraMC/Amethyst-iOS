@@ -191,3 +191,27 @@
 "preference.title.debug_show_layout_overlap" = "顯示重複的佈局";
 "preference.detail.debug_show_layout_overlap" = "通過用透明顏色來覆蓋所有視圖，來顯示重複的視圖";
 "controller_configurator.playstation.title.named_back" = "選擇";
+
+/* On-device pairing */
+"jit.settings.autosave" = "變更會自動儲存，點選左上角返回按鈕即可回到設定。";
+"login.jit.on_launch" = "啟動遊戲時啟用 JIT";
+"jit.pairing.local" = "本機配對";
+"jit.pairing.local.detail" = "iOS 27 及以上可直接配對，無需電腦。";
+"jit.pairing.local.instructions" = "連接 Wi-Fi，並允許本機網路和通知權限。狀態顯示配對主機後，打開系統「設定 → 隱私權與安全性 → 開發者模式」，選擇「與 Amethyst-xxxxxx 配對」，輸入通知中的配對碼，然後返回本應用程式。配對期間會暫時播放靜音音訊以維持背景執行，最多三分鐘。成功後自動儲存，原有配對只在新配對成功後才會替換。";
+"jit.pairing.local.start" = "開始配對";
+"jit.pairing.local.cancel" = "取消本機配對";
+"jit.pairing.local.cancel_detail" = "停止廣播並關閉配對連線。";
+"jit.pairing.starting" = "正在請求權限並啟動配對主機…";
+"jit.pairing.waiting" = "配對主機已就緒：%@。請前往系統「設定 → 隱私權與安全性 → 開發者模式」，選擇與此主機配對。";
+"jit.pairing.pin.status" = "配對碼：%@。請在系統設定中輸入。";
+"jit.pairing.pin.title" = "Amethyst 配對碼";
+"jit.pairing.pin.body" = "請在系統設定中輸入 %@ 完成配對。";
+"jit.pairing.complete" = "配對成功，已儲存至鑰匙圈。請連接 LocalDevVPN，選擇「內建 StikJIT」後準備。";
+"jit.pairing.cancelled" = "已取消配對，原有配對記錄已保留。";
+"jit.pairing.error.os" = "本機配對需要 iOS 27 或更新版本。舊系統請匯入遠端配對檔案。";
+"jit.pairing.error.framework" = "配對框架遺失或無法載入，請重新安裝包含內建 JIT 的完整安裝包。";
+"jit.pairing.error.notifications" = "請允許 Amethyst 顯示通知，以便在系統設定中查看配對碼，然後重試。";
+"jit.pairing.error.background" = "配對無法繼續在背景執行，請返回 Amethyst 後重試。";
+"jit.pairing.error.network" = "無法廣播配對主機或接受連線，請允許本機網路存取並連接 Wi-Fi 後重試。";
+"jit.pairing.error.handshake" = "配對失敗，請檢查系統設定中的配對碼後重試。原有配對記錄已保留。";
+"jit.pairing.error.timeout" = "配對已超過三分鐘，請返回 Amethyst 並重新開始配對。";
