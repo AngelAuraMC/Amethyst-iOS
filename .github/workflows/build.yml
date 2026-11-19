@@ -128,3 +128,11 @@ jobs:
           name: AngelAuraAmethyst-${{ inputs.platform_name }}.dSYM
           path: artifacts/AngelAuraAmethyst.dSYM
           if-no-files-found: error
+
+      - name: Upload JIT helper debug symbols
+        if: inputs.platform == 2 && !inputs.release
+        uses: actions/upload-artifact@v7
+        with:
+          name: AmethystJITHelper-${{ inputs.platform_name }}.dSYM
+          path: Natives/build/AmethystJITHelper.dSYM
+          if-no-files-found: error

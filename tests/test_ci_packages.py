@@ -107,6 +107,12 @@ class CIPackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Expected one"):
             VERIFY.verify_packages(self.directory, "ios")
 
+    def test_debug_symbols_cannot_be_embedded_in_extension(self):
+        files = self.fixture()
+        files[VERIFY.HELPER + "AmethystJITHelper.dSYM/Contents/Resources/DWARF/AmethystJITHelper"] = b"debug fixture"
+        with self.assertRaisesRegex(ValueError, "dSYM"):
+            VERIFY.verify_archive(self.write_archive(files), builtin_jit=True, slimmed=False)
+
 
 if __name__ == "__main__":
     unittest.main()

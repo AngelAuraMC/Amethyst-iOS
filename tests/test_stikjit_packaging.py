@@ -40,7 +40,12 @@ elif tool == "xcrun":
         destination = pathlib.Path(args[args.index("--destination") + 1])
         (destination / "libswiftCore.dylib").write_bytes(b"swift runtime fixture")
     else:
-        pathlib.Path(args[args.index("-o") + 1]).write_bytes(b"compiled helper fixture")
+        output = pathlib.Path(args[args.index("-o") + 1])
+        output.write_bytes(b"compiled helper fixture")
+        if "swiftc" in args and "-g" in args:
+            dwarf = pathlib.Path(str(output) + ".dSYM") / "Contents/Resources/DWARF"
+            dwarf.mkdir(parents=True, exist_ok=True)
+            (dwarf / output.name).write_bytes(b"non-loadable MH_DSYM fixture")
 '''
 
 
@@ -108,6 +113,8 @@ class StikJITPackagingTests(unittest.TestCase):
         self.assertEqual(info["NSExtension"]["NSExtensionPrincipalClass"], "AmethystJITHelperHandler")
         self.assertEqual(info["NSExtension"]["NSExtensionPointIdentifier"], "com.apple.ar.viewer")
         self.assertTrue((helper / "AmethystJITHelper").is_file())
+        self.assertTrue((self.work / "AmethystJITHelper.dSYM/Contents/Resources/DWARF/AmethystJITHelper").is_file())
+        self.assertFalse(any(path.name.endswith(".dSYM") for path in self.app.rglob("*")))
         self.assertEqual((self.app / "Frameworks/StikJIT.framework/StikJIT").read_bytes(), b"framework fixture")
         self.assertTrue((self.app / "Frameworks/libswiftCore.dylib").is_file())
         self.assertFalse((helper / "Frameworks").exists())

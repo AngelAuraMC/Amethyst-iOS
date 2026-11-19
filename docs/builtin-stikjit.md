@@ -90,6 +90,8 @@ iOS builds explicitly set `BUILTIN_STIKJIT=1`. Both the full and slimmed IPA,
 their TrollStore variants, and debug symbols are uploaded. The full IPA includes
 Java 8, 17, 21, and 25; slimmed packages require runtimes to be installed
 separately. SideStore users should choose the regular full IPA artifact above.
+The helper's Debug dSYM is uploaded separately and excluded from the extension;
+debug-symbol binaries cannot be recursively signed as executable code.
 The manually triggered **Release build** reuses the same job with `RELEASE=1`
 and retains the iOS, tvOS, and simulator matrix. Only the iOS device packages
 embed the helper.

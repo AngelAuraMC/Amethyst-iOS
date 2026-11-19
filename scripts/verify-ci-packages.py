@@ -25,6 +25,8 @@ def require_file(archive, name):
 def verify_archive(path, *, builtin_jit, slimmed):
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
+        if any(part.endswith(".dSYM") for name in names for part in name.split("/")):
+            raise ValueError("Package contains build-only dSYM debug symbols")
         host = plistlib.loads(archive.read(APP + "Info.plist"))
         require_file(archive, APP + host["CFBundleExecutable"])
         if slimmed:

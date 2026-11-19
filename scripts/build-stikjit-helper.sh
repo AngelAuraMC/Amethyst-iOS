@@ -16,6 +16,7 @@ app="$work_dir/AngelAuraAmethyst.app"
 
 case "$mode" in
     build)
+        rm -rf "$helper"
         mkdir -p "$cache_dir" "$helper"
         archive="$cache_dir/StikJIT.xcframework.zip"
         if [ ! -f "$archive" ]; then
@@ -42,7 +43,10 @@ case "$mode" in
             -Xlinker -rpath -Xlinker @executable_path/../../Frameworks \
             -Xlinker -rpath -Xlinker /usr/lib/swift \
             "$source_dir/JITHelper/AmethystJITHelper.swift" "$work_dir/AmethystJITHelper-main.o" \
-            -o "$helper/AmethystJITHelper"
+            -o "$work_dir/AmethystJITHelper"
+        # swiftc -g also emits a sibling dSYM. Keep build outputs outside the
+        # extension so recursive signing never encounters its MH_DSYM binary.
+        mv -f "$work_dir/AmethystJITHelper" "$helper/AmethystJITHelper"
         cp "$source_dir/JITHelper/Info.plist" "$helper/Info.plist"
         bundle_id="$(plutil -extract CFBundleIdentifier raw -o - "$app/Info.plist")"
         plutil -replace CFBundleIdentifier -string "$bundle_id.JITHelper" "$helper/Info.plist"
@@ -53,6 +57,7 @@ case "$mode" in
         ;;
     embed)
         mkdir -p "$app/PlugIns" "$app/Frameworks"
+        rm -rf "$app/PlugIns/AmethystJITHelper.appex"
         cp -R "$helper" "$app/PlugIns/"
         # Keep the framework in the host's Frameworks directory, where
         # SideStore and AltStore discover it for re-signing.
