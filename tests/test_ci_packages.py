@@ -22,9 +22,9 @@ class CIPackageTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.directory = Path(self.temp.name)
 
-    def fixture(self, *, builtin_jit=True, slimmed=False):
+    def fixture(self, *, builtin_jit=True, slimmed=False, bundle_id="dev.example.amethyst"):
         host = {
-            "CFBundleIdentifier": "dev.example.amethyst",
+            "CFBundleIdentifier": bundle_id,
             "CFBundleExecutable": "AngelAuraAmethyst",
             "CFBundleVersion": "527",
             "CFBundleShortVersionString": "2.3.4",
@@ -57,6 +57,7 @@ class CIPackageTests(unittest.TestCase):
         return path
 
     def test_all_platform_package_sets(self):
+        bundle_id = "org.angelauramc.amethyst.95J8WZ4TN8"
         for platform in VERIFY.PLATFORMS:
             with self.subTest(platform=platform):
                 suffixes = (".ipa", "-trollstore.tipa") if platform == "ios" else (
@@ -64,10 +65,21 @@ class CIPackageTests(unittest.TestCase):
                 for slimmed in (False, True):
                     bundle = "org.angelauramc.amethyst" + (".slimmed" if slimmed else "")
                     for suffix in suffixes:
-                        self.write_archive(self.fixture(builtin_jit=platform == "ios", slimmed=slimmed),
+                        self.write_archive(self.fixture(builtin_jit=platform == "ios", slimmed=slimmed,
+                                                        bundle_id=bundle_id),
                             f"{bundle}-1.0-{platform}{suffix}")
                 with redirect_stdout(io.StringIO()):
-                    VERIFY.verify_packages(self.directory, platform)
+                    VERIFY.verify_packages(self.directory, platform, expected_bundle_id=bundle_id)
+
+    def test_changed_installation_identifier_is_rejected(self):
+        for builtin_jit in (False, True):
+            for slimmed in (False, True):
+                with self.subTest(builtin_jit=builtin_jit, slimmed=slimmed):
+                    files = self.fixture(builtin_jit=builtin_jit, slimmed=slimmed,
+                                         bundle_id="org.angelauramc.amethyst")
+                    with self.assertRaisesRegex(ValueError, "Host CFBundleIdentifier"):
+                        VERIFY.verify_archive(self.write_archive(files), builtin_jit=builtin_jit,
+                            slimmed=slimmed, expected_bundle_id="org.angelauramc.amethyst.95J8WZ4TN8")
 
     def test_missing_or_empty_helper_files_are_rejected(self):
         for member in (VERIFY.HELPER + "Info.plist", VERIFY.HELPER + "AmethystJITHelper",

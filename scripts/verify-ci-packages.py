@@ -22,12 +22,15 @@ def require_file(archive, name):
         raise ValueError(f"Empty file: {name}")
 
 
-def verify_archive(path, *, builtin_jit, slimmed):
+def verify_archive(path, *, builtin_jit, slimmed, expected_bundle_id=None):
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
         if any(part.endswith(".dSYM") for name in names for part in name.split("/")):
             raise ValueError("Package contains build-only dSYM debug symbols")
         host = plistlib.loads(archive.read(APP + "Info.plist"))
+        if expected_bundle_id is not None and host.get("CFBundleIdentifier") != expected_bundle_id:
+            raise ValueError(f"Host CFBundleIdentifier must be {expected_bundle_id!r}, "
+                             f"got {host.get('CFBundleIdentifier')!r}")
         require_file(archive, APP + host["CFBundleExecutable"])
         if slimmed:
             if any(name.startswith(APP + "java_runtimes/") for name in names):
@@ -61,7 +64,7 @@ def verify_archive(path, *, builtin_jit, slimmed):
         require_file(archive, FRAMEWORK + "StikJIT")
 
 
-def verify_packages(directory, platform):
+def verify_packages(directory, platform, *, expected_bundle_id=None):
     suffixes = [".ipa"] if platform != "tvos" else []
     if platform in ("ios", "tvos"):
         suffixes.append("-trollstore.tipa")
@@ -72,7 +75,8 @@ def verify_packages(directory, platform):
             paths = list(directory.glob(pattern))
             if len(paths) != 1:
                 raise ValueError(f"Expected one {pattern}, found {len(paths)}")
-            verify_archive(paths[0], builtin_jit=platform == "ios", slimmed=slimmed)
+            verify_archive(paths[0], builtin_jit=platform == "ios", slimmed=slimmed,
+                           expected_bundle_id=expected_bundle_id)
             print(f"Verified {paths[0].name}")
 
 
@@ -80,9 +84,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("platform", choices=PLATFORMS)
     parser.add_argument("--artifacts", type=Path, default=Path("artifacts"))
+    parser.add_argument("--bundle-id", help="Required host bundle identifier for every package")
     args = parser.parse_args()
     try:
-        verify_packages(args.artifacts, args.platform)
+        verify_packages(args.artifacts, args.platform, expected_bundle_id=args.bundle_id)
     except (ValueError, KeyError, OSError, zipfile.BadZipFile, plistlib.InvalidFileException) as error:
         print(f"Package validation failed: {error}", file=sys.stderr)
         return 1

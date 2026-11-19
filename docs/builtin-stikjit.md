@@ -96,6 +96,16 @@ The manually triggered **Release build** reuses the same job with `RELEASE=1`
 and retains the iOS, tvOS, and simulator matrix. Only the iOS device packages
 embed the helper.
 
+CI fixes the host bundle identifier to the literal
+`org.angelauramc.amethyst.95J8WZ4TN8` before compilation, matching the existing
+upstream Debug IPA. The helper inherits this identifier with `.JITHelper`
+appended. The suffix is part of the app's installation identity, independent
+of the account used to sign it; it is not used as the CI signing team.
+Development and Release builds use the same identifier, and artifact filenames
+remain unchanged. Package validation rejects any output that loses this
+identifier. SideStore must use the same signing account as the existing app
+when installing an update.
+
 CI runs the packaging smoke tests before compilation. After packaging,
 `scripts/verify-ci-packages.py` checks every expected archive, its runtime
 variant, helper executable and metadata, and the StikJIT framework. Missing or

@@ -32,6 +32,8 @@ jobs:
       BUILTIN_STIKJIT: ${{ inputs.platform == 2 && '1' || '0' }}
       SLIMMED: 1
       RUNNER: 0
+      # Keep the identifier used by existing installations as a literal string.
+      AMETHYST_BUNDLE_ID: org.angelauramc.amethyst.95J8WZ4TN8
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v7
@@ -75,6 +77,20 @@ jobs:
             depends/stikjit/*/StikJIT.xcframework.zip
           key: amethyst-dependencies-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Makefile', 'scripts/build-stikjit-helper.sh') }}
 
+      - name: Preserve the existing app identifier
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import plistlib
+
+          path = Path("Natives/Info.plist")
+          info = plistlib.loads(path.read_bytes())
+          info["CFBundleIdentifier"] = os.environ["AMETHYST_BUNDLE_ID"]
+          path.write_bytes(plistlib.dumps(info, sort_keys=False))
+          print("CI bundle identifier:", info["CFBundleIdentifier"])
+          PY
+
       - name: Build packages
         run: |
           jobs="$(sysctl -n hw.ncpu)"
@@ -88,7 +104,7 @@ jobs:
           fi
 
       - name: Verify packaged app and JIT helper
-        run: python3 scripts/verify-ci-packages.py "$PLATFORM_NAME"
+        run: python3 scripts/verify-ci-packages.py "$PLATFORM_NAME" --bundle-id "$AMETHYST_BUNDLE_ID"
 
       - name: Upload regular IPA
         if: inputs.platform != 3
