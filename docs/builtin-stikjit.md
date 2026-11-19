@@ -8,9 +8,10 @@ and StikJIT, and its minimum OS is iOS 17.4.
 
 1. Install the IPA directly with SideStore and keep app extensions. Enable
    Developer Mode. The app must be signed with `get-task-allow`.
-2. Install/connect LocalDevVPN and obtain this device's **remote pairing file**,
-   following the [StikDebug pairing guide](https://github.com/StikDebug/StikDebug-Guide/blob/main/pairing_file.md).
-3. Open **Settings → JIT setup**, import the file, and select **Built-in StikJIT**.
+2. Obtain this device's **remote pairing file**, or use the on-device pairing
+   flow below on iOS 27 or later.
+3. Open **Settings → JIT setup**, import the file if needed, connect LocalDevVPN,
+   and select **Built-in StikJIT**.
 4. Optionally select **Prepare JIT** to check connectivity and prepare the DDI.
    Launching a game or JAR also performs preparation automatically.
 5. Start the game. The helper prepares the DDI, attaches to Amethyst's current
@@ -22,11 +23,30 @@ temporarily disable cellular data while enabling JIT. Following an OS update,
 download it again. A reset is a cache operation, not confirmation that the DDI
 is mounted or JIT enabled.
 
-This integration imports pairing files; it does not generate them on the phone
-or manage VPN settings. Built-in JIT is disabled in LiveContainer, simulators,
+This integration supports importing records and pairing the same phone on iOS
+27 or later. It does not manage VPN settings. Built-in JIT is disabled in LiveContainer, simulators,
 and non-iOS device targets in this implementation. The external JIT tool and
 wait-for-debugger methods remain available. Existing installations retain the
 external method until the user selects built-in JIT.
+
+### On-device pairing (iOS 27 or later)
+
+1. Connect to Wi-Fi, enable Developer Mode, and open **Settings → JIT setup →
+   Pair this device** in Amethyst. Allow Local Network and alert notifications.
+2. Wait for the `Amethyst-xxxxxx` host name to appear in Status. In the system
+   **Settings → Privacy & Security → Developer Mode**, choose **Pair with** that
+   host. Enter the pairing code shown by Amethyst's notification.
+3. Return to Amethyst. On success the remote pairing record is saved in the
+   device-only Keychain, without exporting a file. Connect LocalDevVPN and select
+   **Built-in StikJIT**, then prepare or launch a game.
+
+Only the same phone may connect to this pairing listener; pairing other devices
+is deliberately rejected. A failed or cancelled attempt preserves the saved
+record. The session can be cancelled in JIT setup and expires after three
+minutes. Silent background audio keeps the app active while system Settings is
+open; audio, Bonjour advertising, sockets, and PIN notifications are cleaned up
+when the session ends. Pairing data stays in memory until it reaches Keychain.
+Earlier iOS versions continue to use file import.
 
 ## Building
 
@@ -53,6 +73,7 @@ bundle ID and versions from the built host's Info.plist. The final layout is:
 ```text
 AngelAuraAmethyst.app/
   Frameworks/StikJIT.framework/
+  Frameworks/AmethystPairing.framework/
   Frameworks/libswift*.dylib          (when required by swift-stdlib-tool)
   PlugIns/AmethystJITHelper.appex/
     AmethystJITHelper
@@ -77,7 +98,7 @@ new commits to an existing pull request. It can also be started manually:
 3. After a successful run, download the `org.angelauramc.amethyst-ios.ipa`
    artifact and extract the IPA from its ZIP wrapper.
 4. Install the IPA directly using SideStore and keep app extensions. Continue
-   with the pairing-file setup above.
+   with the pairing setup above.
 
 The shared `build.yml` job uses GitHub's hosted **`xcode-27`** ARM64 image and
 selects **Xcode 27.1**. It installs Zulu JDK 8, GNU make, `ldid`, and CMake
@@ -116,6 +137,13 @@ hits. The IPA is prepared for re-signing during installation with SideStore.
 Local smoke tests and workflow linting do not establish a successful macOS
 build or device compatibility. The workflow must complete on GitHub and the
 resulting IPA still needs the device validation described below.
+
+The pairing framework is built separately with the pinned MIT idevice static
+library/header used by StikDebug commit
+`7a80dfce28eeb501faca6498d1746949ac921e74`. Both downloads are SHA-256 verified,
+including cache hits. It is loaded only when the user starts pairing on iOS 27
+or later. Package checks also require its executable, matching bundle ID,
+Bonjour service, and background audio declaration.
 
 ## Process lifetime and credentials
 
@@ -157,7 +185,10 @@ metadata, runpaths, Swift-runtime staging, and the SideStore package layout;
 they do not compile or execute iOS code.
 
 Before distributing, build on macOS and validate on a directly SideStore-signed
-device: import a remote pairing file, prepare the DDI, start a vanilla game,
+device: complete on-device pairing and enter the notification PIN on iOS 27,
+cancel and time out pairing while waiting for a connection or PIN, confirm a
+failed attempt preserves the saved record, import a remote pairing file,
+prepare the DDI, start a vanilla game,
 retry after a VPN/pairing error, cancel a pending attempt, relaunch after a
 device reboot, and exercise the "Keep attached" setting. iOS 27 behavior and
 extension provisioning require that device validation.

@@ -10,6 +10,7 @@ import zipfile
 APP = "Payload/AngelAuraAmethyst.app/"
 HELPER = APP + "PlugIns/AmethystJITHelper.appex/"
 FRAMEWORK = APP + "Frameworks/StikJIT.framework/"
+PAIRING = APP + "Frameworks/AmethystPairing.framework/"
 PLATFORMS = ("ios", "tvos", "iossimulator", "tvossimulator")
 
 
@@ -40,7 +41,7 @@ def verify_archive(path, *, builtin_jit, slimmed, expected_bundle_id=None):
                 require_file(archive, APP + f"java_runtimes/java-{version}-openjdk/release")
 
         if not builtin_jit:
-            if any(name.startswith((HELPER, FRAMEWORK)) for name in names):
+            if any(name.startswith((HELPER, FRAMEWORK, PAIRING)) for name in names):
                 raise ValueError("Non-iOS package contains the iOS JIT helper or framework")
             return
 
@@ -62,6 +63,14 @@ def verify_archive(path, *, builtin_jit, slimmed, expected_bundle_id=None):
         require_file(archive, HELPER + helper["CFBundleExecutable"])
         require_file(archive, FRAMEWORK + "Info.plist")
         require_file(archive, FRAMEWORK + "StikJIT")
+        require_file(archive, PAIRING + "Info.plist")
+        require_file(archive, PAIRING + "AmethystPairing")
+        pairing = plistlib.loads(archive.read(PAIRING + "Info.plist"))
+        if pairing.get("CFBundleIdentifier") != host["CFBundleIdentifier"] + ".Pairing":
+            raise ValueError("Pairing framework CFBundleIdentifier does not match the host")
+        if ("_remotepairing-pairable-host._tcp" not in host.get("NSBonjourServices", [])
+                or "audio" not in host.get("UIBackgroundModes", [])):
+            raise ValueError("On-device pairing requires Bonjour and background audio declarations")
 
 
 def verify_packages(directory, platform, *, expected_bundle_id=None):

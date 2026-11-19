@@ -1,6 +1,7 @@
 #import "BuiltinJIT.h"
 #import "LauncherPreferences.h"
 #import "utils.h"
+#import "../../JITPairing/AmethystPairing.h"
 #import <Security/Security.h>
 #import <TargetConditionals.h>
 #include <dlfcn.h>
@@ -21,7 +22,8 @@ static NSString *const ResponseKey = @"amethyst-jit-response";
 @end
 
 @interface BuiltinJIT ()
-@property(nonatomic) BOOL busy, enabling, deliveredReady;
+@property(nonatomic) BOOL busy, pairing, enabling, deliveredReady;
+@property(nonatomic) id<AmethystPairingSession> pairingSession;
 @property(nonatomic, copy) NSString *status, *operation;
 @property(nonatomic, strong) NSNumber *txmPresent;
 @property(nonatomic, strong) id helper;
@@ -102,6 +104,10 @@ static NSError *JITError(NSString *message) {
     NSData *data = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:error];
     if (scoped) [url stopAccessingSecurityScopedResource];
     if (!data) return NO;
+    return [self storePairingData:data name:url.lastPathComponent error:error];
+}
+
+- (BOOL)storePairingData:(NSData *)data name:(NSString *)name error:(NSError **)error {
     id plist = data.length <= 2 * 1024 * 1024 ? [NSPropertyListSerialization propertyListWithData:data options:0 format:nil error:nil] : nil;
     NSDictionary *record = [plist isKindOfClass:NSDictionary.class] ? plist : nil;
     if (![record[@"public_key"] isKindOfClass:NSData.class] || [record[@"public_key"] length] != 32 ||
@@ -111,7 +117,7 @@ static NSError *JITError(NSString *message) {
         return NO;
     }
     NSDictionary *values = @{(__bridge id)kSecValueData: data,
-        (__bridge id)kSecAttrLabel: url.lastPathComponent,
+        (__bridge id)kSecAttrLabel: name,
         (__bridge id)kSecAttrAccessible: (__bridge id)kSecAttrAccessibleWhenUnlockedThisDeviceOnly};
     NSMutableDictionary *query = self.pairingQuery;
     OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)values);
@@ -126,6 +132,63 @@ static NSError *JITError(NSString *message) {
     self.txmPresent = nil;
     [self publishStatus:localize(@"jit.status.imported", nil)];
     return YES;
+}
+
++ (NSString *)onDevicePairingUnavailableReason {
+    NSString *reason = self.unavailableReason;
+    if (reason) return reason;
+    if (@available(iOS 27.0, *)) {
+        NSString *path = [NSBundle.mainBundle.privateFrameworksPath stringByAppendingPathComponent:@"AmethystPairing.framework/AmethystPairing"];
+        if ([NSFileManager.defaultManager fileExistsAtPath:path]) return nil;
+        return localize(@"jit.pairing.error.framework", nil);
+    }
+    return localize(@"jit.pairing.error.os", nil);
+}
+
+- (void)startOnDevicePairingWithCompletion:(void (^)(NSError *))completion {
+    NSAssert(NSThread.isMainThread, @"Pairing starts on the main thread");
+    NSString *reason = self.class.onDevicePairingUnavailableReason;
+    if (!reason && self.busy) reason = localize(@"jit.error.busy", nil);
+    if (reason) { completion(JITError(reason)); return; }
+    NSString *path = [NSBundle.mainBundle.privateFrameworksPath stringByAppendingPathComponent:@"AmethystPairing.framework/AmethystPairing"];
+    if (!dlopen(path.UTF8String, RTLD_NOW | RTLD_LOCAL)) {
+        completion(JITError(localize(@"jit.pairing.error.framework", nil)));
+        return;
+    }
+    Class service = NSClassFromString(@"AmethystPairingService");
+    id<AmethystPairingSession> session = [service new];
+    if (![session respondsToSelector:@selector(startWithProgress:completion:)] ||
+        ![session respondsToSelector:@selector(cancel)]) {
+        completion(JITError(localize(@"jit.pairing.error.framework", nil)));
+        return;
+    }
+    self.busy = self.pairing = YES;
+    self.pairingSession = session;
+    [self publishStatus:localize(@"jit.pairing.starting", nil)];
+    __weak BuiltinJIT *weakSelf = self;
+    [session startWithProgress:^(NSString *stage, NSString *value) {
+        NSString *key = [stage isEqualToString:@"pin"] ? @"jit.pairing.pin.status" : @"jit.pairing.waiting";
+        [weakSelf publishStatus:[NSString stringWithFormat:localize(key, nil), value]];
+    } completion:^(NSData *record, NSError *error) {
+        BuiltinJIT *manager = weakSelf;
+        if (!manager) return;
+        manager.pairingSession = nil;
+        manager.busy = manager.pairing = NO;
+        if (!record && !error) error = JITError(localize(@"jit.pairing.error.handshake", nil));
+        if (!error && record) {
+            [manager storePairingData:record name:@"OnDevicePairing.plist" error:&error];
+        }
+        if ([error.domain isEqualToString:NSCocoaErrorDomain] && error.code == NSUserCancelledError) {
+            [manager publishStatus:localize(@"jit.pairing.cancelled", nil)];
+        } else {
+            [manager publishStatus:error ? error.localizedDescription : localize(@"jit.pairing.complete", nil)];
+        }
+        completion(error);
+    }];
+}
+
+- (void)cancelOnDevicePairing {
+    [self.pairingSession cancel];
 }
 
 - (BOOL)removePairingFile:(NSError **)error {

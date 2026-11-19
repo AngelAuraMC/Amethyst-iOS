@@ -64,6 +64,8 @@ jobs:
           "$BOOTJDK/javac" -version
           gmake --version
           bash -n scripts/build-stikjit-helper.sh
+          bash -n scripts/build-ondevice-pairing.sh
+          plutil -lint Natives/Info.plist Natives/resources/{en,zh-Hans,zh-Hant}.lproj/Localizable.strings
           python3 -m unittest discover -s tests -v
 
       - name: Restore Java runtimes and pinned StikJIT archive
@@ -75,7 +77,8 @@ jobs:
             depends/java-21-openjdk
             depends/java-25-openjdk
             depends/stikjit/*/StikJIT.xcframework.zip
-          key: amethyst-dependencies-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Makefile', 'scripts/build-stikjit-helper.sh') }}
+            depends/ondevice-pairing
+          key: amethyst-dependencies-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Makefile', 'scripts/build-stikjit-helper.sh', 'scripts/build-ondevice-pairing.sh') }}
 
       - name: Preserve the existing app identifier
         run: |

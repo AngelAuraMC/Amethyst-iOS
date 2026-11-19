@@ -129,6 +129,7 @@
 	<array>
 		<string>_altserver._tcp</string>
 		<string>_remotepairing._tcp</string>
+		<string>_remotepairing-pairable-host._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Angel Aura Amethyst uses the local network for JIT device discovery, AltServer, and LAN servers.</string>
@@ -165,6 +166,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>audio</string>
 	</array>
 	<key>UIDeviceFamily</key>
 	<array>

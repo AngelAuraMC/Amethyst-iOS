@@ -291,7 +291,7 @@
 "jit.method.builtin" = "内置 StikJIT";
 "jit.method.wait" = "等待调试器";
 "jit.method.detail" = "内置 StikJIT 会在启动游戏或 JAR 时获取 JIT。外部工具会打开 StikDebug、SideStore 或 TrollStore；等待调试器则由你手动启用。启用失败后会保留当前选择。";
-"jit.setup.instructions" = "需要 iOS 17.4 或更高版本、开发者模式，以及允许调试的侧载签名。通过 SideStore 安装时，请保留 Amethyst 的应用扩展。导入本机的远程配对文件，连接 LocalDevVPN，并在上方选择“内置 StikJIT”。建议使用 Wi-Fi；通过蜂窝网络启用时可能需要暂时关闭蜂窝数据。“准备 JIT”会检查连接并下载、挂载开发者磁盘映像，首次下载可能需要数分钟；启动游戏时也会自动准备。配对数据保存在本机钥匙串中。";
+"jit.setup.instructions" = "需要 iOS 17.4 或更高版本、开发者模式，以及允许调试的侧载签名。通过 SideStore 安装时，请保留 Amethyst 的应用扩展。iOS 27 或更高版本可使用“本机配对”，也可导入本机的远程配对文件。连接 LocalDevVPN，并在上方选择“内置 StikJIT”。建议使用 Wi-Fi；通过蜂窝网络启用时可能需要暂时关闭蜂窝数据。“准备 JIT”会检查连接并下载、挂载开发者磁盘映像，首次下载可能需要数分钟；启动游戏时也会自动准备。配对数据保存在本机钥匙串中。";
 "jit.status.title" = "状态";
 "jit.status.idle" = "尚未准备";
 "jit.status.imported" = "已导入配对文件，请连接 LocalDevVPN 后准备。";
@@ -301,9 +301,9 @@
 "jit.status.enabled" = "JIT 会话已完成。";
 "jit.status.reset" = "已重置开发者磁盘映像缓存。";
 "jit.pairing.import" = "导入配对文件";
-"jit.pairing.missing" = "尚未导入配对文件";
+"jit.pairing.missing" = "尚未保存配对记录";
 "jit.pairing.remove" = "移除配对文件";
-"jit.pairing.remove_confirm" = "从钥匙串移除保存的配对文件？下次使用内置 StikJIT 时需要重新导入。";
+"jit.pairing.remove_confirm" = "从钥匙串移除保存的配对记录？下次使用内置 StikJIT 时需要重新配对或导入远程配对文件。";
 "jit.prepare" = "准备 JIT";
 "jit.txm.title" = "TXM / SPTM";
 "jit.txm.present" = "存在";
@@ -318,10 +318,33 @@
 "jit.error.helper" = "JIT 辅助扩展缺失或无法启动。请重新安装包含 AmethystJITHelper.appex 的构建，并在 SideStore 提示时保留应用扩展。";
 "jit.error.busy" = "已有 JIT 辅助操作正在运行。";
 "jit.error.pairing_format" = "请选择本机的远程配对 plist 文件，需要包含 public_key、private_key 和 identifier 字段。USB 或 SideStore 配对文件不能直接作为远程配对文件使用。";
-"jit.error.pairing_missing" = "请先在“设置 → JIT 设置”中导入本机的远程配对文件。";
+"jit.error.pairing_missing" = "请先在“设置 → JIT 设置”中进行本机配对或导入本机的远程配对文件。";
 "jit.error.signing" = "当前签名缺少 get-task-allow 权限，请使用保留该权限的方式重新侧载。";
 "jit.error.script" = "缺少 Amethyst 的 Universal JIT 脚本，请重新安装应用。";
 "jit.error.response" = "JIT 辅助扩展返回了无效响应。";
 "jit.error.interrupted" = "JIT 辅助扩展意外停止，请检查 LocalDevVPN 后重试。";
 "jit.error.not_ready" = "JIT 就绪前辅助扩展已退出，请检查配对文件和 LocalDevVPN 后重试。";
 "jit.error.timeout" = "等待 JIT 超时，请检查开发者模式、LocalDevVPN 和配对文件后重试。";
+
+/* On-device pairing */
+"login.jit.on_launch" = "启动游戏时启用 JIT";
+"jit.pairing.local" = "本机配对";
+"jit.pairing.local.detail" = "iOS 27 及以上可直接配对，无需电脑。";
+"jit.pairing.local.instructions" = "连接 Wi-Fi，并允许本地网络和通知权限。状态显示配对主机后，打开系统“设置 → 隐私与安全性 → 开发者模式”，选择“与 Amethyst-xxxxxx 配对”，输入通知中显示的配对码，然后返回本应用。配对期间会临时播放静音音频以保持后台运行，最多三分钟。成功后自动保存，原有配对仅在新配对成功后才会替换。";
+"jit.pairing.local.start" = "开始配对";
+"jit.pairing.local.cancel" = "取消本机配对";
+"jit.pairing.local.cancel_detail" = "停止广播并关闭配对连接。";
+"jit.pairing.starting" = "正在请求权限并启动配对主机…";
+"jit.pairing.waiting" = "配对主机已就绪：%@。请前往系统“设置 → 隐私与安全性 → 开发者模式”，选择与此主机配对。";
+"jit.pairing.pin.status" = "配对码：%@。请在系统设置中输入。";
+"jit.pairing.pin.title" = "Amethyst 配对码";
+"jit.pairing.pin.body" = "请在系统设置中输入 %@ 完成配对。";
+"jit.pairing.complete" = "配对成功，已保存到钥匙串。请连接 LocalDevVPN，选择“内置 StikJIT”后准备。";
+"jit.pairing.cancelled" = "已取消配对，原有配对记录已保留。";
+"jit.pairing.error.os" = "本机配对需要 iOS 27 或更高版本。旧系统请导入远程配对文件。";
+"jit.pairing.error.framework" = "配对框架缺失或无法加载，请重新安装包含内置 JIT 的完整安装包。";
+"jit.pairing.error.notifications" = "请允许 Amethyst 显示通知，以便在系统设置中查看配对码，然后重试。";
+"jit.pairing.error.background" = "配对无法继续在后台运行，请返回 Amethyst 后重试。";
+"jit.pairing.error.network" = "无法广播配对主机或接受连接，请允许本地网络访问并连接 Wi-Fi 后重试。";
+"jit.pairing.error.handshake" = "配对失败，请检查系统设置中的配对码后重试。原有配对记录已保留。";
+"jit.pairing.error.timeout" = "配对已超过三分钟，请返回 Amethyst 并重新开始配对。";

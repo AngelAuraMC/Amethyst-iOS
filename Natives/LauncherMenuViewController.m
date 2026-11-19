@@ -142,6 +142,8 @@
             [self displayProgress:nil];
         } else if (@available(iOS 17.0, *)) {
             // enabling JIT for 17.0+ is done when we actually launch the game
+            [self displayProgress:localize(@"login.jit.on_launch", nil)];
+            [self displayProgress:nil];
         } else {
             [self enableJITWithAltKit];
         }

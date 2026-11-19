@@ -8,6 +8,13 @@ The framework includes the idevice library and FFI.
 Source: https://github.com/jkcoxson/idevice
 License: MIT (idevice-MIT.txt).
 
+On-device pairing also links an unmodified MIT idevice FFI static library,
+with a matching header, from StikDebug commit:
+7a80dfce28eeb501faca6498d1746949ac921e74
+https://github.com/StikDebug/StikDebug/tree/7a80dfce28eeb501faca6498d1746949ac921e74/StikDebug/idevice
+It is linked into the separately signed AmethystPairing framework. Amethyst's
+pairing coordinator and interface are implemented in JITPairing/.
+
 Amethyst's UniversalJIT26.js and UniversalJIT26Extension.js remain its existing
 debugger protocol. The framework is hosted in a separate AmethystJITHelper
 extension using the classic NSExtension process model also used by LiveContainer

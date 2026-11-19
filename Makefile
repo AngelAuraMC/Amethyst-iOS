@@ -352,6 +352,7 @@ assets:
 stikjit: native
 ifeq ($(BUILTIN_STIKJIT),1)
 	bash $(SOURCEDIR)/scripts/build-stikjit-helper.sh build $(SOURCEDIR) $(WORKINGDIR) "$(SDKPATH)" $(CMAKE_BUILD_TYPE)
+	bash $(SOURCEDIR)/scripts/build-ondevice-pairing.sh build $(SOURCEDIR) $(WORKINGDIR) "$(SDKPATH)" $(CMAKE_BUILD_TYPE)
 endif
 
 payload: native dep_mg java jre assets stikjit
@@ -364,8 +365,9 @@ payload: native dep_mg java jre assets stikjit
 	cp $(WORKINGDIR)/*.dylib $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/ || exit 1
 ifeq ($(BUILTIN_STIKJIT),1)
 	bash $(SOURCEDIR)/scripts/build-stikjit-helper.sh embed $(SOURCEDIR) $(WORKINGDIR)
+	bash $(SOURCEDIR)/scripts/build-ondevice-pairing.sh embed $(SOURCEDIR) $(WORKINGDIR)
 else
-	rm -rf $(WORKINGDIR)/AngelAuraAmethyst.app/PlugIns/AmethystJITHelper.appex $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/StikJIT.framework
+	rm -rf $(WORKINGDIR)/AngelAuraAmethyst.app/PlugIns/AmethystJITHelper.appex $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/StikJIT.framework $(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/AmethystPairing.framework
 endif
 	cp -R $(SOURCEDIR)/JavaApp/libs/others/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	cp $(SOURCEDIR)/JavaApp/build/*.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1

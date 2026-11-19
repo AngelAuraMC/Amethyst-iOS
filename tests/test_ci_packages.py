@@ -28,6 +28,8 @@ class CIPackageTests(unittest.TestCase):
             "CFBundleExecutable": "AngelAuraAmethyst",
             "CFBundleVersion": "527",
             "CFBundleShortVersionString": "2.3.4",
+            "NSBonjourServices": ["_remotepairing-pairable-host._tcp"],
+            "UIBackgroundModes": ["audio"],
         }
         files = {
             VERIFY.APP + "Info.plist": plistlib.dumps(host),
@@ -46,6 +48,9 @@ class CIPackageTests(unittest.TestCase):
                 VERIFY.HELPER + "AmethystJITHelper": b"helper fixture",
                 VERIFY.FRAMEWORK + "Info.plist": plistlib.dumps({"CFBundleExecutable": "StikJIT"}),
                 VERIFY.FRAMEWORK + "StikJIT": b"framework fixture",
+                VERIFY.PAIRING + "Info.plist": plistlib.dumps({
+                    "CFBundleIdentifier": bundle_id + ".Pairing"}),
+                VERIFY.PAIRING + "AmethystPairing": b"pairing framework fixture",
             })
         return files
 
@@ -83,7 +88,8 @@ class CIPackageTests(unittest.TestCase):
 
     def test_missing_or_empty_helper_files_are_rejected(self):
         for member in (VERIFY.HELPER + "Info.plist", VERIFY.HELPER + "AmethystJITHelper",
-                       VERIFY.FRAMEWORK + "Info.plist", VERIFY.FRAMEWORK + "StikJIT"):
+                       VERIFY.FRAMEWORK + "Info.plist", VERIFY.FRAMEWORK + "StikJIT",
+                       VERIFY.PAIRING + "Info.plist", VERIFY.PAIRING + "AmethystPairing"):
             for empty in (False, True):
                 with self.subTest(member=member, empty=empty):
                     files = self.fixture()
@@ -124,6 +130,16 @@ class CIPackageTests(unittest.TestCase):
         files[VERIFY.HELPER + "AmethystJITHelper.dSYM/Contents/Resources/DWARF/AmethystJITHelper"] = b"debug fixture"
         with self.assertRaisesRegex(ValueError, "dSYM"):
             VERIFY.verify_archive(self.write_archive(files), builtin_jit=True, slimmed=False)
+
+    def test_missing_pairing_permissions_are_rejected(self):
+        for key in ("NSBonjourServices", "UIBackgroundModes"):
+            with self.subTest(key=key):
+                files = self.fixture()
+                host = plistlib.loads(files[VERIFY.APP + "Info.plist"])
+                del host[key]
+                files[VERIFY.APP + "Info.plist"] = plistlib.dumps(host)
+                with self.assertRaisesRegex(ValueError, "Bonjour and background audio"):
+                    VERIFY.verify_archive(self.write_archive(files), builtin_jit=True, slimmed=False)
 
 
 if __name__ == "__main__":

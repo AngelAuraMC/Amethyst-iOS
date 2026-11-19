@@ -77,8 +77,8 @@ Amethyst makes use of **just-in-time compilation**, or JIT, to provide usable sp
 ## Built-in StikJIT
 
 Directly sideloaded iOS builds can include a StikJIT helper. Open **Settings →
-JIT setup** to import this device's remote pairing file and select **Built-in
-StikJIT**. LocalDevVPN and Developer Mode are required. See the
+JIT setup** to pair this device on iOS 27 or later, or import its remote pairing
+file, and select **Built-in StikJIT**. LocalDevVPN and Developer Mode are required. See the
 [setup and build instructions](docs/builtin-stikjit.md), including SideStore's
 app-extension requirements and validation limits.
 
