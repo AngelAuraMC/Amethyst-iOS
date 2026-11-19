@@ -65,9 +65,12 @@ the helper. This removes any previously embedded helper and StikJIT framework
 from the staging bundle. The helper is not platform-patched into simulator,
 tvOS, or Catalyst builds.
 
-`scripts/build-stikjit-helper.sh` downloads a pinned XCFramework into the ignored
-`depends/stikjit/2.0.1` cache, verifies its SHA-256 before extraction, compiles
-the helper, and copies Swift runtime dependencies. It derives the helper's
+`scripts/build-stikjit-helper.sh` downloads the pinned StikJIT 2.0.1 source into
+the ignored `depends/stikjit/2.0.1` cache and verifies its SHA-256 before
+extraction. Install XcodeGen (`brew install xcodegen`) alongside the normal
+build tools. The script applies the MPL-2.0 replacements in `JITHelper/StikJIT/`,
+builds the framework with XcodeGen/Xcode, compiles the helper, and copies Swift
+runtime dependencies. It derives the helper's
 bundle ID and versions from the built host's Info.plist. The final layout is:
 
 ```text
@@ -101,7 +104,7 @@ new commits to an existing pull request. It can also be started manually:
    with the pairing setup above.
 
 The shared `build.yml` job uses GitHub's hosted **`xcode-27`** ARM64 image and
-selects **Xcode 27.1**. It installs Zulu JDK 8, GNU make, `ldid`, and CMake
+selects **Xcode 27.1**. It installs Zulu JDK 8, GNU make, `ldid`, XcodeGen, and CMake
 3.31.10. No self-hosted Mac, Apple developer certificate secret, or manual
 dependency setup is required. The image is currently a
 [public preview](https://github.com/actions/runner-images/issues/14404), so its
@@ -131,7 +134,7 @@ CI runs the packaging smoke tests before compilation. After packaging,
 `scripts/verify-ci-packages.py` checks every expected archive, its runtime
 variant, helper executable and metadata, and the StikJIT framework. Missing or
 incomplete packages fail the job before upload. JRE directories and the pinned
-framework archive are cached; the StikJIT checksum is still checked on cache
+source archive are cached; the StikJIT checksum is still checked on cache
 hits. The IPA is prepared for re-signing during installation with SideStore.
 
 Local smoke tests and workflow linting do not establish a successful macOS
@@ -173,16 +176,28 @@ contents are not logged.
 ## Dependency and validation
 
 - [StikJIT 2.0.1](https://github.com/StikDebug/StikJIT/tree/2.0.1), MPL-2.0.
-- Release archive SHA-256:
-  `c376687326a785f5ed1da8caca08adc709b56919019dd751bca059b92b175d95`.
+- Source revision: `b3e01a30ded4cd0b27cf1b6bd42f123bbdf49c3a`.
+- Source archive SHA-256:
+  `c0aa8df8b65998cc16d45130d004ca0e1f2ae6b6a0c737486bd832a8d4dd390a`.
 - StikJIT bundles idevice (MIT); notices are in the app's `licenses` resources.
 - Architecture/API reference:
   [upstream integration guide](https://github.com/StikDebug/StikJIT/blob/2.0.1/INTEGRATION.md).
 
-The packaging smoke tests run with `python -m unittest discover -s tests -v`
-and Bash. They use toolchain doubles to check archive rejection, helper
-metadata, runpaths, Swift-runtime staging, and the SideStore package layout;
-they do not compile or execute iOS code.
+The source build fixes StikJIT's nine-hex-digit page addresses, which truncate
+high JVM mappings such as `0x7000000000`. It retains batches of 128 writes,
+uses full-width addresses with matching checksums, checks every remote reply,
+and raises JavaScript errors on preparation failures. The Universal JIT script
+also rejects failed allocations or preparation before returning an address or
+detaching. The upstream prebuilt framework does not contain these fixes.
+
+The tests run with `python -m unittest discover -s tests -v` and Bash. Packaging
+tests use toolchain doubles to check archive rejection, replacement source,
+helper metadata, runpaths, Swift-runtime staging, and the SideStore layout.
+On macOS, a native Swift regression executable exercises the actual packet and
+batch implementation with high JVM addresses, checksums, unaligned ranges,
+transport errors, and rejected writes. Node.js protocol tests check that the
+Universal script cannot return an unprepared region or detach after failure.
+These checks do not execute iOS code or establish device compatibility.
 
 Before distributing, build on macOS and validate on a directly SideStore-signed
 device: complete on-device pairing and enter the notification PIN on iOS 27,

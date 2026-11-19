@@ -8,9 +8,11 @@ sdk_path="${4:-}"
 configuration="${5:-Debug}"
 
 version=2.0.1
-checksum=c376687326a785f5ed1da8caca08adc709b56919019dd751bca059b92b175d95
+revision=b3e01a30ded4cd0b27cf1b6bd42f123bbdf49c3a
+checksum=c0aa8df8b65998cc16d45130d004ca0e1f2ae6b6a0c737486bd832a8d4dd390a
 cache_dir="$source_dir/depends/stikjit/$version"
-framework="$cache_dir/StikJIT.xcframework/ios-arm64/StikJIT.framework"
+upstream="$work_dir/StikJIT-source"
+framework="$work_dir/StikJIT.xcarchive/Products/Library/Frameworks/StikJIT.framework"
 helper="$work_dir/AmethystJITHelper.appex"
 app="$work_dir/AngelAuraAmethyst.app"
 
@@ -18,10 +20,10 @@ case "$mode" in
     build)
         rm -rf "$helper"
         mkdir -p "$cache_dir" "$helper"
-        archive="$cache_dir/StikJIT.xcframework.zip"
+        archive="$cache_dir/StikJIT-source.tar.gz"
         if [ ! -f "$archive" ]; then
             curl --fail --location --retry 3 \
-                "https://github.com/StikDebug/StikJIT/releases/download/$version/StikJIT.xcframework.zip" \
+                "https://codeload.github.com/StikDebug/StikJIT/tar.gz/$revision" \
                 --output "$archive.part"
             mv "$archive.part" "$archive"
         fi
@@ -30,7 +32,22 @@ case "$mode" in
             echo "StikJIT archive checksum mismatch. Remove $archive and retry." >&2
             exit 1
         fi
-        unzip -oq "$archive" -d "$cache_dir"
+        rm -rf "$upstream" "$work_dir/StikJIT.xcarchive"
+        mkdir -p "$upstream"
+        tar -xz -C "$upstream" --strip-components=1 < "$archive"
+        # MPL-2.0 replacements are kept in-tree, so the exact modified source
+        # remains available with each Amethyst revision.
+        cp "$source_dir/JITHelper/StikJIT/"*.swift "$upstream/Sources/"
+        (
+            cd "$upstream"
+            xcodegen generate
+            xcodebuild -quiet archive -project StikJIT.xcodeproj -scheme StikJIT \
+                -configuration Release -destination 'generic/platform=iOS' \
+                -archivePath "$work_dir/StikJIT" \
+                SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+                CODE_SIGNING_ALLOWED=NO APPLICATION_EXTENSION_API_ONLY=YES
+        )
+        plutil -insert AmethystJITMemoryFix -string full-width-v1 "$framework/Info.plist"
         xcrun --sdk iphoneos clang -target arm64-apple-ios17.4 \
             -isysroot "$sdk_path" -fobjc-arc -fapplication-extension \
             -c "$source_dir/JITHelper/main.m" -o "$work_dir/AmethystJITHelper-main.o"

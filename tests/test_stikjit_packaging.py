@@ -1,6 +1,7 @@
 """Exercise helper packaging without requiring an Apple toolchain or network."""
 
 import json
+import io
 import os
 from pathlib import Path
 import plistlib
@@ -8,15 +9,15 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
-import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
 BASH = shutil.which("bash") or (r"C:\Program Files\Git\bin\bash.exe" if os.name == "nt" else None)
-SHA256 = "c376687326a785f5ed1da8caca08adc709b56919019dd751bca059b92b175d95"
+SHA256 = "c0aa8df8b65998cc16d45130d004ca0e1f2ae6b6a0c737486bd832a8d4dd390a"
 
-# These doubles emulate tool outputs, not compilation. Real cp/unzip execute so
+# These doubles emulate tool outputs, not compilation. Real cp/tar execute so
 # extension layout and metadata failures remain visible to the tests.
 TOOL = r'''
 import json, os, pathlib, plistlib, shutil, sys
@@ -35,6 +36,13 @@ elif tool == "plutil":
     else:
         data[args[1]] = args[args.index("-string") + 1]
         path.write_bytes(plistlib.dumps(data))
+elif tool == "xcodebuild":
+    archive = pathlib.Path(args[args.index("-archivePath") + 1] + ".xcarchive")
+    framework = archive / "Products/Library/Frameworks/StikJIT.framework"
+    framework.mkdir(parents=True)
+    (framework / "StikJIT").write_bytes(b"framework fixture")
+    (framework / "universal.js").write_text("fixture script")
+    (framework / "Info.plist").write_bytes(plistlib.dumps({"CFBundleExecutable": "StikJIT"}))
 elif tool == "xcrun":
     if "swift-stdlib-tool" in args:
         destination = pathlib.Path(args[args.index("--destination") + 1])
@@ -65,16 +73,18 @@ class StikJITPackagingTests(unittest.TestCase):
             "CFBundleVersion": "527",
         }
         (self.app / "Info.plist").write_bytes(plistlib.dumps(host))
-        self.archive = Path(self.temp.name) / "framework-fixture.zip"
-        with zipfile.ZipFile(self.archive, "w") as archive:
-            prefix = "StikJIT.xcframework/ios-arm64/StikJIT.framework/"
-            archive.writestr(prefix + "StikJIT", b"framework fixture")
-            archive.writestr(prefix + "universal.js", "fixture script")
+        self.archive = Path(self.temp.name) / "source-fixture.tar.gz"
+        with tarfile.open(self.archive, "w:gz") as archive:
+            for name, contents in [("project.yml", b"fixture project"),
+                                   ("Sources/ScriptRunner.swift", b"unpatched upstream fixture")]:
+                info = tarfile.TarInfo("StikJIT-fixture/" + name)
+                info.size = len(contents)
+                archive.addfile(info, io.BytesIO(contents))
         self.bin = Path(self.temp.name) / "bin"
         self.bin.mkdir()
         tool = self.bin / "tool.py"
         tool.write_text(TOOL, encoding="utf-8")
-        for name in ["xcrun", "plutil", "shasum", "curl"]:
+        for name in ["xcrun", "xcodegen", "xcodebuild", "plutil", "shasum", "curl"]:
             stub = self.bin / name
             stub.write_text('#!/bin/bash\nexec "$STIKJIT_TEST_PYTHON" "$STIKJIT_TEST_TOOL" ' + name + ' "$@"\n', encoding="utf-8")
             stub.chmod(0o755)
@@ -116,6 +126,8 @@ class StikJITPackagingTests(unittest.TestCase):
         self.assertTrue((self.work / "AmethystJITHelper.dSYM/Contents/Resources/DWARF/AmethystJITHelper").is_file())
         self.assertFalse(any(path.name.endswith(".dSYM") for path in self.app.rglob("*")))
         self.assertEqual((self.app / "Frameworks/StikJIT.framework/StikJIT").read_bytes(), b"framework fixture")
+        framework_info = plistlib.loads((self.app / "Frameworks/StikJIT.framework/Info.plist").read_bytes())
+        self.assertEqual(framework_info["AmethystJITMemoryFix"], "full-width-v1")
         self.assertTrue((self.app / "Frameworks/libswiftCore.dylib").is_file())
         self.assertFalse((helper / "Frameworks").exists())
         swift = next(call for call in self.calls() if "swiftc" in call)
@@ -124,15 +136,21 @@ class StikJITPackagingTests(unittest.TestCase):
         self.assertIn("-application-extension", swift)
         self.assertIn("-Onone", swift)
         download = next(call for call in self.calls() if call[0] == "curl")
-        self.assertIn("https://github.com/StikDebug/StikJIT/releases/download/2.0.1/StikJIT.xcframework.zip", download)
+        self.assertIn("https://codeload.github.com/StikDebug/StikJIT/tar.gz/b3e01a30ded4cd0b27cf1b6bd42f123bbdf49c3a", download)
+        # Prove the source actually compiled is the patched implementation.
+        for name in ("ScriptRunner.swift", "JITMemory.swift"):
+            self.assertEqual((self.work / "StikJIT-source/Sources" / name).read_bytes(),
+                             (ROOT / "JITHelper/StikJIT" / name).read_bytes())
+        build = next(call for call in self.calls() if call[0] == "xcodebuild")
+        self.assertIn("APPLICATION_EXTENSION_API_ONLY=YES", build)
 
     def test_corrupted_archive_is_rejected_before_extraction_or_compilation(self):
         self.env["STIKJIT_TEST_SHA"] = "0" * 64
         result = self.run_script("build")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("checksum mismatch", result.stderr)
-        self.assertFalse(any(call[0] == "xcrun" for call in self.calls()))
-        self.assertFalse((self.root / "depends/stikjit/2.0.1/StikJIT.xcframework").exists())
+        self.assertFalse(any(call[0] in ("xcodegen", "xcodebuild", "xcrun") for call in self.calls()))
+        self.assertFalse((self.work / "StikJIT-source").exists())
 
     def test_cached_archive_is_still_verified_and_release_uses_optimization(self):
         result = self.run_script("build")

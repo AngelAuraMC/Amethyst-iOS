@@ -63,6 +63,9 @@ def verify_archive(path, *, builtin_jit, slimmed, expected_bundle_id=None):
         require_file(archive, HELPER + helper["CFBundleExecutable"])
         require_file(archive, FRAMEWORK + "Info.plist")
         require_file(archive, FRAMEWORK + "StikJIT")
+        framework = plistlib.loads(archive.read(FRAMEWORK + "Info.plist"))
+        if framework.get("AmethystJITMemoryFix") != "full-width-v1":
+            raise ValueError("StikJIT framework is missing the full-width JIT memory fix")
         require_file(archive, PAIRING + "Info.plist")
         require_file(archive, PAIRING + "AmethystPairing")
         pairing = plistlib.loads(archive.read(PAIRING + "Info.plist"))

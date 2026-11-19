@@ -49,7 +49,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          brew install make ldid
+          brew install make ldid xcodegen
           # Keep legacy CMake projects building after the runners adopt CMake 4.
           python3 -m venv "$RUNNER_TEMP/amethyst-tools"
           "$RUNNER_TEMP/amethyst-tools/bin/python3" -m pip install --disable-pip-version-check cmake==3.31.10
@@ -68,7 +68,7 @@ jobs:
           plutil -lint Natives/Info.plist Natives/resources/{en,zh-Hans,zh-Hant}.lproj/Localizable.strings
           python3 -m unittest discover -s tests -v
 
-      - name: Restore Java runtimes and pinned StikJIT archive
+      - name: Restore Java runtimes and pinned StikJIT source
         uses: actions/cache@v6
         with:
           path: |
@@ -76,7 +76,7 @@ jobs:
             depends/java-17-openjdk
             depends/java-21-openjdk
             depends/java-25-openjdk
-            depends/stikjit/*/StikJIT.xcframework.zip
+            depends/stikjit/*/StikJIT-source.tar.gz
             depends/ondevice-pairing
           key: amethyst-dependencies-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Makefile', 'scripts/build-stikjit-helper.sh', 'scripts/build-ondevice-pairing.sh') }}
 

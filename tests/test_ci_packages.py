@@ -46,7 +46,8 @@ class CIPackageTests(unittest.TestCase):
             files.update({
                 VERIFY.HELPER + "Info.plist": plistlib.dumps(helper),
                 VERIFY.HELPER + "AmethystJITHelper": b"helper fixture",
-                VERIFY.FRAMEWORK + "Info.plist": plistlib.dumps({"CFBundleExecutable": "StikJIT"}),
+                VERIFY.FRAMEWORK + "Info.plist": plistlib.dumps({"CFBundleExecutable": "StikJIT",
+                    "AmethystJITMemoryFix": "full-width-v1"}),
                 VERIFY.FRAMEWORK + "StikJIT": b"framework fixture",
                 VERIFY.PAIRING + "Info.plist": plistlib.dumps({
                     "CFBundleIdentifier": bundle_id + ".Pairing"}),
@@ -85,6 +86,12 @@ class CIPackageTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, "Host CFBundleIdentifier"):
                         VERIFY.verify_archive(self.write_archive(files), builtin_jit=builtin_jit,
                             slimmed=slimmed, expected_bundle_id="org.angelauramc.amethyst.95J8WZ4TN8")
+
+    def test_unpatched_stikjit_framework_is_rejected(self):
+        files = self.fixture()
+        files[VERIFY.FRAMEWORK + "Info.plist"] = plistlib.dumps({"CFBundleExecutable": "StikJIT"})
+        with self.assertRaisesRegex(ValueError, "full-width JIT memory fix"):
+            VERIFY.verify_archive(self.write_archive(files), builtin_jit=True, slimmed=False)
 
     def test_missing_or_empty_helper_files_are_rejected(self):
         for member in (VERIFY.HELPER + "Info.plist", VERIFY.HELPER + "AmethystJITHelper",

@@ -187,20 +187,25 @@ function JIT26PrepareRegion(brkResponse) {
         let requestRXResponse = send_command(`_M${x1.toString(16)},rx`);
         log_verbose(`requestRXResponse = ${requestRXResponse}`);
         
-        if (!requestRXResponse || requestRXResponse.length === 0) {
-            log(`Failed to allocate RX memory`);
-            return;
+        if (!/^[0-9a-f]+$/i.test(requestRXResponse) || /^0+$/.test(requestRXResponse) || /^E[0-9a-f]{2}$/i.test(requestRXResponse)) {
+            throw new Error(`Failed to allocate RX memory: ${requestRXResponse}`);
         }
         
         jitPageAddress = BigInt(`0x${requestRXResponse}`);
         log(`Allocated JIT page at address: 0x${jitPageAddress.toString(16)}`);
     }
 
-    let prepareJITPageResponse = prepare_memory_region(jitPageAddress, x1);
+    let prepareJITPageResponse = prepare_memory_region(Number(jitPageAddress), Number(x1));
     log(`prepareJITPageResponse = ${prepareJITPageResponse}`);
+    if (prepareJITPageResponse !== "OK") {
+        throw new Error(`Failed to prepare JIT memory at 0x${jitPageAddress.toString(16)}: ${prepareJITPageResponse}`);
+    }
 
     let putX0Response = send_command(`P0=${numberToLittleEndianHexString(jitPageAddress)};thread:${tid};`);
     log(`putX0Response = ${putX0Response}`);
+    if (putX0Response !== "OK") {
+        throw new Error(`Failed to return JIT memory address: ${putX0Response}`);
+    }
 }
 
 // utilities
