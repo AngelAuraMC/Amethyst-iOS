@@ -1,6 +1,7 @@
 #import "LauncherPrefJITViewController.h"
 #import "LauncherPreferences.h"
 #import "jit/BuiltinJIT.h"
+#import "ios_uikit_bridge.h"
 #import "utils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
