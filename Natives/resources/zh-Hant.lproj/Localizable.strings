@@ -193,6 +193,7 @@
 "controller_configurator.playstation.title.named_back" = "選擇";
 
 /* On-device pairing */
+"jit.settings.autosave" = "變更會自動儲存，點選左上角返回按鈕即可回到設定。";
 "login.jit.on_launch" = "啟動遊戲時啟用 JIT";
 "jit.pairing.local" = "本機配對";
 "jit.pairing.local.detail" = "iOS 27 及以上可直接配對，無需電腦。";

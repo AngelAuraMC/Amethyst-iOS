@@ -60,6 +60,7 @@
             @{@"key": @"jit_setup",
               @"icon": @"bolt",
               @"type": self.typeChildPane,
+              @"canDismissWithSwipe": @YES,
               @"enableCondition": whenNotInGame,
               @"class": LauncherPrefJITViewController.class
             },

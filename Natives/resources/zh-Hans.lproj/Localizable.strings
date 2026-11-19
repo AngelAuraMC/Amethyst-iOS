@@ -287,6 +287,7 @@
 /* 内置 StikJIT */
 "preference.title.jit_setup" = "JIT 设置";
 "jit.method.title" = "JIT 启用方式";
+"jit.settings.autosave" = "更改会自动保存，点击左上角返回按钮即可回到设置。";
 "jit.method.external" = "外部 JIT 工具";
 "jit.method.builtin" = "内置 StikJIT";
 "jit.method.wait" = "等待调试器";

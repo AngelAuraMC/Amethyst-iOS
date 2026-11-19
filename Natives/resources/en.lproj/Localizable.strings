@@ -335,6 +335,7 @@
 /* Built-in StikJIT */
 "preference.title.jit_setup" = "JIT setup";
 "jit.method.title" = "JIT method";
+"jit.settings.autosave" = "Changes are saved automatically. Use Back to return to Settings.";
 "jit.method.external" = "External JIT tool";
 "jit.method.builtin" = "Built-in StikJIT";
 "jit.method.wait" = "Wait for debugger";

@@ -29,7 +29,8 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-    if (section == 0) return localize(@"jit.method.detail", nil);
+    if (section == 0) return [NSString stringWithFormat:@"%@\n\n%@",
+        localize(@"jit.settings.autosave", nil), localize(@"jit.method.detail", nil)];
     NSString *reason = BuiltinJIT.unavailableReason;
     return reason ?: localize(@"jit.setup.instructions", nil);
 }
