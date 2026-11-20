@@ -125,3 +125,23 @@ jobs:
         with:
           name: AngelAuraAmethyst.dSYM
           path: artifacts/AngelAuraAmethyst.dSYM
+  release:
+    name: Release IPA
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    steps:
+    - name: set up 
+      uses: actions/download-artifact@v4
+      with: 
+        path: ./release-assets
+        merge-multiple: true
+        
+    - name: Release 
+      env: 
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create "${{ github.ref_name }}" ./release-assets/ * \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            --prerelease
