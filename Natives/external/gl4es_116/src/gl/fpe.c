@@ -1038,12 +1038,23 @@ void APIENTRY_GL4ES fpe_glMaterialfv(GLenum face, GLenum pname, const GLfloat *p
     noerrorShim();
 }
 void APIENTRY_GL4ES fpe_glMaterialf(GLenum face, GLenum pname, const GLfloat param) {
+    int changed = 0;
     if(face==GL_FRONT_AND_BACK || face==GL_FRONT) {
-        glstate->fpe_state->cm_front_nullexp=(param<=0.0)?0:1;
+        int val = (param<=0.0)?0:1;
+        if(glstate->fpe_state->cm_front_nullexp != val) {
+            glstate->fpe_state->cm_front_nullexp = val;
+            changed = 1;
+        }
     }
     if(face==GL_FRONT_AND_BACK || face==GL_BACK) {
-        glstate->fpe_state->cm_back_nullexp=(param<=0.0)?0:1;
+        int val = (param<=0.0)?0:1;
+        if(glstate->fpe_state->cm_back_nullexp != val) {
+            glstate->fpe_state->cm_back_nullexp = val;
+            changed = 1;
+        }
     }
+    if(changed)
+        fpe_state_dirty();
     noerrorShim();
 }
 
@@ -1051,26 +1062,41 @@ void APIENTRY_GL4ES fpe_glFogfv(GLenum pname, const GLfloat* params) {
     noerrorShim();
     if(pname==GL_FOG_MODE) {
         int p = *params;
+        int m = -1;
         switch(p) {
-            case GL_EXP: glstate->fpe_state->fogmode = FPE_FOG_EXP; break;
-            case GL_EXP2: glstate->fpe_state->fogmode = FPE_FOG_EXP2; break;
-            case GL_LINEAR: glstate->fpe_state->fogmode = FPE_FOG_LINEAR; break;
+            case GL_EXP: m = FPE_FOG_EXP; break;
+            case GL_EXP2: m = FPE_FOG_EXP2; break;
+            case GL_LINEAR: m = FPE_FOG_LINEAR; break;
             default: errorShim(GL_INVALID_ENUM);
+        }
+        if(m != -1 && glstate->fpe_state->fogmode != m) {
+            glstate->fpe_state->fogmode = m;
+            fpe_state_dirty();
         }
     } else if (pname==GL_FOG_COORDINATE_SOURCE) {
         int p = *params;
+        int s = -1;
         switch(p) {
-            case GL_FRAGMENT_DEPTH: glstate->fpe_state->fogsource = FPE_FOG_SRC_DEPTH; break;
-            case GL_FOG_COORD: glstate->fpe_state->fogsource = FPE_FOG_SRC_COORD; break;
+            case GL_FRAGMENT_DEPTH: s = FPE_FOG_SRC_DEPTH; break;
+            case GL_FOG_COORD: s = FPE_FOG_SRC_COORD; break;
             default: errorShim(GL_INVALID_ENUM);
+        }
+        if(s != -1 && glstate->fpe_state->fogsource != s) {
+            glstate->fpe_state->fogsource = s;
+            fpe_state_dirty();
         }
     } else if (pname==GL_FOG_DISTANCE_MODE_NV) {
         int p = *params;
+        int d = -1;
         switch(p) {
-            case GL_EYE_PLANE_ABSOLUTE_NV: glstate->fpe_state->fogdist = FPE_FOG_DIST_PLANE_ABS; break;
-            case GL_EYE_PLANE: glstate->fpe_state->fogdist = FPE_FOG_DIST_PLANE; break;
-            case GL_EYE_RADIAL_NV: glstate->fpe_state->fogdist = FPE_FOG_DIST_RADIAL; break;
+            case GL_EYE_PLANE_ABSOLUTE_NV: d = FPE_FOG_DIST_PLANE_ABS; break;
+            case GL_EYE_PLANE: d = FPE_FOG_DIST_PLANE; break;
+            case GL_EYE_RADIAL_NV: d = FPE_FOG_DIST_RADIAL; break;
             default: errorShim(GL_INVALID_ENUM);
+        }
+        if(d != -1 && glstate->fpe_state->fogdist != d) {
+            glstate->fpe_state->fogdist = d;
+            fpe_state_dirty();
         }
     }
 }
@@ -1252,7 +1278,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     // setup fixed pipeline builtin matrix uniform if needed
     if(glprogram->has_builtin_matrix)
     {
-        if(glstate->gleshard->glprogram != glprogram || glprogram->applied_matrix_seq != glstate->matrix_seq)
+        if(glprogram->applied_matrix_seq != glstate->matrix_seq)
         {
         if(glprogram->builtin_matrix[MAT_MVP]!=-1 || glprogram->builtin_matrix[MAT_MVP_I]!=-1
             || glprogram->builtin_matrix[MAT_MVP_T]!=-1 || glprogram->builtin_matrix[MAT_MVP_IT]!=-1)

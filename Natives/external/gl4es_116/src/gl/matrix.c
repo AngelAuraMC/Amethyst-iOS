@@ -73,6 +73,7 @@ static int send_to_hardware() {
 
 void init_matrix(glstate_t* glstate) {
 DBG(printf("init_matrix(%p)\n", glstate);)
+    glstate->matrix_seq = 1;
     alloc_matrix(&glstate->projection_matrix, MAX_STACK_PROJECTION);
     set_identity(TOP(projection_matrix));
 	glstate->projection_matrix->identity = 1;
@@ -106,10 +107,13 @@ DBG(printf("init_matrix(%p)\n", glstate);)
 }
 
 void set_fpe_textureidentity() {
+	int old_texmat = glstate->fpe_state->texture[glstate->texture.active].texmat;
 	if(glstate->texture_matrix[glstate->texture.active]->identity)	// inverted in fpe flags
 		glstate->fpe_state->texture[glstate->texture.active].texmat = 0;
 	else
 		glstate->fpe_state->texture[glstate->texture.active].texmat = 1;
+	if(old_texmat != glstate->fpe_state->texture[glstate->texture.active].texmat)
+		fpe_state_dirty();
 }
 
 void APIENTRY_GL4ES gl4es_glMatrixMode(GLenum mode) {
