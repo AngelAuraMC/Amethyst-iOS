@@ -21,6 +21,12 @@ bool pixel_convert(const GLvoid *src, GLvoid **dst,
                    GLenum src_format, GLenum src_type,
                    GLenum dst_format, GLenum dst_type, GLuint stride, GLuint align);
 
+bool pixel_convert_strided(const GLvoid *src, GLvoid **dst,
+                           GLuint width, GLuint height,
+                           GLenum src_format, GLenum src_type,
+                           GLenum dst_format, GLenum dst_type, GLuint stride, GLuint align,
+                           GLuint src_row_length, GLuint src_skip_pixels, GLuint src_skip_rows);
+
 bool pixel_transform(const GLvoid *src, GLvoid **dst,
                    GLuint width, GLuint height,
                    GLenum src_format, GLenum src_type,

@@ -218,8 +218,10 @@ void APIENTRY_GL4ES gl4es_glBindProgramARB(GLenum target, GLuint program) {
         case GL_VERTEX_PROGRAM_ARB:
             if(program) {
                 noerrorShimNoPurge();
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->vertex_prg_id = program;
+                    fpe_state_dirty();
+                }
                 glstate->glsl->vtx_prog = old;
                 if(!old->type) {
                     // create an empty shader
@@ -243,15 +245,19 @@ void APIENTRY_GL4ES gl4es_glBindProgramARB(GLenum target, GLuint program) {
             } else {
                 noerrorShimNoPurge();
                 glstate->glsl->vtx_prog = NULL;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->vertex_prg_id = 0;
+                    fpe_state_dirty();
+                }
             }
             break;
         case GL_FRAGMENT_PROGRAM_ARB:
             if(program) {
                 noerrorShimNoPurge();
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->fragment_prg_id = program;
+                    fpe_state_dirty();
+                }
                 glstate->glsl->frg_prog = old;
                 if(!old->type) {
                     // create an empty shader
@@ -275,8 +281,10 @@ void APIENTRY_GL4ES gl4es_glBindProgramARB(GLenum target, GLuint program) {
             } else {
                 noerrorShimNoPurge();
                 glstate->glsl->frg_prog = NULL;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->fragment_prg_id = 0;
+                    fpe_state_dirty();
+                }
             }
             break;
         default:

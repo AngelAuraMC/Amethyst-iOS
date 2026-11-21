@@ -144,6 +144,7 @@ DBG(printf("glPushMatrix(), list=%p\n", glstate->list.active);)
 		#define P(A, B) if(glstate->A->top+1<MAX_STACK_##B) { \
 			memcpy(TOP(A)+16, TOP(A), 16*sizeof(GLfloat)); \
 			glstate->A->top++; \
+			glstate->matrix_seq++; \
 		} else errorShim(GL_STACK_OVERFLOW)
 		case GL_PROJECTION:
 			P(projection_matrix, PROJECTION);
@@ -190,6 +191,7 @@ DBG(printf("glPopMatrix(), list=%p\n", glstate->list.active);)
 		#define P(A) if(glstate->A->top) { \
 			--glstate->A->top; \
 			glstate->A->identity = is_identity(update_current_mat()); \
+			glstate->matrix_seq++; \
 			if (send_to_hardware()) {LOAD_GLES(glLoadMatrixf); gles_glLoadMatrixf(update_current_mat()); } \
 		} else errorShim(GL_STACK_UNDERFLOW)
 		case GL_PROJECTION:
@@ -235,6 +237,7 @@ DBG(printf("glLoadMatrix(%f, %f, %f, %f, %f, %f, %f...), list=%p\n", m[0], m[1],
 		}
 	}
 	memcpy(update_current_mat(), m, 16*sizeof(GLfloat));
+	glstate->matrix_seq++;
 	const int id = update_current_identity(0);
 	if(glstate->matrix_mode==GL_MODELVIEW) {
 		glstate->normal_matrix_dirty = glstate->inv_mv_matrix_dirty = 1;
@@ -272,6 +275,7 @@ DBG(printf("glMultMatrix(%f, %f, %f, %f, %f, %f, %f...), list=%p\n", m[0], m[1],
 	}
 	GLfloat *current_mat = update_current_mat();
 	matrix_mul(current_mat, m, current_mat);
+	glstate->matrix_seq++;
 	const int id = update_current_identity(0);
 	if(glstate->matrix_mode==GL_MODELVIEW) {
 		glstate->normal_matrix_dirty = glstate->inv_mv_matrix_dirty = 1;
@@ -304,6 +308,7 @@ DBG(printf("glLoadIdentity(), list=%p\n", glstate->list.active);)
 		}
 	}
 	set_identity(update_current_mat());
+	glstate->matrix_seq++;
 	update_current_identity(1);
 	if(glstate->matrix_mode==GL_MODELVIEW) {
 		glstate->normal_matrix_dirty = glstate->inv_mv_matrix_dirty = 1;

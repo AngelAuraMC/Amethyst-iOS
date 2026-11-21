@@ -106,6 +106,7 @@ void APIENTRY_GL4ES gl4es_glBlendFuncSeparate(GLenum sfactorRGB, GLenum dfactorR
         glstate->fpe_state->blenddstrgb = dstrgb;
         glstate->fpe_state->blendsrcalpha = srcalpha;
         glstate->fpe_state->blenddstalpha = dstalpha;
+        fpe_state_dirty();
     } else {
     #ifndef PANDORA
         if(gles_glBlendFuncSeparate==NULL) {
@@ -153,6 +154,7 @@ void APIENTRY_GL4ES gl4es_glBlendEquationSeparate(GLenum modeRGB, GLenum modeA) 
         }
         glstate->fpe_state->blendeqrgb = rgb;
         glstate->fpe_state->blendeqalpha = alpha;
+        fpe_state_dirty();
     } else {
         LOAD_GLES2_OR_OES(glBlendEquationSeparate);
         #ifndef PANDORA
@@ -197,6 +199,7 @@ void APIENTRY_GL4ES gl4es_glBlendFunc(GLenum sfactor, GLenum dfactor) {
         glstate->fpe_state->blenddstrgb = dstrgb;
         glstate->fpe_state->blendsrcalpha = srcalpha;
         glstate->fpe_state->blenddstalpha = dstalpha;
+        fpe_state_dirty();
     } else {
         LOAD_GLES(glBlendFunc);
         LOAD_GLES2_OR_OES(glBlendFuncSeparate);
@@ -297,6 +300,7 @@ void APIENTRY_GL4ES gl4es_glBlendEquation(GLenum mode) {
         }
         glstate->fpe_state->blendeqrgb = rgb;
         glstate->fpe_state->blendeqalpha = alpha;
+        fpe_state_dirty();
     } else {
         LOAD_GLES2_OR_OES(glBlendEquation);
         errorGL();

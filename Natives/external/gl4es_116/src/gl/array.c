@@ -97,20 +97,32 @@ GLvoid *copy_gl_array_texcoord(const GLvoid *src,
     in += stride*skip;
     GLfloat* out = (GLfloat*)dst;
     if (from == GL_FLOAT && to_width >= width) {
-        for (int i = skip; i < count; i++) {
-            GLfloat* input = (GLfloat*)in;
-            //memcpy(out, (GLvoid *)in, from_size);   // which one is faster ?
-            for (int j = 0; j < width; j++) {
-                out[j] = input[j];
+        if (width == 2 && to_width == 4) {
+            for (int i = skip; i < count; i++) {
+                const GLfloat* input = (const GLfloat*)in;
+                out[0] = input[0];
+                out[1] = input[1];
+                out[2] = 0.0f;
+                out[3] = 1.0f;
+                out += 4;
+                in += stride;
             }
-            for (int j = width; j < to_width; j++) {
-                if(j==3)
-                    out[j] = 1.0f;
-                else
-                    out[j] = 0.0f;
+        } else {
+            for (int i = skip; i < count; i++) {
+                GLfloat* input = (GLfloat*)in;
+                //memcpy(out, (GLvoid *)in, from_size);   // which one is faster ?
+                for (int j = 0; j < width; j++) {
+                    out[j] = input[j];
+                }
+                for (int j = width; j < to_width; j++) {
+                    if(j==3)
+                        out[j] = 1.0f;
+                    else
+                        out[j] = 0.0f;
+                }
+                out += to_width;
+                in += stride;
             }
-            out += to_width;
-            in += stride;
         }
     } else {
         for (int i = skip; i < count; i++) {
@@ -470,7 +482,32 @@ GLfloat *copy_eval_float2(GLenum target, GLint ustride, GLint uorder,
 void getminmax_indices_us(const GLushort *indices, GLsizei *max, GLsizei *min, GLsizei count) {
     if (!count) return;
     GLsizei mx = indices[0], mn = indices[0];
-    for (int i = 1; i < count; i++) {
+    int i = 0;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+    if (count >= 8) {
+        uint16x8_t vmin = vdupq_n_u16(0xFFFF);
+        uint16x8_t vmax = vdupq_n_u16(0);
+        for (; i + 8 <= count; i += 8) {
+            uint16x8_t v = vld1q_u16(indices + i);
+            vmin = vminq_u16(vmin, v);
+            vmax = vmaxq_u16(vmax, v);
+        }
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+        mn = (GLsizei)vminvq_u16(vmin);
+        mx = (GLsizei)vmaxvq_u16(vmax);
+#else
+        uint16x4_t min4 = vmin_u16(vget_low_u16(vmin), vget_high_u16(vmin));
+        uint16x4_t max4 = vmax_u16(vget_low_u16(vmax), vget_high_u16(vmax));
+        uint16x4_t min2 = vpmin_u16(min4, min4);
+        uint16x4_t max2 = vpmax_u16(max4, max4);
+        uint16x4_t min1 = vpmin_u16(min2, min2);
+        uint16x4_t max1 = vpmax_u16(max2, max2);
+        mn = (GLsizei)vget_lane_u16(min1, 0);
+        mx = (GLsizei)vget_lane_u16(max1, 0);
+#endif
+    }
+#endif
+    for (; i < count; i++) {
         GLsizei n = indices[i];
         if (n < mn) mn = n;
         if (n > mx) mx = n;
@@ -490,7 +527,30 @@ void normalize_indices_us(GLushort *indices, GLsizei *max, GLsizei *min, GLsizei
 void getminmax_indices_ui(const GLuint *indices, GLsizei *max, GLsizei *min, GLsizei count) {
     if (!count) return;
     GLsizei mx = indices[0], mn = indices[0];
-    for (int i = 1; i < count; i++) {
+    int i = 0;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+    if (count >= 4) {
+        uint32x4_t vmin = vdupq_n_u32(0xFFFFFFFF);
+        uint32x4_t vmax = vdupq_n_u32(0);
+        for (; i + 4 <= count; i += 4) {
+            uint32x4_t v = vld1q_u32(indices + i);
+            vmin = vminq_u32(vmin, v);
+            vmax = vmaxq_u32(vmax, v);
+        }
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+        mn = (GLsizei)vminvq_u32(vmin);
+        mx = (GLsizei)vmaxvq_u32(vmax);
+#else
+        uint32x2_t min2 = vmin_u32(vget_low_u32(vmin), vget_high_u32(vmin));
+        uint32x2_t max2 = vmax_u32(vget_low_u32(vmax), vget_high_u32(vmax));
+        uint32x2_t min1 = vpmin_u32(min2, min2);
+        uint32x2_t max1 = vpmax_u32(max2, max2);
+        mn = (GLsizei)vget_lane_u32(min1, 0);
+        mx = (GLsizei)vget_lane_u32(max1, 0);
+#endif
+    }
+#endif
+    for (; i < count; i++) {
         GLsizei n = indices[i];
         if (n < mn) mn = n;
         if (n > mx) mx = n;
@@ -581,4 +641,54 @@ GLvoid *copy_gl_pointer_color_bgra(const void *ptr, GLint stride, GLsizei width,
 void copy_gl_pointer_color_bgra_noalloc(void* dest, const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count)
 {
     copy_gl_array_bgra(dest, ptr, stride, width, skip, count);
+}
+
+void copy_gl_pointer_color_bgra_byte_noalloc(void* dest, const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count)
+{
+    const GLubyte *src = (const GLubyte*)ptr;
+    if (!src || count <= skip) return;
+    GLubyte *dst = (GLubyte*)dest;
+    if (!stride) stride = 4;
+    src += skip * stride;
+    int n = count - skip;
+    int i = 0;
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+    if (stride == 4) {
+        static const uint8_t bgra_to_rgba_mask[16] = {
+            2, 1, 0, 3,
+            6, 5, 4, 7,
+            10, 9, 8, 11,
+            14, 13, 12, 15
+        };
+        uint8x16_t tbl = vld1q_u8(bgra_to_rgba_mask);
+        for (; i + 4 <= n; i += 4) {
+            uint8x16_t raw = vld1q_u8(src);
+            uint8x16_t rgba = vqtbl1q_u8(raw, tbl);
+            vst1q_u8(dst, rgba);
+            dst += 16;
+            src += 16;
+        }
+    }
+#endif
+    for (; i < n; i++) {
+        uint32_t c;
+        memcpy(&c, src, 4);
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+        c = (c & 0x00ff00ff) | ((c & 0x0000ff00) << 16) | ((c & 0xff000000) >> 16);
+#else
+        c = (c & 0xff00ff00) | ((c & 0x00ff0000) >> 16) | ((c & 0x000000ff) << 16);
+#endif
+        memcpy(dst, &c, 4);
+        dst += 4;
+        src += stride;
+    }
+}
+
+GLvoid *copy_gl_pointer_color_bgra_byte(const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count)
+{
+    if (!ptr || count <= skip) return NULL;
+    void *dest = malloc((size_t)(count - skip) * 4 * sizeof(GLubyte));
+    if (!dest) return NULL;
+    copy_gl_pointer_color_bgra_byte_noalloc(dest, ptr, stride, width, skip, count);
+    return dest;
 }

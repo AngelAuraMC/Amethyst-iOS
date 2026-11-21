@@ -225,6 +225,7 @@ typedef struct {
     GLint                           builtin_attrib[ATT_MAX];
     // builtin uniform
     int                             has_builtin_matrix;
+    uint32_t                        applied_matrix_seq;
     GLint                           builtin_matrix[MAT_MAX];
     int                             has_builtin_light;
     builtin_lightsource_t           builtin_lights[MAX_LIGHT];

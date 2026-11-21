@@ -44,6 +44,7 @@ void APIENTRY_GL4ES gl4es_glTexGenfv(GLenum coord, GLenum pname, const GLfloat *
             int mode = -1;
             int n = glstate->texture.active;
             if(glstate->fpe_state) {
+                fpe_state_dirty();
                 int p = param[0];
                 switch (p) {
                     case GL_OBJECT_LINEAR: mode = FPE_TG_OBJLINEAR; break;

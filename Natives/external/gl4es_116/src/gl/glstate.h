@@ -42,6 +42,7 @@ typedef struct glstate_s {
     matrixstack_t       **texture_matrix;
     matrixstack_t       **arb_matrix;
     int                 matrix_mode;
+    uint32_t            matrix_seq;
     selectbuf_t         selectbuf;
     khash_t(glvao)      *vaos;
     khash_t(buff)       *buffers;       //shared
@@ -83,11 +84,14 @@ typedef struct glstate_s {
     GLenum              logicop;
     glsl_t              *glsl;              //shared
     fpe_state_t         *fpe_state;
+    uint64_t            fpe_generation;
+    uint64_t            fpe_last_applied_gen;
     fpe_fpe_t           *fpe;
     fpestatus_t         fpe_client;
     fpe_cache_t         *fpe_cache;
     struct {
         fpe_state_t in, out;
+        uint64_t    in_gen;
         int         valid, empty;
     }                   fpe_rel[2];
     gleshard_t          *gleshard;          //shared
@@ -121,6 +125,8 @@ typedef struct glstate_s {
     int                 quad_ibo_state;
     void*               color_scratch[4];
     size_t              color_scratch_cap[4];
+    void*               texture_scratch;
+    size_t              texture_scratch_cap;
     // Implementation read
     GLenum              readf; // implementation Read Format
     GLenum              readt; // implementation Read Type
@@ -148,6 +154,12 @@ typedef struct glstate_s {
     GLenum              blendeqrgb;
     GLenum              blendeqalpha;
 } glstate_t;
+
+extern glstate_t *glstate;
+
+static inline void fpe_state_dirty(void) {
+    if (glstate) glstate->fpe_generation++;
+}
 
 
 #endif // _GL4ES_GLSTATE_H_

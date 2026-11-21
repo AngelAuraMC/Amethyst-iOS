@@ -295,11 +295,14 @@ int APIENTRY_GL4ES fpe_IsEmpty(fpe_state_t *state) {
 
 static const fpe_state_t* fpe_CachedReleventState(int fixed, int *empty) {
     __typeof__(glstate->fpe_rel[0]) *c = &glstate->fpe_rel[fixed?1:0];
-    if(!c->valid || memcmp(&c->in, glstate->fpe_state, sizeof(fpe_state_t))) {
-        memcpy(&c->in, glstate->fpe_state, sizeof(fpe_state_t));
-        fpe_ReleventState(&c->out, glstate->fpe_state, fixed);
-        c->empty = fpe_IsEmpty(&c->out);
-        c->valid = 1;
+    if(!c->valid || c->in_gen != glstate->fpe_generation) {
+        if(!c->valid || memcmp(&c->in, glstate->fpe_state, sizeof(fpe_state_t))) {
+            memcpy(&c->in, glstate->fpe_state, sizeof(fpe_state_t));
+            fpe_ReleventState(&c->out, glstate->fpe_state, fixed);
+            c->empty = fpe_IsEmpty(&c->out);
+            c->valid = 1;
+        }
+        c->in_gen = glstate->fpe_generation;
     }
     if(empty) *empty = c->empty;
     return &c->out;
@@ -403,7 +406,10 @@ void APIENTRY_GL4ES fpe_oldprogram(fpe_state_t* state) {
 void APIENTRY_GL4ES fpe_program(int ispoint) {
     if(glstate==NULL || glstate->fpe_state==NULL)
         return;
-    glstate->fpe_state->point = ispoint;
+    if(glstate->fpe_state->point != ispoint) {
+        glstate->fpe_state->point = ispoint;
+        glstate->fpe_generation++;
+    }
     if(ispoint) {
         int ps_coord = 0;
         for (int i=0; i<hardext.maxtex; i++) {
@@ -412,19 +418,25 @@ void APIENTRY_GL4ES fpe_program(int ispoint) {
                 break;
             }
         }
-        glstate->fpe_state->pointsprite_coord = ps_coord;
+        if(glstate->fpe_state->pointsprite_coord != ps_coord) {
+            glstate->fpe_state->pointsprite_coord = ps_coord;
+            glstate->fpe_generation++;
+        }
     }
     const fpe_state_t *rel = fpe_CachedReleventState(1, NULL);
     if(glstate->fpe_cache==NULL)
         glstate->fpe_cache = fpe_NewCache();
     if(glstate->fpe_cache==NULL)
         return;
-    if(glstate->fpe==NULL || memcmp(&glstate->fpe->state, rel, sizeof(fpe_state_t))) {
-        // get cached fpe (or new one)
-        fpe_fpe_t *cached = fpe_GetCache(glstate->fpe_cache, (fpe_state_t*)rel, 1);
-        if(cached==NULL)
-            return;
-        glstate->fpe = cached;
+    if(glstate->fpe==NULL || glstate->fpe_last_applied_gen != glstate->fpe_generation) {
+        if(glstate->fpe==NULL || memcmp(&glstate->fpe->state, rel, sizeof(fpe_state_t))) {
+            // get cached fpe (or new one)
+            fpe_fpe_t *cached = fpe_GetCache(glstate->fpe_cache, (fpe_state_t*)rel, 1);
+            if(cached==NULL)
+                return;
+            glstate->fpe = cached;
+        }
+        glstate->fpe_last_applied_gen = glstate->fpe_generation;
     }   
     if(glstate->fpe->glprogram==NULL) {
         fpe_state_t state = {0};
@@ -1085,6 +1097,7 @@ void APIENTRY_GL4ES fpe_glAlphaFunc(GLenum func, GLclampf ref) {
     if(glstate->fpe_state->alphafunc != f) {
         glstate->fpe = NULL;
         glstate->fpe_state->alphafunc = f;
+        glstate->fpe_generation++;
     }
 }
 
@@ -1127,6 +1140,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     LOAD_GLES2(glUseProgram);
     // update texture state for fpe only
     if(glstate->fpe_bound_changed && !glstate->glsl->program) {
+        glstate->fpe_generation++;
         for(int i=0; i<glstate->fpe_bound_changed; i++) {
             glstate->fpe_state->texture[i].texformat = 0;
             glstate->fpe_state->texture[i].texadjust = 0;
@@ -1238,6 +1252,8 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
     // setup fixed pipeline builtin matrix uniform if needed
     if(glprogram->has_builtin_matrix)
     {
+        if(glstate->gleshard->glprogram != glprogram || glprogram->applied_matrix_seq != glstate->matrix_seq)
+        {
         if(glprogram->builtin_matrix[MAT_MVP]!=-1 || glprogram->builtin_matrix[MAT_MVP_I]!=-1
             || glprogram->builtin_matrix[MAT_MVP_T]!=-1 || glprogram->builtin_matrix[MAT_MVP_IT]!=-1)
         {
@@ -1305,6 +1321,8 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
                     GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_IT+i*4], 1, GL_TRUE, invmat);
                 }
             }
+        }
+        glprogram->applied_matrix_seq = glstate->matrix_seq;
         }
     }
     // set light and material if needed
@@ -1545,10 +1563,10 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
                     }
                     if(w->size==GL_BGRA) {
                         v->size = 4;
-                        v->type = GL_FLOAT;
-                        v->normalized = 0;
+                        v->type = GL_UNSIGNED_BYTE;
+                        v->normalized = 1;
                         v->integer = 0;
-                        size_t needed = (size_t)(imax - imin) * 4 * sizeof(GLfloat);
+                        size_t needed = (size_t)(imax - imin) * 4 * sizeof(GLubyte);
                         void* scratch_buf = NULL;
                         if(scratch->size < 4) {
                             int sidx = scratch->size;
@@ -1562,15 +1580,15 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
                             }
                             if(glstate->color_scratch[sidx] && glstate->color_scratch_cap[sidx] >= needed) {
                                 scratch_buf = glstate->color_scratch[sidx];
-                                copy_gl_pointer_color_bgra_noalloc(scratch_buf, ptr, w->stride, 4, imin, imax);
+                                copy_gl_pointer_color_bgra_byte_noalloc(scratch_buf, ptr, w->stride, 4, imin, imax);
                                 scratch->scratch[scratch->size++] = NULL;
                             }
                         }
                         if(!scratch_buf) {
-                            scratch_buf = copy_gl_pointer_color_bgra(ptr, w->stride, 4, imin, imax);
+                            scratch_buf = copy_gl_pointer_color_bgra_byte(ptr, w->stride, 4, imin, imax);
                             scratch->scratch[scratch->size++] = scratch_buf;
                         }
-                        v->pointer = (char*)scratch_buf - imin*4*sizeof(GLfloat);   // adjust for min...
+                        v->pointer = (char*)scratch_buf - imin*4*sizeof(GLubyte);   // adjust for min...
                         v->stride = 0;
                         v->buffer = NULL;
                         v->real_buffer = 0;

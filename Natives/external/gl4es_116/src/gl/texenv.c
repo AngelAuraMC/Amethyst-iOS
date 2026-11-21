@@ -32,8 +32,10 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     return;
                 FLUSH_BEGINEND;
                 glstate->texture.pscoordreplace[tmu] = p;
-                if (glstate->fpe_state)
+                if (glstate->fpe_state) {
                     glstate->fpe_state->pointsprite_coord = p;
+                    fpe_state_dirty();
+                }
             } else {
                 errorShim(GL_INVALID_ENUM);
                 return;
@@ -68,7 +70,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     }
                     FLUSH_BEGINEND;
                     t->mode = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_MODULATE;
                         switch(t->mode) {
                             case GL_ADD: state=FPE_ADD; break;
@@ -96,7 +98,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->combine_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_CR_REPLACE;
                         switch(t->combine_rgb) {
                             case GL_MODULATE: state=FPE_CR_MODULATE; break;
@@ -129,7 +131,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->combine_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_CR_REPLACE;
                         switch(t->combine_alpha) {
                             case GL_MODULATE: state=FPE_CR_MODULATE; break;
@@ -161,7 +163,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src0_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src0_rgb>=GL_TEXTURE0 && t->src0_rgb<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src0_rgb-GL_TEXTURE0);
@@ -193,7 +195,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src1_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src1_rgb>=GL_TEXTURE0 && t->src1_rgb<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src1_rgb-GL_TEXTURE0);
@@ -225,7 +227,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src2_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src2_rgb>=GL_TEXTURE0 && t->src2_rgb<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src2_rgb-GL_TEXTURE0);
@@ -256,7 +258,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src3_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(param>=GL_TEXTURE0 && param<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (param-GL_TEXTURE0);
@@ -286,7 +288,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src0_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src0_alpha>=GL_TEXTURE0 && t->src0_alpha<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src0_alpha-GL_TEXTURE0);
@@ -319,7 +321,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src1_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src1_alpha>=GL_TEXTURE0 && t->src1_alpha<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src1_alpha-GL_TEXTURE0);
@@ -352,7 +354,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src2_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(t->src2_alpha>=GL_TEXTURE0 && t->src2_alpha<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (t->src2_alpha-GL_TEXTURE0);
@@ -383,7 +385,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->src3_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_SRC_TEXTURE;
                         if(param>=GL_TEXTURE0 && param<GL_TEXTURE0+MAX_TEX) {
                             state = FPE_SRC_TEXTURE0 + (param-GL_TEXTURE0);
@@ -407,7 +409,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op0_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         switch(t->op0_rgb) {
                             case GL_SRC_COLOR: state=FPE_OP_SRCCOLOR; break;
@@ -427,7 +429,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op1_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         switch(t->op1_rgb) {
                             case GL_SRC_COLOR: state=FPE_OP_SRCCOLOR; break;
@@ -447,7 +449,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op2_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         switch(t->op2_rgb) {
                             case GL_SRC_COLOR: state=FPE_OP_SRCCOLOR; break;
@@ -471,7 +473,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op3_rgb = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         switch(t->op3_rgb) {
                             case GL_SRC_COLOR: state=FPE_OP_SRCCOLOR; break;
@@ -490,7 +492,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op0_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         if(t->op0_alpha==GL_ONE_MINUS_SRC_ALPHA) state=FPE_OP_MINUSALPHA;
 
@@ -506,7 +508,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op1_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         if(t->op1_alpha==GL_ONE_MINUS_SRC_ALPHA) state=FPE_OP_MINUSALPHA;
 
@@ -522,7 +524,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op2_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         if(t->op2_alpha==GL_ONE_MINUS_SRC_ALPHA) state=FPE_OP_MINUSALPHA;
 
@@ -542,7 +544,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                         }
                     FLUSH_BEGINEND;
                     t->op3_alpha = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         int state = FPE_OP_ALPHA;
                         if(t->op3_alpha==GL_ONE_MINUS_SRC_ALPHA) state=FPE_OP_MINUSALPHA;
 
@@ -558,7 +560,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     }
                     FLUSH_BEGINEND;
                     t->rgb_scale = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         if(param==1.0f)
                             glstate->fpe_state->texenv[tmu].texrgbscale = 0;
                         else
@@ -574,7 +576,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     }
                     FLUSH_BEGINEND;
                     t->alpha_scale = param;
-                    if(glstate->fpe_state) {
+                    if(glstate->fpe_state) { fpe_state_dirty();
                         if(param==1.0f)
                             glstate->fpe_state->texenv[tmu].texalphascale = 0;
                         else

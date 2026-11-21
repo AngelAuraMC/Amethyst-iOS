@@ -66,6 +66,21 @@ static kh_inline khint_t _hash_fpe_kh(fpe_state_t *p)
 
 KHASH_MAP_INIT_FPE(fpecachelist, fpe_fpe_t *);
 
+static kh_inline khint_t kh_get_fpecachelist_hash(const kh_fpecachelist_t *h, kh_fpe_t key, khint_t hash_val)
+{
+    if (h && h->n_buckets) {
+        khint_t i, last, mask, step = 0;
+        mask = h->n_buckets - 1;
+        i = hash_val & mask;
+        last = i;
+        while (!__ac_isempty(h->flags, i) && (__ac_isdel(h->flags, i) || !kh_fpe_hash_equal(h->keys[i], key))) {
+            i = (i + (++step)) & mask;
+            if (i == last) return h->n_buckets;
+        }
+        return __ac_iseither(h->flags, i) ? h->n_buckets : i;
+    } else return 0;
+}
+
 // ********* Cache handling *********
 
 fpe_cache_t* fpe_NewCache(void) {
@@ -114,7 +129,8 @@ fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
         }
     }
 
-    khint_t k = kh_get(fpecachelist, cur->map, state);
+    khint_t hash_val = (khint_t)(key_hash ^ (key_hash >> 32));
+    khint_t k = kh_get_fpecachelist_hash(cur->map, state, hash_val);
     fpe_fpe_t *result = NULL;
     if(k != kh_end(cur->map)) {
         result = kh_value(cur->map, k);

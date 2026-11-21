@@ -20,6 +20,7 @@ static void gl_changetex(int n)
 static void fpe_changeplane(int n, bool enable)
 {
     glstate->fpe = NULL;
+    fpe_state_dirty();
     if(enable)
         glstate->fpe_state->plane |= 1<<n;
     else
@@ -28,6 +29,7 @@ static void fpe_changeplane(int n, bool enable)
 static void fpe_changelight(int n, bool enable)
 {
     glstate->fpe = NULL;
+    fpe_state_dirty();
     if(enable)
         glstate->fpe_state->light |= 1<<n;
     else
@@ -41,6 +43,7 @@ static void fpe_changetex(int n)
 #define generate_changetexgen(C) \
 static void fpe_changetexgen_##C(int n, bool enable) \
 { \
+    fpe_state_dirty(); \
     glstate->fpe_state->texgen[n].texgen_##C = enable?1:0; \
 }
 generate_changetexgen(s)
@@ -69,13 +72,13 @@ static void proxy_glEnable(GLenum cap, bool enable, void (APIENTRY_GLES *next)(G
     #define proxy_GO(constant, name) \
         case constant: if(glstate->enable.name != enable) {FLUSH_BEGINEND; glstate->enable.name = enable; next(cap);} break
     #define proxy_GOFPE(constant, name, fct) \
-        case constant: if(glstate->enable.name != enable) {FLUSH_BEGINEND; glstate->enable.name = enable; if(glstate->fpe_state) { fct; } else next(cap);} break
+        case constant: if(glstate->enable.name != enable) {FLUSH_BEGINEND; glstate->enable.name = enable; if(glstate->fpe_state) { fct; fpe_state_dirty(); } else next(cap);} break
     #define GO(constant, name) \
         case constant: if(glstate->list.pending && glstate->enable.name!=enable) gl4es_flush(); glstate->enable.name = enable; break;
     #define GONF(constant, name) \
         case constant: glstate->enable.name = enable; break;
     #define GOFPE(constant, name, fct) \
-        case constant: if(glstate->list.pending && glstate->enable.name!=enable) gl4es_flush(); glstate->enable.name = enable; if(glstate->fpe_state) { fct; } break;
+        case constant: if(glstate->list.pending && glstate->enable.name!=enable) gl4es_flush(); glstate->enable.name = enable; if(glstate->fpe_state) { fct; fpe_state_dirty(); } break;
     #define proxy_clientGO(constant, name) \
         case constant: if (glstate->vao->name != enable) {glstate->vao->name = enable; next(cap);} break
     #define clientGO(constant, name) \
@@ -108,7 +111,7 @@ static void proxy_glEnable(GLenum cap, bool enable, void (APIENTRY_GLES *next)(G
         GO(GL_AUTO_NORMAL, auto_normal);
         proxy_GOFPE(GL_ALPHA_TEST, alpha_test,glstate->fpe_state->alphatest=enable);
         proxy_GOFPE(GL_FOG, fog, glstate->fpe_state->fog=enable);
-        case GL_BLEND: if(glstate->enable.blend != enable) {FLUSH_BEGINEND; glstate->enable.blend = enable; if(glstate->fpe_state && globals4es.shaderblend) { glstate->fpe_state->blend_enable = enable; } else next(cap);} break;
+        case GL_BLEND: if(glstate->enable.blend != enable) {FLUSH_BEGINEND; glstate->enable.blend = enable; if(glstate->fpe_state && globals4es.shaderblend) { glstate->fpe_state->blend_enable = enable; fpe_state_dirty(); } else next(cap);} break;
         proxy_GO(GL_CULL_FACE, cull_face);
         proxy_GO(GL_DEPTH_TEST, depth_test);
         proxy_GO(GL_STENCIL_TEST, stencil_test);

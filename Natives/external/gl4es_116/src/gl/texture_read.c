@@ -63,6 +63,7 @@ void APIENTRY_GL4ES gl4es_glCopyTexImage2D(GLenum target,  GLint level,  GLenum 
         gles_glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE_OES, (GLint *) &glstate->fbo.current_fb->read_type);
     }
     int copytex = ((bound->format==GL_RGBA && bound->type==GL_UNSIGNED_BYTE) 
+        || (hardext.bgra8888 && bound->format==GL_BGRA && bound->type==GL_UNSIGNED_BYTE)
         || (bound->format==glstate->fbo.current_fb->read_format && bound->type==glstate->fbo.current_fb->read_type));
 
     if (copytex) {
@@ -80,8 +81,10 @@ void APIENTRY_GL4ES gl4es_glCopyTexImage2D(GLenum target,  GLint level,  GLenum 
             case GL_RGB:
             case 3:
                 fmt = GL_RGB; break;
+            case GL_BGRA:
+                fmt = hardext.bgra8888 ? GL_BGRA : GL_RGBA; break;
             default:
-                fmt = GL_RGBA;
+                fmt = (hardext.bgra8888 && bound->format==GL_BGRA) ? GL_BGRA : GL_RGBA;
         }
         LOAD_GLES(glCopyTexImage2D);
         gles_glCopyTexImage2D(target, level, fmt, x, y, width, height, border);
@@ -162,6 +165,7 @@ void APIENTRY_GL4ES gl4es_glCopyTexSubImage2D(GLenum target, GLint level, GLint 
             gles_glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE_OES, (GLint *) &glstate->fbo.current_fb->read_type);
         }
         copytex = ((bound->format==GL_RGBA && bound->type==GL_UNSIGNED_BYTE) 
+            || (hardext.bgra8888 && bound->format==GL_BGRA && bound->type==GL_UNSIGNED_BYTE)
             || (bound->format==glstate->fbo.current_fb->read_format && bound->type==glstate->fbo.current_fb->read_type));
         if (copytex || !glstate->colormask[0] || !glstate->colormask[1] || !glstate->colormask[2] || !glstate->colormask[3]) {
             gles_glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);

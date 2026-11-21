@@ -17,10 +17,31 @@ const char* fpeshader_signature = "// FPE_Shader generated\n";
 
 static char* shad = NULL;
 static int shad_cap = 0;
+static int shad_len = 0;
 
 static int comments = 1;
 
-#define ShadAppend(S) shad = gl4es_append(shad, &shad_cap, S)
+static void ShadAppend_fast(const char* S) {
+    if(!S || !*S) return;
+    int slen = strlen(S);
+    if(shad_len + slen + 1 > shad_cap) {
+        int new_cap = shad_cap ? (shad_cap * 2) : 2048;
+        while(shad_len + slen + 1 > new_cap) new_cap *= 2;
+        char* new_shad = (char*)realloc(shad, new_cap);
+        if(!new_shad) return;
+        shad = new_shad;
+        shad_cap = new_cap;
+    }
+    memcpy(shad + shad_len, S, slen);
+    shad_len += slen;
+    shad[shad_len] = '\0';
+}
+
+#define ShadAppend(S) ShadAppend_fast(S)
+
+static inline void shad_sync_len(void) {
+    if (shad) shad_len = strlen(shad);
+}
 
 //                           2D   Rectangle    3D   CubeMap  Stream
 const char* texvecsize[] = {"vec4", "vec2", "vec2", "vec3", "vec2"};
@@ -196,6 +217,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
     }
 
     strcpy(shad, fpeshader_signature);
+    shad_len = strlen(fpeshader_signature);
 
     comments = globals4es.comments;
     DBG(comments=1-comments;)   // When DEBUG is activated, the effect of LIBGL_COMMENTS is reversed
@@ -723,6 +745,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
             strcat(buff, "vec4 ");
         strcat(buff, "vertex = gl_ModelViewMatrix * gl_Vertex;\n");
         shad = gl4es_inplace_insert(gl4es_getline(shad, normal_line + headers), buff, shad, &shad_cap);
+        shad_sync_len();
         normal_line += gl4es_countline(buff);
     }
     if(need_normal) {
@@ -742,6 +765,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
             strcpy(buff, "vec3 normal = gl_NormalMatrix * gl_Normal;\n");
 #endif
         shad = gl4es_inplace_insert(gl4es_getline(shad, normal_line + headers), buff, shad, &shad_cap);
+        shad_sync_len();
     }
     buff[0] = '\0';
     for (int i=0; i<MAX_TEX; i++) {
@@ -763,6 +787,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
     }
     if(buff[0]!='\0') {
         shad = gl4es_inplace_insert(gl4es_getline(shad, headers), buff, shad, &shad_cap);
+        shad_sync_len();
         headers += gl4es_countline(buff);
     }
     if(fog) {
@@ -841,6 +866,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
 
 
     strcpy(shad, fpeshader_signature);
+    shad_len = strlen(fpeshader_signature);
 
     // check texture streaming and texturing
     {
@@ -1030,6 +1056,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
                         // create the Uniform for TexEnv Constant color
                         sprintf(buff, "uniform lowp vec4 _gl4es_TextureEnvColor_%d;\n", i);
                         shad = gl4es_inplace_insert(gl4es_getline(shad, headers), buff, shad, &shad_cap);
+                        shad_sync_len();
                         headers+=gl4es_countline(buff);
                         needclamp=0;
                         if(texformat!=FPE_TEX_ALPHA) {
@@ -1141,6 +1168,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
                                 // yep, create the Uniform
                                 sprintf(buff, "uniform lowp vec4 _gl4es_TextureEnvColor_%d;\n", i);
                                 shad = gl4es_inplace_insert(gl4es_getline(shad, headers), buff, shad, &shad_cap);
+                                shad_sync_len();
                                 headers+=gl4es_countline(buff);                            
                             }
                             for (int j=0; j<4; j++) {
@@ -1637,6 +1665,7 @@ const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* stat
     if(headline) --headline;
 
     strcpy(shad, "");
+    shad_len = 0;
     ShadAppend(initial);
 
     int color = default_fragment?(strstr(initial, "_gl4es_Color")?0:1):0;   // need to add a simple color variant?
@@ -1666,6 +1695,7 @@ if(default_fragment) printf("fpe_CustomVertexShader(%p, %p, %d)\n%s\ncolor=%d\n"
     if(planes || color) {
         // wrap real main...
         shad = gl4es_inplace_replace(shad, &shad_cap, "main", "_gl4es_main");
+        shad_sync_len();
     }
 
     // let's start
@@ -1706,6 +1736,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
     if(headline) --headline;
 
     strcpy(shad, "");
+    shad_len = 0;
     if(shaderblend) {
         ShadAppend("#extension GL_ARM_shader_framebuffer_fetch : enable\n");
     }
@@ -1738,6 +1769,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
             shad = gl4es_inplace_insert(gl4es_getline(shad, l_main), "lowp vec4 _gl4es_FragColor;\n", shad, &shad_cap);
             shad = gl4es_inplace_replace(shad, &shad_cap, "gl_FragColor", "_gl4es_FragColor");
         }
+        shad_sync_len();
     }
     if(strstr(shad, "_gl4es_main")) {
         ShadAppend("void main() {\n");
@@ -1761,6 +1793,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
         if(alpha_test) {
             if(alpha_test && alpha_func>FPE_NEVER) {
                 shad = gl4es_inplace_insert(gl4es_getline(shad, headline), gl4es_alphaRefSource, shad, &shad_cap);
+                shad_sync_len();
                 headline+=gl4es_countline(gl4es_alphaRefSource);
             } 
             if(comments) {

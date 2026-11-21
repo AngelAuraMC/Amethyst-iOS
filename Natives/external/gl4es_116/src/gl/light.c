@@ -20,8 +20,10 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
         case GL_LIGHT_MODEL_TWO_SIDE:
             errorGL();
             glstate->light.two_side = param;
-            if(glstate->fpe_state)
+            if(glstate->fpe_state) {
                 glstate->fpe_state->twosided = param;
+                fpe_state_dirty();
+            }
 			break;
         case GL_LIGHT_MODEL_COLOR_CONTROL:
             if(param!=GL_SINGLE_COLOR && param!=GL_SEPARATE_SPECULAR_COLOR ) {
@@ -34,8 +36,10 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
                     return;
                 }
                 glstate->light.separate_specular=value;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->light_separate=value;
+                    fpe_state_dirty();
+                }
             }
             return; // NOT Supported in GLES 1.1 anyway
         case GL_LIGHT_MODEL_LOCAL_VIEWER:
@@ -46,8 +50,10 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
                     return;
                 }
                 glstate->light.local_viewer=value;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->light_localviewer=value;
+                    fpe_state_dirty();
+                }
             }
             return; // NOT Supported in GLES 1.1 anyway
         case GL_LIGHT_MODEL_AMBIENT:
@@ -92,8 +98,10 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
             }
             errorGL();
             glstate->light.two_side = params[0];
-            if(glstate->fpe_state)
+            if(glstate->fpe_state) {
                 glstate->fpe_state->twosided = params[0];
+                fpe_state_dirty();
+            }
         break;
         case GL_LIGHT_MODEL_COLOR_CONTROL:
             if(params[0]!=GL_SINGLE_COLOR && params[0]!=GL_SEPARATE_SPECULAR_COLOR ) {
@@ -106,8 +114,10 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
                     return;
                 }
                 glstate->light.separate_specular=value;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->light_separate=value;
+                    fpe_state_dirty();
+                }
             }
             return; // NOT Supported in GLES 1.1 anyway
         case GL_LIGHT_MODEL_LOCAL_VIEWER:
@@ -118,8 +128,10 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
                     return;
                 }
                 glstate->light.local_viewer=value;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->light_localviewer=value;
+                    fpe_state_dirty();
+                }
             }
             return; // NOT Supported in GLES 1.1 anyway
         default:
@@ -170,6 +182,7 @@ void APIENTRY_GL4ES gl4es_glLightfv(GLenum light, GLenum pname, const GLfloat* p
                 return;
             memcpy(glstate->light.lights[nl].position, tmp, 4*sizeof(GLfloat));
             if(glstate->fpe_state) {
+                fpe_state_dirty();
                 int dir = (tmp[3]!=0.f);
                 if (dir) {
                     glstate->fpe_state->light_direction |= (1<<nl);
@@ -202,6 +215,7 @@ void APIENTRY_GL4ES gl4es_glLightfv(GLenum light, GLenum pname, const GLfloat* p
                 return;
             glstate->light.lights[nl].spotCutoff = params[0];
             if(glstate->fpe_state) {
+                fpe_state_dirty();
                 int dir = (params[0]!=180.f);
                 if (dir) {
                     glstate->fpe_state->light_cutoff180 |= (1<<nl);
@@ -313,13 +327,17 @@ void APIENTRY_GL4ES gl4es_glMaterialfv(GLenum face, GLenum pname, const GLfloat 
             }
             if(face==GL_FRONT_AND_BACK || face==GL_FRONT) {
                 glstate->material.front.shininess = *params;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->cm_front_nullexp=(*params<=0.0)?0:1;
+                    fpe_state_dirty();
+                }
             }
             if(face==GL_FRONT_AND_BACK || face==GL_BACK) {
                 glstate->material.back.shininess = *params;
-                if(glstate->fpe_state)
+                if(glstate->fpe_state) {
                     glstate->fpe_state->cm_back_nullexp=(*params<=0.0)?0:1;
+                    fpe_state_dirty();
+                }
             }
             break;
         case GL_COLOR_INDEXES:
@@ -415,6 +433,7 @@ void APIENTRY_GL4ES gl4es_glColorMaterial(GLenum face, GLenum mode) {
     if(face==GL_FRONT_AND_BACK || face==GL_BACK)
         glstate->material.back.colormat = mode;
     if(glstate->fpe_state) {
+        fpe_state_dirty();
         int value = FPE_CM_AMBIENTDIFFUSE;
         switch(mode) {
             case GL_EMISSION: value = FPE_CM_EMISSION; break;

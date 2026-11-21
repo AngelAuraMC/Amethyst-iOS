@@ -96,13 +96,19 @@ void rebind_real_buff_arrays(int old_buffer, int new_buffer) {
 
 static void buffer_reserve_shadow(glbuffer_t *buff, GLsizeiptr size)
 {
-    if (buff->data && size <= buff->cap
-        && (size <= buff->size || (buff->cap - size) <= (size >> 3) + 4096))
+    if (buff->data && size <= buff->cap)
         return;
-    if (buff->data)
+    if (buff->data) {
         free(buff->data);
-    buff->data = malloc(size);
-    buff->cap = buff->data ? size : 0;
+        buff->data = NULL;
+    }
+    GLsizeiptr new_cap = size + (size >> 1) + 4096;
+    buff->data = malloc(new_cap);
+    if (!buff->data) {
+        new_cap = size;
+        buff->data = malloc(new_cap);
+    }
+    buff->cap = buff->data ? new_cap : 0;
 }
 
 void APIENTRY_GL4ES gl4es_glGenBuffers(GLsizei n, GLuint * buffers) {
@@ -320,6 +326,10 @@ void APIENTRY_GL4ES gl4es_glBufferSubData(GLenum target, GLintptr offset, GLsize
         LOAD_GLES(glBindBuffer);
         bindBuffer(target, buff->real_buffer);
         gles_glBufferSubData(target, offset, size, data);
+        if(buff->usage == GL_STREAM_DRAW) {
+            noerrorShim();
+            return;
+        }
     }
         
     memcpy((char*)buff->data + offset, data, size);
@@ -343,6 +353,10 @@ void APIENTRY_GL4ES gl4es_glNamedBufferSubData(GLuint buffer, GLintptr offset, G
         LOAD_GLES(glBindBuffer);
         bindBuffer(buff->type, buff->real_buffer);
         gles_glBufferSubData(buff->type, offset, size, data);
+        if(buff->usage == GL_STREAM_DRAW) {
+            noerrorShim();
+            return;
+        }
     }
     memcpy((char*)buff->data + offset, data, size);
     noerrorShim();

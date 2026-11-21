@@ -559,6 +559,10 @@ void DeleteGLState(void* oldstate) {
         state->color_scratch[a] = NULL;
         state->color_scratch_cap[a] = 0;
     }
+    if(state->texture_scratch)
+        free(state->texture_scratch);
+    state->texture_scratch = NULL;
+    state->texture_scratch_cap = 0;
     // merger buffers
     if(state->merger_master)
         free(state->merger_master);

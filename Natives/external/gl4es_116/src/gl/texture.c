@@ -49,6 +49,27 @@ static int inline nlevel(int size, int level) {
     return size;
 }
 
+static void* get_texture_scratch(size_t size) {
+    if (!glstate) return malloc(size);
+    if (glstate->texture_scratch && glstate->texture_scratch_cap >= size)
+        return glstate->texture_scratch;
+    size_t new_cap = size + (size >> 1) + 4096;
+    void *new_buf = realloc(glstate->texture_scratch, new_cap);
+    if (!new_buf) {
+        new_buf = realloc(glstate->texture_scratch, size);
+        if (!new_buf) return malloc(size);
+        new_cap = size;
+    }
+    glstate->texture_scratch = new_buf;
+    glstate->texture_scratch_cap = new_cap;
+    return glstate->texture_scratch;
+}
+
+static inline void free_texture_pixels(GLvoid *p, const GLvoid *datab) {
+    if (p && p != datab && (!glstate || p != glstate->texture_scratch))
+        free(p);
+}
+
 // return the max level for that WxH size
 static int inline maxlevel(int w, int h) {
     int mlevel = 0;
@@ -1078,25 +1099,18 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
         // implements GL_UNPACK_ROW_LENGTH
         if ((glstate->texture.unpack_row_length && glstate->texture.unpack_row_length != width) 
         || glstate->texture.unpack_skip_pixels || glstate->texture.unpack_skip_rows) {
-            int imgWidth, pixelSize, dstWidth;
-            pixelSize = pixel_sizeof(format, type);
-            imgWidth = ((glstate->texture.unpack_row_length)? glstate->texture.unpack_row_length:width) * pixelSize;
-            GLubyte *dst = (GLubyte *)malloc(width * height * pixelSize);
-            pixels = (GLvoid *)dst;
-            dstWidth = width * pixelSize;
-            const GLubyte *src = (GLubyte *)datab;
-            src += glstate->texture.unpack_skip_pixels * pixelSize + glstate->texture.unpack_skip_rows * imgWidth;
-            for (int y = height; y; --y) {
-                memcpy(dst, src, dstWidth);
-                src += imgWidth;
-                dst += dstWidth;
+            size_t scratch_size = (size_t)height * widthalign(width * pixel_sizeof(format, type), glstate->texture.unpack_align);
+            pixels = get_texture_scratch(scratch_size);
+            if (!pixel_convert_strided(datab, &pixels, width, height, format, type, format, type, 0, glstate->texture.unpack_align,
+                                      glstate->texture.unpack_row_length, glstate->texture.unpack_skip_pixels, glstate->texture.unpack_skip_rows)) {
+                printf("LIBGL: Error in pixel_convert_strided while glTexImage2D unpack\n");
             }
         }
 
         GLvoid *old = pixels;
         pixels = (GLvoid *)swizzle_texture(width, height, &format, &type, internalformat, new_format, old, bound);
-        if (old != pixels && old != datab) {
-            free(old);
+        if (old != pixels) {
+            free_texture_pixels(old, datab);
         }
 
         if (bound->shrink!=0) {
@@ -1140,8 +1154,8 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
                         bound->useratio = 1;
                         pixel_scale(pixels, &out, width, height, newwidth, newheight, format, type);
                     }
-                    if (out != pixels && pixels!=datab)
-                        free(pixels);
+                    if (out != pixels)
+                        free_texture_pixels(pixels, datab);
                     pixels = out;
                     width = newwidth;
                     height = newheight;
@@ -1163,8 +1177,8 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
                         if(!bound->valid)
                             { bound->ratiox *= 0.25f; bound->ratioy *= 0.25f; }
                     }
-                    if (out != pixels && pixels!=datab)
-                        free(pixels);
+                    if (out != pixels)
+                        free_texture_pixels(pixels, datab);
                     pixels = out;
                     width = nlevel(width, toshrink);
                     height = nlevel(height, toshrink);
@@ -1322,8 +1336,8 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
                 GLvoid *out = pixels;
                 if(pixels)
                     pixel_scale(pixels, &out, width, height, nwidth, nheight, format, type);
-                if (out != pixels && pixels!=datab)
-                    free(pixels);
+                if (out != pixels)
+                    free_texture_pixels(pixels, datab);
                 pixels = out;
                 width = nwidth;
                 height = nheight;
@@ -1491,9 +1505,7 @@ void APIENTRY_GL4ES gl4es_glTexImage2D(GLenum target, GLint level, GLint interna
         //memset(bound->data, 0, width*height*4);
         }
     }
-    if (pixels != datab) {
-        free(pixels);
-    }
+    free_texture_pixels(pixels, datab);
     // update max bound to be sure "sampler" is applied
     if(glstate->bound_changed<glstate->texture.active+1)
         glstate->bound_changed = glstate->texture.active+1;
@@ -1551,30 +1563,19 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
     if(level && bound->mipmap_auto)
         return;
 
-    if ((glstate->texture.unpack_row_length && glstate->texture.unpack_row_length != width) || glstate->texture.unpack_skip_pixels || glstate->texture.unpack_skip_rows) {
-        int imgWidth, pixelSize, dstWidth;
-        pixelSize = pixel_sizeof(format, type);
-        imgWidth = ((glstate->texture.unpack_row_length)? glstate->texture.unpack_row_length:width) * pixelSize;
-        GLubyte *dst = (GLubyte *)malloc(width * height * pixelSize);
-        pixels = (GLvoid *)dst;
-        dstWidth = width * pixelSize;
-        const GLubyte *src = (GLubyte *)datab;
-        src += glstate->texture.unpack_skip_pixels * pixelSize + glstate->texture.unpack_skip_rows * imgWidth;
-        for (int y = height; y; --y) {
-            memcpy(dst, src, dstWidth);
-            src += imgWidth;
-            dst += dstWidth;
-        }
-    }
-    
-    GLvoid *old = pixels;
+    GLenum target_format = bound->format ? bound->format : bound->inter_format;
+    GLenum target_type = bound->type ? bound->type : bound->inter_type;
+    int has_unpack_stride = (glstate->texture.unpack_row_length && glstate->texture.unpack_row_length != width) || glstate->texture.unpack_skip_pixels || glstate->texture.unpack_skip_rows;
+    int need_convert = (format != target_format || type != target_type);
+
 #ifdef TEXSTREAM
     if (globals4es.texstream && (bound->streamed)) {
         // Optimisation, let's do convert directly to the right place...
         GLvoid *tmp = GetStreamingBuffer(bound->streamingID);
         tmp += (yoffset*bound->width+xoffset)*2;
-        if (! pixel_convert(old, &tmp, width, height,
-                        format, type, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, bound->width, glstate->texture.unpack_align)) {
+        if (! pixel_convert_strided(datab, &tmp, width, height,
+                        format, type, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, bound->width, glstate->texture.unpack_align,
+                        glstate->texture.unpack_row_length, glstate->texture.unpack_skip_pixels, glstate->texture.unpack_skip_rows)) {
             printf("LIBGL: swizzle error: (%#4x, %#4x -> GL_RGB, UNSIGNED_SHORT_5_6_5)\n",
                         format, type);
         }
@@ -1582,18 +1583,17 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
         type = GL_UNSIGNED_SHORT_5_6_5;
     } else  
 #endif
-    {
-        GLenum target_format = bound->format ? bound->format : bound->inter_format;
-        GLenum target_type = bound->type ? bound->type : bound->inter_type;
-        if (!pixel_convert(old, &pixels, width, height, format, type, target_format, target_type, 0, glstate->texture.unpack_align)) {
+    if (has_unpack_stride || need_convert) {
+        size_t scratch_size = (size_t)height * widthalign(width * pixel_sizeof(target_format, target_type), glstate->texture.unpack_align);
+        pixels = get_texture_scratch(scratch_size);
+        if (!pixel_convert_strided(datab, &pixels, width, height, format, type, target_format, target_type, 0, glstate->texture.unpack_align,
+                                  glstate->texture.unpack_row_length, glstate->texture.unpack_skip_pixels, glstate->texture.unpack_skip_rows)) {
             printf("LIBGL: Error in pixel_convert while glTexSubImage2D\n");
         } else {
             format = target_format;
             type = target_type;
         }
     }
-    if (old != pixels && old != datab)
-        free(old);
 
     if (bound->shrink || bound->useratio) {
         // special case for width/height == 1
@@ -1603,12 +1603,11 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
             height+=(yoffset%2);
         if ((width==1) || (height==1)) {
             // nothing to do...
-            if (pixels != datab)
-                free((GLvoid *)pixels);
+            free_texture_pixels(pixels, datab);
             return;
         }
         // ok, now standard cases....
-        old = pixels;
+        GLvoid *old = pixels;
         if(bound->useratio) {
             xoffset *= bound->ratiox;
             yoffset *= bound->ratioy;
@@ -1617,8 +1616,8 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
             pixel_scale(pixels, &old, width, height, newwidth, newheight, format, type);
             width = newwidth;
             height = newheight;
-            if (old != pixels && pixels!=datab)
-                free(pixels);
+            if (old != pixels)
+                free_texture_pixels(pixels, datab);
             pixels = old;
         } else {
             xoffset /= 2*bound->shrink;
@@ -1631,8 +1630,8 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
                     pixel_halfscale(pixels, &old, width, height, format, type);
                 else
                     pixel_quarterscale(pixels, &old, width, height, format, type);
-                if (old != pixels && pixels!=datab)
-                    free(pixels);
+                if (old != pixels)
+                    free_texture_pixels(pixels, datab);
                 pixels = old;
                 width = nlevel(width, toshrink);
                 height = nlevel(height, toshrink);
@@ -1728,8 +1727,7 @@ void APIENTRY_GL4ES gl4es_glTexSubImage2D(GLenum target, GLint level, GLint xoff
             printf("LIBGL: Error on pixel_convert while TEXCOPY in glTexSubImage2D\n");
     }
 
-    if (pixels != datab)
-        free((GLvoid *)pixels);
+    free_texture_pixels(pixels, datab);
 }
 
 // 1d stubs

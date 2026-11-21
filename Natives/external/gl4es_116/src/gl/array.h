@@ -15,12 +15,14 @@ GLvoid *copy_gl_array_convert(const GLvoid *src,
 GLvoid *copy_gl_pointer(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 GLvoid *copy_gl_pointer_color(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 GLvoid *copy_gl_pointer_color_bgra(const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count);
+GLvoid *copy_gl_pointer_color_bgra_byte(const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count);
 GLvoid *copy_gl_pointer_bytecolor(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 GLvoid *copy_gl_pointer_raw(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 GLvoid *copy_gl_pointer_tex(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_color_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_color_bgra_noalloc(void* dest, const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count);
+void copy_gl_pointer_color_bgra_byte_noalloc(void* dest, const void *ptr, GLint stride, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_bytecolor_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_raw_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);
 void copy_gl_pointer_tex_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count);

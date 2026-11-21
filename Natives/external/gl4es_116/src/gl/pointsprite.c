@@ -99,6 +99,7 @@ void APIENTRY_GL4ES gl4es_glPointParameterfv(GLenum pname, const GLfloat * param
                 return;
             }
             if(glstate->fpe_state) {
+                fpe_state_dirty();
                 if(*params==GL_LOWER_LEFT)
                     glstate->fpe_state->pointsprite_upper = 0;
                 else
