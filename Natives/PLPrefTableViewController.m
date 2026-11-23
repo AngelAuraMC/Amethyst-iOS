@@ -262,6 +262,12 @@
 
     sender.value = (int)sender.value;
     self.setPreference(section, key, @(sender.value));
+
+    NSDictionary *item = objc_getAssociatedObject(sender, @"item");
+    void(^invokeAction)(int) = item[@"action"];
+    if (invokeAction) {
+        invokeAction((int)sender.value);
+    }
 }
 
 - (void)switchChanged:(UISwitch *)sender {

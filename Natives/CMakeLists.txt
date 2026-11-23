@@ -149,6 +149,7 @@ add_executable(AngelAuraAmethyst
   LauncherNewsViewController.m
   LauncherPreferences.m
   LauncherPreferencesViewController.m
+  ExperimentalViewController.m
   LauncherPrefContCfgViewController.m
   LauncherPrefGameDirViewController.m
   LauncherPrefManageJREViewController.m

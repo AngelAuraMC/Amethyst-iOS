@@ -1,5 +1,6 @@
 #import "PLLogOutputView.h"
 #import "SurfaceViewController.h"
+#import "LauncherPreferences.h"
 #import "utils.h"
 
 @interface PLLogOutputView()<UITableViewDataSource, UITableViewDelegate>
@@ -11,6 +12,46 @@
 static BOOL fatalErrorOccurred;
 static NSMutableArray* logLines;
 static PLLogOutputView* current;
+
++ (int)currentLogTextSizeLevel {
+    id val = getPrefObject(@"experimental.log_text_size");
+    int level = val ? [val intValue] : 5;
+    if (level < 1 || level > 9) {
+        level = 5;
+    }
+    return level;
+}
+
++ (CGFloat)fontSizeForLevel:(int)level {
+    if (level < 1 || level > 9) level = 5;
+    return 16.0f + (level - 5) * 1.5f;
+}
+
++ (CGFloat)rowHeightForLevel:(int)level {
+    if (level < 1 || level > 9) level = 5;
+    return 16.0f + (level - 5) * 1.5f + 4.0f; // Level 5 is exactly 20.0f
+}
+
++ (UIFont *)logFontForLevel:(int)level {
+    CGFloat size = [self fontSizeForLevel:level];
+    UIFont *font = [UIFont fontWithName:@"Menlo-Regular" size:size];
+    if (!font) {
+        font = [UIFont monospacedSystemFontOfSize:size weight:UIFontWeightRegular];
+    }
+    return font;
+}
+
++ (void)updateLogTextSize:(int)level {
+    if (level < 1 || level > 9) {
+        level = 5;
+    }
+    if (!current) return;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (!current || !current.logTableView) return;
+        current.logTableView.rowHeight = [self rowHeightForLevel:level];
+        [current.logTableView reloadData];
+    });
+}
 
 - (instancetype)initWithFrame:(CGRect)frame {
     UIViewController *vc = [UIViewController new];
@@ -42,7 +83,8 @@ static PLLogOutputView* current;
     self.logTableView.dataSource = self;
     self.logTableView.delegate = self;
     self.logTableView.layoutMargins = UIEdgeInsetsZero;
-    self.logTableView.rowHeight = 20;
+    int initialLevel = [PLLogOutputView currentLogTextSizeLevel];
+    self.logTableView.rowHeight = [PLLogOutputView rowHeightForLevel:initialLevel];
     self.logTableView.separatorInset = UIEdgeInsetsZero;
     self.logTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     [self addSubview:self.logTableView];
@@ -66,9 +108,10 @@ static PLLogOutputView* current;
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
         cell.backgroundColor = UIColor.clearColor;
         //cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        cell.textLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:16];
         cell.textLabel.textColor = UIColor.whiteColor;
     }
+    int level = [PLLogOutputView currentLogTextSizeLevel];
+    cell.textLabel.font = [PLLogOutputView logFontForLevel:level];
     cell.textLabel.text = logLines[indexPath.row];
 
     return cell;
@@ -126,6 +169,12 @@ static PLLogOutputView* current;
         [UIApplication.sharedApplication performSelector:@selector(suspend)];
         dispatch_group_leave(fatalExitGroup);
         return;
+    }
+
+    if (self.navController.view.hidden) {
+        int level = [PLLogOutputView currentLogTextSizeLevel];
+        self.logTableView.rowHeight = [PLLogOutputView rowHeightForLevel:level];
+        [self.logTableView reloadData];
     }
 
     UIViewAnimationOptions opt = self.navController.view.hidden ? UIViewAnimationOptionCurveEaseOut : UIViewAnimationOptionCurveEaseIn;

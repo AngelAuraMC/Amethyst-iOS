@@ -48,12 +48,22 @@ int pojavInit(BOOL useStackQueue) {
     return JNI_TRUE;
 }
 
+static void* s_gl4es116Handle = NULL;
+
+void* get_gl4es_116_handle(void) {
+    return s_gl4es116Handle;
+}
+
 int pojavInitOpenGL() {
     NSString *renderer = NSProcessInfo.processInfo.environment[@"RENDERER"];
     BOOL isAuto = [renderer isEqualToString:@"auto"];
     if (isAuto || [renderer isEqualToString:@ RENDERER_NAME_GL4ES]) {
         // At this point, if renderer is still auto (unspecified major version), pick gl4es
         renderer = @ RENDERER_NAME_GL4ES;
+        setenv("RENDERER", renderer.UTF8String, 1);
+        set_gl_bridge_tbl();
+    } else if ([renderer isEqualToString:@ RENDERER_NAME_GL4ES_116]) {
+        renderer = @ RENDERER_NAME_GL4ES_116;
         setenv("RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
@@ -68,7 +78,16 @@ int pojavInitOpenGL() {
     }
     JNI_LWJGL_changeRenderer(renderer.UTF8String);
     // Preload renderer library
-    dlopen([NSString stringWithFormat:@"@rpath/%@", renderer].UTF8String, RTLD_GLOBAL);
+    void* handle = dlopen([NSString stringWithFormat:@"@rpath/%@", renderer].UTF8String, RTLD_GLOBAL);
+    if (!handle) {
+        NSLog(@"[Amethyst] Failed to dlopen %@: %s", renderer, dlerror());
+    }
+    if ([renderer isEqualToString:@ RENDERER_NAME_GL4ES_116]) {
+        s_gl4es116Handle = handle;
+        NSLog(@"[Amethyst] GL4ES 1.1.6 loaded (handle=%p). Constructor deferred until EGL context is current.", handle);
+    } else {
+        s_gl4es116Handle = NULL;
+    }
 
     return !br_init();
     //return 0;

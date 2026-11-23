@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <mach/mach.h>
 
 #include "utils.h"
 
@@ -17,6 +18,7 @@
 #import "MinecraftOptionUtils.h"
 #import "PLLogOutputView.h"
 #import "PLProfiles.h"
+#import "ctxbridges/gl_bridge.h"
 
 #define fm NSFileManager.defaultManager
 
@@ -51,6 +53,50 @@ void init_loadDefaultEnv() {
 
     // Runs JVM in a separate thread
     setenv("HACK_IGNORE_START_ON_FIRST_THREAD", "1", 1);
+}
+
+void init_applyExperimentalSettings() {
+    // 1. Reset all environment variables owned by Experimental to avoid residue from previous sessions
+    unsetenv("AMETHYST_RENDER_BENCHMARK");
+    unsetenv("AMETHYST_FPS_LOG");
+    unsetenv("LIBGL_LOGSHADERERROR");
+    unsetenv("LIBGL_SILENTSTUB");
+    unsetenv("LIBGL_BATCH");
+    unsetenv("LIBGL_USEVBO");
+    unsetenv("LIBGL_MIPMAP");
+    unsetenv("LIBGL_NOSHADERLOD");
+    unsetenv("LIBGL_SHRINK");
+    unsetenv("LIBGL_NOVAOCACHE");
+    unsetenv("AMETHYST_GL4ES_TEXTURE_TRACE");
+    unsetenv("AMETHYST_GL4ES_SHADER_TRACE");
+    unsetenv("AMETHYST_GL4ES_ERROR_TRACE");
+    unsetenv("AMETHYST_GL4ES_BACKEND_PROBE");
+
+    // 2. Apply Benchmark & FPS log (cadence metrics)
+    if (getPrefBool(@"experimental.benchmark")) {
+        setenv("AMETHYST_RENDER_BENCHMARK", "1", 1);
+        NSLog(@"[Amethyst Experimental] Enabled Render Benchmark");
+    }
+    if (getPrefBool(@"experimental.fps_log")) {
+        setenv("AMETHYST_FPS_LOG", "1", 1);
+        NSLog(@"[Amethyst Experimental] Enabled FPS Log");
+    }
+
+    // Check renderer - only apply GL4ES flags if using GL4ES
+    NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
+    BOOL isGL4ES = (!renderer || [renderer isEqualToString:@"auto"] || [renderer containsString:@"gl4es"]);
+
+    if (isGL4ES) {
+        // 3. Shader Error Diagnostics + Bounded Texture, Shader & Error Trace
+        if (getPrefBool(@"experimental.shader_error_log")) {
+            setenv("LIBGL_LOGSHADERERROR", "1", 1);
+            setenv("LIBGL_SILENTSTUB", "0", 1);
+            setenv("AMETHYST_GL4ES_TEXTURE_TRACE", "1", 1);
+            setenv("AMETHYST_GL4ES_SHADER_TRACE", "1", 1);
+            setenv("AMETHYST_GL4ES_ERROR_TRACE", "1", 1);
+            NSLog(@"[Amethyst Experimental] Enabled Shader Error & Stub Diagnostics + GL4ES Texture, Shader & Error Trace");
+        }
+    }
 }
 
 void init_loadCustomEnv() {
@@ -103,7 +149,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     NSLog(@"[JavaLauncher] Beginning JVM launch");
 
     init_loadDefaultEnv();
+    init_applyExperimentalSettings();
     init_loadCustomEnv();
+    amethyst_refresh_benchmark_state();
 
     DeviceGetJITFlags(YES); // refresh JIT flags right after loading env
     BOOL requiresTXMWorkaround = DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM);
@@ -353,6 +401,14 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         for (NSString *arg in launchTarget[@"arguments"][@"jvm_processed"]) {
             margv[++margc] = arg.UTF8String;
         }
+    }
+
+    if (getPrefBool(@"experimental.low_stutter_jvm")) {
+        NSLog(@"[Amethyst Experimental] Applying Low-Stutter G1GC JVM profile flags");
+        margv[++margc] = "-XX:+UseG1GC";
+        margv[++margc] = "-XX:MaxGCPauseMillis=20";
+        margv[++margc] = "-XX:G1ReservePercent=15";
+        margv[++margc] = "-XX:InitiatingHeapOccupancyPercent=45";
     }
 
     init_loadCustomJvmFlags(&margc, (const char **)margv);

@@ -18,6 +18,8 @@
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 
+#import <dlfcn.h>
+
 #import <objc/runtime.h>
 #include <sys/time.h>
 
@@ -49,7 +51,11 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
     UIToolbar *targetToolbar = self.toolbar;
-    BOOL hasLiquidGlass = _UISolariumEnabled && _UISolariumEnabled();
+    BOOL hasLiquidGlass = NO;
+    BOOL (*UISolariumEnabled)(void) = (BOOL (*)(void))dlsym(RTLD_DEFAULT, "_UISolariumEnabled");
+    if (UISolariumEnabled) {
+        hasLiquidGlass = UISolariumEnabled();
+    }
     
     if(hasLiquidGlass) {
         self.versionTextField = [[PickTextField alloc] initWithFrame:CGRectMake(0, 0, MIN(self.view.frame.size.width,self.view.frame.size.height)*0.8 - 40, 36)];

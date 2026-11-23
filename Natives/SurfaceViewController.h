@@ -37,6 +37,15 @@ CGPoint lastVirtualMousePoint;
 @property(nonatomic) UITableView *menuView;
 @property(nonatomic) UIScreenEdgePanGestureRecognizer* edgeGesture;
 
+// Diagnostics HUD
+@property(nonatomic) BOOL isDiagnosticsHUDEnabled;
+@property(nonatomic) UIView *diagnosticsHUDView;
+@property(nonatomic) NSTimer *diagnosticsHUDTimer;
+
+- (void)actionToggleDiagnosticsHUD;
+- (void)updateDiagnosticsHUD;
+- (void)clampHUDPosition;
+
 @end
 
 @interface SurfaceViewController(ExternalDisplay)

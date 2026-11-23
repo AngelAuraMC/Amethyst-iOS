@@ -7,6 +7,7 @@
 "game.menu.confirm.force_close" = "Are you sure you want to force close?";
 "game.menu.log_output" = "Log output";
 "game.menu.custom_controls" = "Custom controls";
+"game.menu.diagnostics" = "Diagnostics";
 
 "game.note.airplay" = "Minecraft is being displayed in AirPlay mirrored display";
 
@@ -176,12 +177,14 @@
 
 "preference.title.renderer.release.auto" = "Auto";
 "preference.title.renderer.release.gl4es" = "holy gl4es";
+"preference.title.renderer.release.gl4es_116" = "GL4ES 1.1.6 (ptitSeb)";
 "preference.title.renderer.release.angle" = "ANGLE";
 "preference.title.renderer.release.mg" = "MobileGlues";
 "preference.title.renderer.release.zink" = "Zink";
 
 "preference.title.renderer.debug.auto" = "Auto: gl4es or ANGLE";
 "preference.title.renderer.debug.gl4es" = "holy gl4es - exports OpenGL 2.1";
+"preference.title.renderer.debug.gl4es_116" = "GL4ES 1.1.6 (ptitSeb) - exports OpenGL 2.1";
 "preference.title.renderer.debug.angle" = "ANGLE (1.17+) - exports OpenGL 3.2 (Core Profile, limited)";
 "preference.title.renderer.debug.mg" = "MobileGlues (1.17+) - exports OpenGL 4.0, EXPERIMENTAL";
 "preference.title.renderer.debug.zink" = "Zink (Mesa 21.0) - exports OpenGL 4.1";
@@ -332,3 +335,66 @@
 "controller_configurator.section.footer.menu_mappings" = "Bindings when the mouse is not locked, such as on the title screen or in the pause menu.";
 "controller_configurator.section.controller_style" = "Controller type";
 "controller_configurator.section.footer.controller_style" = "Show different controller button names in this configurator.";
+
+// Experimental Tab
+"launcher.menu.experimental" = "Experimental";
+
+// Experimental Sections
+"preference.section.diagnostics" = "Diagnostics & Metrics";
+"preference.section.renderer_opt" = "Renderer Optimizations (GL4ES)";
+"preference.section.runtime_exp" = "Engine & Runtime";
+"preference.section.reset" = "Reset";
+
+// 1. Render Benchmark
+"preference.title.benchmark" = "Render Benchmark";
+"preference.detail.benchmark" = "Measures actual EGL swap-completion cadence, estimated FPS, drops >33.3ms, and stutters >50ms. Aggregates results every 5 seconds to system log. Refreshes dynamically on next Minecraft launch. Zero overhead when disabled.";
+
+// 2. FPS Log
+"preference.title.fps_log" = "FPS Statistics (Log)";
+"preference.detail.fps_log" = "Logs estimated average FPS and max frame intervals to system log every 5 seconds. Note: This records to console log, not an on-screen HUD. Refreshes dynamically on next Minecraft launch.";
+
+// 3. Shader Error Diagnostics
+"preference.title.shader_error_log" = "Shader Error Diagnostics";
+"preference.detail.shader_error_log" = "Enables LIBGL_LOGSHADERERROR=1, LIBGL_SILENTSTUB=0, and bounded texture diagnostics (AMETHYST_GL4ES_TEXTURE_TRACE=1) in GL4ES. May increase log size and CPU overhead. Requires relaunching Amethyst app if game was already run.";
+
+// Log Text Size
+"preference.title.log_text_size" = "Log Text Size";
+"preference.detail.log_text_size" = "Adjusts font size and row height of the in-app log console (levels 1-9). Level 5 is the default size. Changes apply immediately.";
+
+// 4. Draw Call Batching
+"preference.title.draw_batching" = "Draw Call Batching";
+"preference.detail.draw_batching" = "Controls LIBGL_BATCH. Attempts to merge subsequent glDraw calls up to the specified vertex limit. May improve draw throughput or cause visual anomalies depending on mod rendering. Requires relaunching Amethyst app if game was already run.";
+
+// 5. VBO Compatibility / Performance
+"preference.title.use_vbo" = "VBO Mode";
+"preference.detail.use_vbo" = "Controls LIBGL_USEVBO. 0 = Disabled, 1 = Standard VBO (default), 2 = VBO with glLockArrays. Higher values may boost performance if backend supports it. Requires relaunching Amethyst app if game was already run.";
+
+// 6. Texture & Mipmap Compatibility
+"preference.title.mipmap_mode" = "Mipmap Compatibility";
+"preference.detail.mipmap_mode" = "Controls LIBGL_MIPMAP. 1 = Force AutoMipMap, 2 = Guess AutoMipMap, 3 = Disable MipMaps, 4 = Ignore on non-square. May cause blurry or flickering textures. Requires relaunching Amethyst app if game was already run.";
+
+// 7. Shader Compatibility Mode
+"preference.title.no_shader_lod" = "Shader Compatibility Mode";
+"preference.detail.no_shader_lod" = "Enables LIBGL_NOSHADERLOD=1 to prevent texture2DLod in converted shaders. Diagnostic compatibility switch for mod shaders (e.g. Dynamic Surroundings fog/effects); does not guarantee fixes. Requires relaunching Amethyst app if game was already run.";
+
+// 8. Texture Memory Saver
+"preference.title.shrink_texture" = "Texture Memory Saver";
+"preference.detail.shrink_texture" = "Controls LIBGL_SHRINK. Downscales textures to reduce GPU/RAM usage at the cost of texture clarity and visual quality. Default preserves original quality. Requires relaunching Amethyst app if game was already run.";
+
+// 9. VAO Cache Compatibility
+"preference.title.no_vao_cache" = "Disable VAO Cache";
+"preference.detail.no_vao_cache" = "Enables LIBGL_NOVAOCACHE=1. Disables vertex array object caching in GL4ES. May increase CPU overhead and reduce frame rate; useful for isolating VAO desync issues. Requires relaunching Amethyst app if game was already run.";
+
+// 10. Low-Stutter JVM Profile
+"preference.title.low_stutter_jvm" = "Low-Stutter JVM Profile";
+"preference.detail.low_stutter_jvm" = "Applies G1 GC low-pause tuning flags (-XX:+UseG1GC -XX:MaxGCPauseMillis=20). Note: 20ms is a garbage collector target, not a hard guarantee. Does not alter RAM allocation or JIT. Takes effect on next Minecraft launch.";
+
+// 11. Adaptive Render Scale
+"preference.title.adaptive_render_scale" = "Adaptive Render Scale";
+"preference.detail.adaptive_render_scale" = "Under Research. Dynamic resolution scaling requires active frame cadence feedback, hysteresis thresholds, and lifecycle synchronization with mod framebuffers. Deferred in this build to avoid visual corruption.";
+
+// Reset
+"preference.title.reset_defaults" = "Reset to Safe Defaults";
+"preference.detail.reset_defaults" = "Resets all Experimental settings back to their safe, default values.";
+"preference.title.confirm.reset_defaults" = "Are you sure you want to reset all Experimental options to safe defaults?";
+"preference.title.done.reset_defaults" = "Experimental settings have been reset to safe defaults.";

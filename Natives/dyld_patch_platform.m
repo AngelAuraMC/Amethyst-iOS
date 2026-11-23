@@ -40,8 +40,13 @@ BOOL PLPatchMachOPlatformForFile(const char *path) {
     struct stat s;
     fstat(fd, &s);
 
+    if (s.st_size == 0) {
+        close(fd);
+        return NO;
+    }
+
     void *map = mmap(NULL, s.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (!map) {
+    if (!map || map == MAP_FAILED) {
         close(fd);
         return NO;
     }
