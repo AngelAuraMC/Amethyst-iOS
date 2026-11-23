@@ -522,6 +522,7 @@ static void clear_program(program_t *glprogram)
         )
     }
     glprogram->cache.size = 0;  // reset cache buffer
+    glprogram->applied_matrix_seq = 0;
 }
 
 static void fill_program(program_t *glprogram)

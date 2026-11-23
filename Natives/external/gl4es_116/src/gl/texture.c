@@ -49,11 +49,18 @@ static int inline nlevel(int size, int level) {
     return size;
 }
 
+#define MAX_PERSISTENT_TEXTURE_SCRATCH (4 * 1024 * 1024)
+
 static void* get_texture_scratch(size_t size) {
     if (!glstate) return malloc(size);
+    if (size > MAX_PERSISTENT_TEXTURE_SCRATCH) {
+        return malloc(size);
+    }
     if (glstate->texture_scratch && glstate->texture_scratch_cap >= size)
         return glstate->texture_scratch;
     size_t new_cap = size + (size >> 1) + 4096;
+    if (new_cap > MAX_PERSISTENT_TEXTURE_SCRATCH)
+        new_cap = MAX_PERSISTENT_TEXTURE_SCRATCH;
     void *new_buf = realloc(glstate->texture_scratch, new_cap);
     if (!new_buf) {
         new_buf = realloc(glstate->texture_scratch, size);

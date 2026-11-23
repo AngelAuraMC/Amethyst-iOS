@@ -535,9 +535,9 @@ static void draw_quad_arrays(GLint first, GLsizei count) {
         && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
         && quad_ibo_ready()) {
         GLuint old_buffer = glstate->bind_buffer.want_index;
+        bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, glstate->quad_idx + (first*3/2), NULL, 1);
-        if (old_buffer)
-            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
+        bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
         return;
     }
     static GLushort *indices = NULL;
@@ -1438,10 +1438,10 @@ void APIENTRY_GL4ES gl4es_glDrawArraysInstanced(GLenum mode, GLint first, GLsize
                 && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
                 && quad_ibo_ready()) {
                 GLuint old_buffer = glstate->bind_buffer.want_index;
+                bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
                 glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len,
                                      glstate->quad_idx + (first*3/2), NULL, primcount);
-                if (old_buffer)
-                    bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
+                bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
                 return;
             }
             static GLushort *indices = NULL;

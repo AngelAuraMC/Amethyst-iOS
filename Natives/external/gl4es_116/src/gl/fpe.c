@@ -173,11 +173,7 @@ void APIENTRY_GL4ES fpe_ReleventState(fpe_state_t *dest, fpe_state_t *src, int f
     // individual textures
     for (int i=0; i<MAX_TEX; i++) {
         if(dest->texture[i].textype==0) { // texture is off
-            if (glstate->texture_matrix && glstate->texture_matrix[i] && !glstate->texture_matrix[i]->identity) {
-                dest->texture[i].texmat = 1;
-            } else {
-                dest->texture[i].texmat = 0;
-            }
+            dest->texture[i].texmat = 0;
             dest->texture[i].texformat = 0;
             dest->texture[i].texadjust = 0;
             memset(&dest->texgen[i], 0, sizeof(dest->texgen[i]));
