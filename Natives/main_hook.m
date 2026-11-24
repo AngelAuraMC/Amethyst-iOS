@@ -100,6 +100,7 @@ void* hooked_dlopen(const char* path, int mode) {
         /// Special case for LiveContainer multitask mode where it hooks dlopen to hook mmap, which will break this dyld bypass, so we redirect calls to the original dlopen.
         static void *(*sys_dlopen)(const char *, int);
         if(!sys_dlopen) sys_dlopen = dlsym(RTLD_NEXT, "dlopen");
+        if(!sys_dlopen) sys_dlopen = orig_dlopen;
         __attribute__((musttail)) return sys_dlopen(path, mode);
     } else {
         __attribute__((musttail)) return orig_dlopen(path, mode);

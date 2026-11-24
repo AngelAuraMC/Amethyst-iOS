@@ -37,7 +37,23 @@ void printEntitlementAvailability(NSString *key) {
 void uncaughtExceptionHandler(NSException *exception) {
     NSLog(@"Uncaught exception: %@", exception.description);
     NSLog(@"Call stack: %@", exception.callStackSymbols);
-    usleep(10000);
+
+    // Synchronously write exception details to latestlog.txt in case the process aborts before the async logger flushes
+    const char *home = getenv("AME_HOME");
+    if (home) {
+        NSString *logPath = [NSString stringWithFormat:@"%s/latestlog.txt", home];
+        NSString *crashMsg = [NSString stringWithFormat:@"\n[FATAL] Uncaught exception: %@\nReason: %@\nCall stack:\n%@\n",
+                              exception.name, exception.reason, [exception.callStackSymbols componentsJoinedByString:@"\n"]];
+        NSFileHandle *file = [NSFileHandle fileHandleForWritingAtPath:logPath];
+        if (file) {
+            [file seekToEndOfFile];
+            [file writeData:[crashMsg dataUsingEncoding:NSUTF8StringEncoding]];
+            [file synchronizeFile];
+            [file closeFile];
+        }
+    }
+
+    usleep(50000);
     handle_fatal_exit(SIGABRT);
 }
 
@@ -93,8 +109,8 @@ bool init_checkForJailbreak() {
     }
 
     // Check if we have platform bit set
-    uint32_t flags;
-    csops(0, CS_OPS_STATUS, &flags, sizeof(flags));
+    uint32_t flags = 0;
+    csops(getpid(), CS_OPS_STATUS, &flags, sizeof(flags));
     if ((flags & CS_PLATFORM_BINARY) != 0) {
         return true;
     }
