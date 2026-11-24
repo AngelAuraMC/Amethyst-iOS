@@ -231,8 +231,10 @@ BOOL DeviceHasTXMReal(void) {
         while ((dir = readdir(d)) != NULL) {
             if(strlen(dir->d_name) == 96) {
                 snprintf(txmPath, sizeof(txmPath), "/private/preboot/%s/usr/standalone/firmware/FUD/Ap,TrustedExecutionMonitor.img4", dir->d_name);
-                found = (access(txmPath, F_OK) == 0);
-                break;
+                if (access(txmPath, F_OK) == 0) {
+                    found = YES;
+                    break;
+                }
             }
         }
         closedir(d);

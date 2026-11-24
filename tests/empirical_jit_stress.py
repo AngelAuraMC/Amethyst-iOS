@@ -272,6 +272,57 @@ FAT_CIGAM = 0xbebafeca
 CPU_TYPE_ARM64 = 0x0100000c
 LC_BUILD_VERSION = 0x32
 
+def simulate_PLPatchMachOPlatformForSlice(data, slice_offset, slice_size, is_upstream=False):
+    if slice_size < 32:
+        return False
+    if slice_offset + 32 > len(data):
+        if is_upstream:
+            raise MemoryError(f"CRASH: SIGSEGV dereferencing slice header outside file bounds (offset {slice_offset}, size {len(data)})!")
+        return False
+    
+    ncmds = struct.unpack("<I", data[slice_offset+16:slice_offset+20])[0]
+    cmd_ptr = slice_offset + 32
+    
+    for _ in range(ncmds):
+        if not is_upstream:
+            if cmd_ptr + 8 > slice_offset + slice_size:
+                break
+        cmd, cmdsize = struct.unpack("<II", data[cmd_ptr:cmd_ptr+8])
+        if not is_upstream:
+            if cmdsize < 8:
+                break
+            if cmd_ptr + cmdsize > slice_offset + slice_size:
+                break
+        
+        if cmd == 0xc: # LC_LOAD_DYLIB
+            name_offset = struct.unpack("<I", data[cmd_ptr+8:cmd_ptr+12])[0]
+            if not is_upstream:
+                if name_offset < cmdsize:
+                    dylib_bytes = bytes(data[cmd_ptr+name_offset:cmd_ptr+cmdsize])
+                    ver_idx = dylib_bytes.find(b"/Versions/")
+                    if ver_idx != -1:
+                        null_idx = dylib_bytes.find(b"\x00")
+                        c_strlen = null_idx if null_idx != -1 else len(dylib_bytes)
+                        ver_str_len = c_strlen - ver_idx
+                        if ver_str_len < 11:
+                            # Safely ignore without crash
+                            pass
+                        else:
+                            last_comp_len = ver_str_len - 11
+                            if last_comp_len >= 0:
+                                pass
+            else:
+                dylib_bytes = bytes(data[cmd_ptr+name_offset:])
+                ver_idx = dylib_bytes.find(b"/Versions/")
+                if ver_idx != -1:
+                    null_idx = dylib_bytes.find(b"\x00")
+                    c_strlen = null_idx if null_idx != -1 else len(dylib_bytes)
+                    last_comp_len = c_strlen - ver_idx - 11
+                    if last_comp_len < 0:
+                        raise ValueError(f"CRASH: Negative length {last_comp_len} passed to memmove (SIGSEGV buffer overflow)!")
+        cmd_ptr += cmdsize
+    return True
+
 def simulate_PLPatchMachOPlatformForFile(file_path, is_upstream=False):
     # Simulate open and fstat
     if not os.path.exists(file_path):
@@ -313,7 +364,27 @@ def simulate_PLPatchMachOPlatformForFile(file_path, is_upstream=False):
     if magic == MH_MAGIC_64:
         cputype = struct.unpack("<I", map_addr[4:8])[0]
         if cputype == CPU_TYPE_ARM64:
-            return True
+            return simulate_PLPatchMachOPlatformForSlice(map_addr, 0, len(map_addr), is_upstream=is_upstream)
+    elif magic == FAT_CIGAM:
+        nfat_arch = struct.unpack(">I", map_addr[4:8])[0]
+        if is_upstream:
+            # Upstream does not bound-check nfat_arch table against st_size
+            for i in range(nfat_arch):
+                arch_ptr = 8 + i * 20
+                if arch_ptr + 20 > len(map_addr):
+                    raise IndexError(f"CRASH: SIGSEGV reading fat_arch beyond file mapping ({arch_ptr} > {len(map_addr)})!")
+                cputype, cpusubtype, offset, size, align = struct.unpack(">IIIII", map_addr[arch_ptr:arch_ptr+20])
+                if cputype == CPU_TYPE_ARM64:
+                    return simulate_PLPatchMachOPlatformForSlice(map_addr, offset, size, is_upstream=True)
+        else:
+            if nfat_arch <= (len(map_addr) - 8) // 20:
+                for i in range(nfat_arch):
+                    arch_ptr = 8 + i * 20
+                    cputype, cpusubtype, offset, size, align = struct.unpack(">IIIII", map_addr[arch_ptr:arch_ptr+20])
+                    if cputype == CPU_TYPE_ARM64:
+                        if offset + 32 <= len(map_addr):
+                            slice_size = size if offset + size <= len(map_addr) else (len(map_addr) - offset)
+                            return simulate_PLPatchMachOPlatformForSlice(map_addr, offset, slice_size, is_upstream=False)
     return False
 
 # Create temporary test files
@@ -357,6 +428,59 @@ with tempfile.TemporaryDirectory() as tmpdir:
         f.write(b"\xfe\xed\xfa\xcf" + b"\x00" * 12)  # 16 bytes, less than sizeof(mach_header_64)=32
     res_fixed_truncated = simulate_PLPatchMachOPlatformForFile(truncated_file, is_upstream=False)
     record_test("Fixed truncated binary handling (< 32 bytes)", res_fixed_truncated is False, "(Safely rejected without dereferencing)")
+
+    # 6. Test FAT binary with out-of-bounds slice offset:
+    fat_oob_file = os.path.join(tmpdir, "fat_oob.dylib")
+    with open(fat_oob_file, "wb") as f:
+        # Disk bytes for FAT magic: 0xca 0xfe 0xba 0xbe (reads as FAT_CIGAM 0xbebafeca on LE host)
+        # nfat_arch=1, cputype=ARM64, cpusubtype=0, offset=5000, size=100, align=2
+        f.write(b"\xca\xfe\xba\xbe" + struct.pack(">I", 1) + struct.pack(">IIIII", CPU_TYPE_ARM64, 0, 5000, 100, 2))
+    try:
+        simulate_PLPatchMachOPlatformForFile(fat_oob_file, is_upstream=True)
+        record_test("Upstream FAT OOB slice offset", False, "Expected crash did not occur!")
+    except MemoryError as e:
+        record_test("Upstream FAT OOB slice crash reproduced", True, f"({e})")
+    res_fixed_fat_oob = simulate_PLPatchMachOPlatformForFile(fat_oob_file, is_upstream=False)
+    record_test("Fixed FAT OOB slice handling", res_fixed_fat_oob is False, "(Safely rejected out-of-bounds slice offset)")
+
+    # 7. Test FAT binary with corrupted nfat_arch exceeding file size:
+    fat_huge_file = os.path.join(tmpdir, "fat_huge.dylib")
+    with open(fat_huge_file, "wb") as f:
+        f.write(b"\xca\xfe\xba\xbe" + struct.pack(">I", 1000) + b"\x00" * 20)
+    try:
+        simulate_PLPatchMachOPlatformForFile(fat_huge_file, is_upstream=True)
+        record_test("Upstream FAT huge nfat_arch table", False, "Expected crash did not occur!")
+    except IndexError as e:
+        record_test("Upstream FAT huge nfat_arch crash reproduced", True, f"({e})")
+    res_fixed_fat_huge = simulate_PLPatchMachOPlatformForFile(fat_huge_file, is_upstream=False)
+    record_test("Fixed FAT huge nfat_arch handling", res_fixed_fat_huge is False, "(Safely rejected corrupt arch table)")
+
+    # 8. Test Mach-O LC_LOAD_DYLIB with truncated /Versions/ string (< 11 chars):
+    macho_short_ver_file = os.path.join(tmpdir, "short_ver.dylib")
+    with open(macho_short_ver_file, "wb") as f:
+        # mach_header_64 with ncmds=1
+        header = struct.pack("<IIIIIIII", MH_MAGIC_64, CPU_TYPE_ARM64, 0, 6, 1, 32, 0, 0)
+        # LC_LOAD_DYLIB cmd=0xc, cmdsize=32, name_offset=24, timestamp=0, cur_ver=0, comp_ver=0
+        # dylib name = b"/Versions/\x00" (11 bytes total including null, but ver part after /Versions/ is 0)
+        dylib_cmd = struct.pack("<IIIIII", 0xc, 32, 24, 0, 0, 0) + b"/Versions/\x00"
+        dylib_cmd += b"\x00" * (32 - len(dylib_cmd))
+        f.write(header + dylib_cmd)
+    try:
+        simulate_PLPatchMachOPlatformForFile(macho_short_ver_file, is_upstream=True)
+        record_test("Upstream short /Versions/ memmove", False, "Expected negative length crash did not occur!")
+    except ValueError as e:
+        record_test("Upstream short /Versions/ crash reproduced", True, f"({e})")
+    res_fixed_short_ver = simulate_PLPatchMachOPlatformForFile(macho_short_ver_file, is_upstream=False)
+    record_test("Fixed short /Versions/ memmove handling", res_fixed_short_ver is True, "(Safely avoided negative length memmove)")
+
+    # 9. Test Mach-O with corrupt load command cmdsize < 8 (infinite loop guard):
+    macho_zero_cmd_file = os.path.join(tmpdir, "zero_cmd.dylib")
+    with open(macho_zero_cmd_file, "wb") as f:
+        header = struct.pack("<IIIIIIII", MH_MAGIC_64, CPU_TYPE_ARM64, 0, 6, 2, 8, 0, 0)
+        cmd = struct.pack("<II", 0xc, 0) # cmdsize = 0
+        f.write(header + cmd)
+    res_fixed_zero_cmd = simulate_PLPatchMachOPlatformForFile(macho_zero_cmd_file, is_upstream=False)
+    record_test("Fixed zero cmdsize loop guard", res_fixed_zero_cmd is True, "(Safely broke loop on cmdsize < 8)")
 
 
 # ----------------------------------------------------------------------
