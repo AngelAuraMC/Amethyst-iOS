@@ -116,6 +116,19 @@ jobs:
           branch: buildjre17-21
           name: jre21-ios-aarch64
 
+      - name: GetJRE25
+        uses: dawidd6/action-download-artifact@v2
+          
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: build.yml
+          path: depends
+          workflow_conclusion: completed
+          allow_forks: false
+          repo: PojavLauncherTeam/android-openjdk-build-multiarch
+          branch: buildjre25
+          name: jre25-ios-aarch64
+
       - name: Build for ${{ matrix.platform_name }}
         env:
           password: ${{ secrets.ELLIE_MINI_SECRET }}
