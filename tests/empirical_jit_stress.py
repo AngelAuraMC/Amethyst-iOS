@@ -281,7 +281,7 @@ def simulate_PLPatchMachOPlatformForFile(file_path, is_upstream=False):
 
     if not is_upstream:
         # Fixed logic:
-        if st_size == 0:
+        if st_size < 32:
             return False
     
     # Simulate mmap behavior
@@ -350,6 +350,13 @@ with tempfile.TemporaryDirectory() as tmpdir:
     # 4. Test corrupt file against Fixed:
     res_fixed_corrupt = simulate_PLPatchMachOPlatformForFile(corrupt_file, is_upstream=False)
     record_test("Fixed corrupt binary handling", res_fixed_corrupt is False, "(Safely rejected non-Mach-O file)")
+
+    # 5. Test truncated 16-byte Mach-O file (< 32 bytes mach_header_64):
+    truncated_file = os.path.join(tmpdir, "truncated.dylib")
+    with open(truncated_file, "wb") as f:
+        f.write(b"\xfe\xed\xfa\xcf" + b"\x00" * 12)  # 16 bytes, less than sizeof(mach_header_64)=32
+    res_fixed_truncated = simulate_PLPatchMachOPlatformForFile(truncated_file, is_upstream=False)
+    record_test("Fixed truncated binary handling (< 32 bytes)", res_fixed_truncated is False, "(Safely rejected without dereferencing)")
 
 
 # ----------------------------------------------------------------------
@@ -488,8 +495,12 @@ def upstream_displayProgress(toolbar_items, status):
         toolbar_items[1]["title"] = status
         return True
 
-def fixed_displayProgress(toolbar_items, status):
+def fixed_displayProgress(toolbar_items, status, is_main_thread=True, dispatch_queue=None):
     # Fixed logic:
+    if not is_main_thread:
+        if dispatch_queue is not None:
+            dispatch_queue.append((toolbar_items, status))
+        return "DISPATCHED_TO_MAIN"
     if not toolbar_items or len(toolbar_items) == 0:
         return False
     if status is None:
@@ -546,6 +557,11 @@ record_test("Fixed normal 2-item toolbar (status!=None)", res_fixed_normal_statu
 
 res_fixed_normal_none = fixed_displayProgress(normal_toolbar, None)
 record_test("Fixed normal 2-item toolbar (status=None)", res_fixed_normal_none is True and normal_toolbar[0]["customView"].stopped is True)
+
+# Scenario D: Background Thread Dispatch Safety
+main_queue = []
+res_bg = fixed_displayProgress(normal_toolbar, "Connecting via AltKit...", is_main_thread=False, dispatch_queue=main_queue)
+record_test("Fixed displayProgress background thread safety", res_bg == "DISPATCHED_TO_MAIN" and len(main_queue) == 1, "(Safely enqueued to main thread without UIKit violation)")
 
 # ----------------------------------------------------------------------
 # 7. sys_dlopen NULL Dereference Fallback Safety

@@ -346,6 +346,12 @@
 }
 
 - (void)displayProgress:(NSString *)status {
+    if (!NSThread.isMainThread) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self displayProgress:status];
+        });
+        return;
+    }
     if (!self.toolbarItems || self.toolbarItems.count == 0) {
         return;
     }

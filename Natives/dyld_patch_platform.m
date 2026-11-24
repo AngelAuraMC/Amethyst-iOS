@@ -40,7 +40,7 @@ BOOL PLPatchMachOPlatformForFile(const char *path) {
     struct stat s;
     fstat(fd, &s);
 
-    if (s.st_size == 0) {
+    if (s.st_size < sizeof(struct mach_header_64)) {
         close(fd);
         return NO;
     }
