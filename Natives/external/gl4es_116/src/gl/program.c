@@ -163,6 +163,10 @@ void deleteProgram(program_t *glprogram, khint_t k_program) {
     // clean fpe cache if it exist
     if(glprogram->fpe_cache)
         fpe_disposeCache((fpe_cache_t*)glprogram->fpe_cache, 1);
+    if(glprogram->default_need) {
+        free(glprogram->default_need);
+        glprogram->default_need = NULL;
+    }
     // delete program
     kh_del(programlist, glstate->glsl->programs, k_program);
     free(glprogram);
@@ -523,6 +527,10 @@ static void clear_program(program_t *glprogram)
     }
     glprogram->cache.size = 0;  // reset cache buffer
     glprogram->applied_matrix_seq = 0;
+    if(glprogram->default_need) {
+        free(glprogram->default_need);
+        glprogram->default_need = NULL;
+    }
 }
 
 static void fill_program(program_t *glprogram)
@@ -767,7 +775,8 @@ void APIENTRY_GL4ES gl4es_glLinkProgram(GLuint program) {
     }
     // create one fragment shader if needed!
     if(!glprogram->last_frag) {
-        glprogram->default_need = (shaderconv_need_t*)malloc(sizeof(shaderconv_need_t));
+        if(!glprogram->default_need)
+            glprogram->default_need = (shaderconv_need_t*)malloc(sizeof(shaderconv_need_t));
         memcpy(glprogram->default_need, &needs, sizeof(shaderconv_need_t));
         glprogram->default_fragment = 1;
         GLenum vtx = gl4es_glCreateShader(GL_FRAGMENT_SHADER);

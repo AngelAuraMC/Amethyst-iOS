@@ -2,8 +2,10 @@
 
 #include "../glx/hardext.h"
 #include "fpe.h"
+#include "fpe_cache.h"
 #include "framebuffers.h"
 #include "gl4es.h"
+#include "gl4es_mem.h"
 #include "glstate.h"
 #include "init.h"
 #include "loader.h"
@@ -52,6 +54,109 @@ static void free_texture(gltexture_t *tex)
         free(tex->data);
     // renderbuffer linked to this texture will be freed by the free_renderbuffer function.
     free(tex);
+}
+
+static void free_vao(glvao_t *vao)
+{
+    if(!vao)
+        return;
+    VaoSharedClear(vao);
+    free(vao);
+}
+
+static void free_buffer(glbuffer_t *buff)
+{
+    if(!buff)
+        return;
+    if(buff->real_buffer) {
+        LOAD_GLES(glDeleteBuffers);
+        if(gles_glDeleteBuffers)
+            gles_glDeleteBuffers(1, &buff->real_buffer);
+        buff->real_buffer = 0;
+    }
+    if(buff->data) {
+        gl4es_mem_track_shadow((size_t)buff->cap, 0);
+        free(buff->data);
+        buff->data = NULL;
+        buff->cap = 0;
+    }
+    free(buff);
+}
+
+static void free_glsl_maps(glstate_t *state)
+{
+    if(!state || !state->glsl)
+        return;
+    glsl_t *glsl = state->glsl;
+    if(glsl->oldprograms) {
+        glstate_t *saved_glstate = glstate;
+        glstate = state;
+        FreeOldProgramMap(state);
+        glstate = saved_glstate;
+        glsl->oldprograms = NULL;
+    }
+    if(glsl->programs) {
+        LOAD_GLES2(glDeleteProgram);
+        program_t *glprogram = NULL;
+        kh_foreach_value(glsl->programs, glprogram,
+            if(glprogram) {
+                if(glprogram->id && gles_glDeleteProgram)
+                    gles_glDeleteProgram(glprogram->id);
+                if(glprogram->attach)
+                    free(glprogram->attach);
+                if(glprogram->attribloc) {
+                    attribloc_t *m = NULL;
+                    kh_foreach_value(glprogram->attribloc, m,
+                        if(m) {
+                            free(m->name);
+                            free(m);
+                        }
+                    )
+                    kh_destroy(attribloclist, glprogram->attribloc);
+                    glprogram->attribloc = NULL;
+                }
+                if(glprogram->uniform) {
+                    uniform_t *m = NULL;
+                    kh_foreach_value(glprogram->uniform, m,
+                        if(m) {
+                            free(m->name);
+                            free(m);
+                        }
+                    )
+                    kh_destroy(uniformlist, glprogram->uniform);
+                    glprogram->uniform = NULL;
+                }
+                if(glprogram->cache.cache)
+                    free(glprogram->cache.cache);
+                if(glprogram->default_need) {
+                    free(glprogram->default_need);
+                    glprogram->default_need = NULL;
+                }
+                if(glprogram->fpe_cache)
+                    fpe_disposeCache((fpe_cache_t*)glprogram->fpe_cache, 0);
+                free(glprogram);
+            }
+        )
+        kh_destroy(programlist, glsl->programs);
+        glsl->programs = NULL;
+    }
+    if(glsl->shaders) {
+        LOAD_GLES2(glDeleteShader);
+        shader_t *glshader = NULL;
+        kh_foreach_value(glsl->shaders, glshader,
+            if(glshader) {
+                if(glshader->id && gles_glDeleteShader)
+                    gles_glDeleteShader(glshader->id);
+                if(glshader->source)
+                    free(glshader->source);
+                if(glshader->converted)
+                    free(glshader->converted);
+                free(glshader);
+            }
+        )
+        kh_destroy(shaderlist, glsl->shaders);
+        glsl->shaders = NULL;
+    }
 }
 
 void CopyGLEShard(void* dst, const void* src)
@@ -204,13 +309,6 @@ void* NewGLState(void* shared_glstate, int es2only) {
         memset(glstate->linestipple.data, 0xff, sizeof(GLubyte) * 16);
     glstate->linestipple.texture = 0;    
     
-    // fpe
-    if(hardext.esversion>1) {
-        glstate->fpe_state = (fpe_state_t*)calloc(1, sizeof(fpe_state_t));
-        glstate->glsl->es2 = es2only;
-        fpe_Init(glstate);
-    }
-
     // init the matrix tracking
     init_matrix(glstate);
 
@@ -352,8 +450,11 @@ void* NewGLState(void* shared_glstate, int es2only) {
     if(hardext.esversion>1) {
         glstate->fpe_state = (fpe_state_t*)calloc(1, sizeof(fpe_state_t));
         glstate->glsl->es2 = es2only;
-        if(!shared_glstate)
+        if(!shared_glstate) {
             fpe_Init(glstate);
+            if(glstate->fpe_cache)
+                glstate->fpe_cache->owner_glsl = glstate->glsl;
+        }
         // some default are not 0...
         for (int i=0; i<MAX_TEX; i++) {
             //TexEnv Combine that are not 0
@@ -487,9 +588,12 @@ void DeleteGLState(void* oldstate) {
         )                                   \
         kh_destroy(K, state->N);            \
     }
-    free_hashmap(glvao_t, vaos, glvao, free);
+    free_hashmap(glvao_t, vaos, glvao, free_vao);
+    state->vaos = NULL;
+    state->vao = NULL;
+    state->defaultvao = NULL;
     if(!state->shared_cnt) {
-        free_hashmap(glbuffer_t, buffers, buff, free);
+        free_hashmap(glbuffer_t, buffers, buff, free_buffer);
         free_hashmap(gltexture_t, texture.list, tex, free_texture);
         free_hashmap(renderlist_t, headlists, gllisthead, free_renderlist);
         free_hashmap(glrenderbuffer_t, fbo.renderbufferlist, renderbufferlist_t, free_renderbuffer);
@@ -512,8 +616,14 @@ void DeleteGLState(void* oldstate) {
     freemap(2, vertex3); freemap(2, vertex4); freemap(2, index); freemap(2, color4); freemap(2, normal); 
     freemap(2, texture1); freemap(2, texture2); freemap(2, texture3); freemap(2, texture4);   
     #undef freemap
-    // free active list
-    if(!state->shared_cnt && state->list.active) free_renderlist(state->list.active);
+    // free active list (per-context)
+    if(state->list.active) {
+        glstate_t *saved_glstate = glstate;
+        glstate = state;
+        free_renderlist(state->list.active);
+        glstate = saved_glstate;
+        state->list.active = NULL;
+    }
 
     // free matrix stack
     #define free_matrix(A)                  \
@@ -523,20 +633,32 @@ void DeleteGLState(void* oldstate) {
         }
 	free_matrix(projection_matrix);
 	free_matrix(modelview_matrix);
-	for (int i=0; i<MAX_TEX; i++)
-		free_matrix(texture_matrix[i]);
-	free(state->texture_matrix);
-	for (int i=0; i<MAX_ARB_MATRIX; i++)
-		free_matrix(arb_matrix[i]);
+	if(state->texture_matrix) {
+		for (int i=0; i<MAX_TEX; i++)
+			free_matrix(texture_matrix[i]);
+		free(state->texture_matrix);
+		state->texture_matrix = NULL;
+	}
+	if(state->arb_matrix) {
+		for (int i=0; i<MAX_ARB_MATRIX; i++)
+			free_matrix(arb_matrix[i]);
+		free(state->arb_matrix);
+		state->arb_matrix = NULL;
+	}
     #undef free_matrix
     // states stack
     if(state->stack)
         free(state->stack);
     if(state->clientStack)
         free(state->clientStack);
+    if(state->namestack.names) {
+        free(state->namestack.names);
+        state->namestack.names = NULL;
+    }
     // linestipple
     if(state->linestipple.data)
         free(state->linestipple.data);
+    state->linestipple.texture = 0;
     // raster / bitmap
     if(state->raster.data)
         free(state->raster.data);
@@ -544,23 +666,52 @@ void DeleteGLState(void* oldstate) {
         free(state->raster.bitmap);
     // TODO: delete the "immediate" stuff and bitmap texture?
     // scratch buffer
-    if(state->scratch)
+    if(state->scratch) {
+        gl4es_mem_track_scratch((size_t)state->scratch_alloc, 0);
         free(state->scratch);
-    if(state->quad_ibo) {
+        state->scratch = NULL;
+        state->scratch_alloc = 0;
+    }
+    if(state->quad_ibo || state->scratch_vertex || state->scratch_indices) {
+        LOAD_GLES(glDeleteBuffers);
+        if(gles_glDeleteBuffers) {
+            if(state->quad_ibo)
+                gles_glDeleteBuffers(1, &state->quad_ibo);
+            if(state->scratch_vertex)
+                gles_glDeleteBuffers(1, &state->scratch_vertex);
+            if(state->scratch_indices)
+                gles_glDeleteBuffers(1, &state->scratch_indices);
+        }
         state->quad_ibo = 0;
+        state->scratch_vertex = 0;
+        state->scratch_vertex_size = 0;
+        state->scratch_indices = 0;
+        state->scratch_indices_size = 0;
     }
     if(state->quad_idx)
         free(state->quad_idx);
     state->quad_idx = NULL;
     state->quad_ibo_state = 0;
+    if(state->quad_indices_scratch) {
+        gl4es_mem_track_scratch(state->quad_indices_bytes, 0);
+        free(state->quad_indices_scratch);
+        state->quad_indices_scratch = NULL;
+    }
+    state->quad_indices_verts = 0;
+    state->quad_indices_first = 0;
+    state->quad_indices_bytes = 0;
     for(int a=0; a<4; ++a) {
-        if(state->color_scratch[a])
+        if(state->color_scratch[a]) {
+            gl4es_mem_track_scratch(state->color_scratch_cap[a], 0);
             free(state->color_scratch[a]);
+        }
         state->color_scratch[a] = NULL;
         state->color_scratch_cap[a] = 0;
     }
-    if(state->texture_scratch)
+    if(state->texture_scratch) {
+        gl4es_mem_track_scratch(state->texture_scratch_cap, 0);
         free(state->texture_scratch);
+    }
     state->texture_scratch = NULL;
     state->texture_scratch_cap = 0;
     // merger buffers
@@ -571,6 +722,16 @@ void DeleteGLState(void* oldstate) {
     for(int a=0; a<MAX_TEX-2; ++a)
         if(state->merger_tex[a])
             free(state->merger_tex[a]);
+    if(state->merger_indices)
+        free(state->merger_indices);
+    state->merger_master = NULL;
+    state->merger_secondary = NULL;
+    for(int a=0; a<MAX_TEX-2; ++a)
+        state->merger_tex[a] = NULL;
+    state->merger_indices = NULL;
+    state->merger_cap = 0;
+    state->merger_indice_cap = 0;
+    gl4es_mem_reset_merger_bytes_for(state);
     // mainfbo
     if(!state->shared_cnt) {
         if(state->fbo.mainfbo_fbo)
@@ -588,12 +749,17 @@ void DeleteGLState(void* oldstate) {
         //TODO: check if should delete GL object too
         free(state->blit);
     }
+    if(state->fpe_state) {
+        free(state->fpe_state);
+        state->fpe_state = NULL;
+    }
     if(!state->shared_cnt) {
-        FreeOldProgramMap(state);
-        free(state->glsl);
         if(state->fpe_cache) {
             fpe_Dispose(state);
         }
+        free_glsl_maps(state);
+        free(state->glsl);
+        state->glsl = NULL;
     }
     free(state->gleshard);  // Not shared!
     // get extensions
@@ -606,13 +772,19 @@ void DeleteGLState(void* oldstate) {
     }
     // helper texture adjust
     for(int i=0; i<MAX_TEX; ++i) {
-        if(state->helper_tex[i])
+        if(state->helper_tex[i]) {
+            gl4es_mem_track_scratch((size_t)state->helper_texlen[i] * 4u * sizeof(GLfloat), 0);
             free(state->helper_tex[i]);
-        if(state->texgened[i])
+            state->helper_tex[i] = NULL;
+        }
+        state->helper_texlen[i] = 0;
+        if(state->texgened[i]) {
+            gl4es_mem_track_scratch((size_t)state->texgenedsz[i] * 4u * sizeof(GLfloat), 0);
             free(state->texgened[i]);
-
+            state->texgened[i] = NULL;
+        }
+        state->texgenedsz[i] = 0;
     }
-    //TODO: free sharderlist and programlist...
 
     // probably missing some things to free here!
 
@@ -638,10 +810,8 @@ void ActivateGLState(void* new_glstate) {
 }
 
 void gl_init() {
-	#ifdef GL4ES_COMPILE_FOR_USE_IN_SHARED_LIB
-		glstate=NULL;
-		memset(&default_glstate,0,sizeof(glstate_t));
-	#endif
+  glstate = NULL;
+  memset(&default_glstate, 0, sizeof(glstate_t));
   (void)NewGLState(DEFAULT_STATE, 0); // automaticaly fill default_glstate
   ActivateGLState(&default_glstate);
 }

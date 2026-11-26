@@ -11,6 +11,7 @@
 #include "error_trace.h"
 #include "fpe.h"
 #include "framebuffers.h"
+#include "gl4es_mem.h"
 #include "gles.h"
 #include "init.h"
 #include "loader.h"
@@ -112,10 +113,9 @@ void tex_setup_texcoord(GLuint len, int changes, GLuint itarget, vertexattrib_t*
     
     if (changes) {
         // first convert to GLfloat, without normalization
-        if(glstate->helper_texlen[texunit]<len) {
-            if(glstate->helper_tex[texunit]) free(glstate->helper_tex[texunit]);
-            glstate->helper_tex[texunit] = malloc(4*sizeof(GLfloat)*len);
-            glstate->helper_texlen[texunit] = len;
+        if (!gl4es_mem_acquire_helper_tex((int)texunit, (int)len)) {
+            gles_glTexCoordPointer(ptr->size, ptr->type, ptr->stride, ptr->pointer);
+            return;
         }
         copy_gl_pointer_tex_noalloc(glstate->helper_tex[texunit], ptr, 4, 0, len);
         // Normalize if needed
@@ -226,8 +226,8 @@ void APIENTRY_GL4ES gl4es_glBindTexture(GLenum target, GLuint texture) {
             case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
                 if (glstate->bound_changed < glstate->texture.active+1)
                     glstate->bound_changed = glstate->texture.active+1;
-                if (glstate->fpe_state)
-                    glstate->fpe_bound_changed = hardext.maxtex;
+                if (glstate->fpe_state && glstate->fpe_bound_changed < glstate->texture.active+1)
+                    glstate->fpe_bound_changed = glstate->texture.active+1;
                 realize_active();
                 gles_glBindTexture(GL_TEXTURE_CUBE_MAP, tex?tex->glname:0);
                 glstate->actual_tex2d[glstate->texture.active] = 0;
@@ -238,8 +238,8 @@ void APIENTRY_GL4ES gl4es_glBindTexture(GLenum target, GLuint texture) {
             case GL_TEXTURE_RECTANGLE_ARB:
                 if (glstate->bound_changed < glstate->texture.active+1)
                     glstate->bound_changed = glstate->texture.active+1;
-                if (glstate->fpe_state)
-                    glstate->fpe_bound_changed = hardext.maxtex;
+                if (glstate->fpe_state && glstate->fpe_bound_changed < glstate->texture.active+1)
+                    glstate->fpe_bound_changed = glstate->texture.active+1;
                 break;
         }
     }
@@ -433,8 +433,12 @@ void APIENTRY_GL4ES gl4es_glDeleteTextures(GLsizei n, const GLuint *textures) {
                         glstate->actual_tex2d[a] = 0;
                         found = 1;
                     }
-                    if(found)
-                        glstate->bound_changed = a+1;
+                    if(found) {
+                        if (glstate->bound_changed < a+1)
+                            glstate->bound_changed = a+1;
+                        if (glstate->fpe_state && glstate->fpe_bound_changed < a+1)
+                            glstate->fpe_bound_changed = a+1;
+                    }
                 }
                 gles_glDeleteTextures(1, &tex->glname);
                 // check if renderbuffer where associeted

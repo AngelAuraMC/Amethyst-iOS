@@ -1,4 +1,5 @@
 #import "SurfaceViewController.h"
+#import <os/lock.h>
 
 #include "jni.h"
 #include <assert.h>
@@ -31,10 +32,17 @@ void JNI_LWJGL_changeRenderer(const char* value_c) {
     (*env)->CallStaticObjectMethod(env, clazz, method, key, value);
 }
 
+static os_unfair_lock s_gl4es116HandleLock = OS_UNFAIR_LOCK_INIT;
+static void* s_gl4es116Handle = NULL;
+
 void pojavTerminate() {
     CallbackBridge_nativeSetInputReady(NO);
-    if (!br_terminate) return;
-    br_terminate();
+    if (br_terminate) {
+        br_terminate();
+    }
+    os_unfair_lock_lock(&s_gl4es116HandleLock);
+    s_gl4es116Handle = NULL;
+    os_unfair_lock_unlock(&s_gl4es116HandleLock);
 }
 
 void* pojavGetCurrentContext() {
@@ -48,10 +56,11 @@ int pojavInit(BOOL useStackQueue) {
     return JNI_TRUE;
 }
 
-static void* s_gl4es116Handle = NULL;
-
 void* get_gl4es_116_handle(void) {
-    return s_gl4es116Handle;
+    os_unfair_lock_lock(&s_gl4es116HandleLock);
+    void* handle = s_gl4es116Handle;
+    os_unfair_lock_unlock(&s_gl4es116HandleLock);
+    return handle;
 }
 
 int pojavInitOpenGL() {
@@ -83,10 +92,14 @@ int pojavInitOpenGL() {
         NSLog(@"[Amethyst] Failed to dlopen %@: %s", renderer, dlerror());
     }
     if ([renderer isEqualToString:@ RENDERER_NAME_GL4ES_116]) {
+        os_unfair_lock_lock(&s_gl4es116HandleLock);
         s_gl4es116Handle = handle;
+        os_unfair_lock_unlock(&s_gl4es116HandleLock);
         NSLog(@"[Amethyst] GL4ES 1.1.6 loaded (handle=%p). Constructor deferred until EGL context is current.", handle);
     } else {
+        os_unfair_lock_lock(&s_gl4es116HandleLock);
         s_gl4es116Handle = NULL;
+        os_unfair_lock_unlock(&s_gl4es116HandleLock);
     }
 
     return !br_init();

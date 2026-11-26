@@ -2,19 +2,24 @@
 
 #include "../glx/hardext.h"
 #include "gl4es.h"
+#include "gl4es_mem.h"
 #include "glstate.h"
 #include "init.h"
 #include "matrix.h"
 
-static inline void rlVertexCommon(renderlist_t *list, int idx, int l) {
+static inline int rlVertexCommon(renderlist_t *list, int idx, int l) {
     if(list->use_glstate) {
         resize_renderlist(list);
         if (!list->vert)    list->vert = glstate->merger_master;
+        if (!list->vert || list->len >= (unsigned long)glstate->merger_cap)
+            return 0;
         if (list->normal)   memcpy(list->normal + idx, list->lastNormal, sizeof(GLfloat) * 3);
         if (list->fogcoord) memcpy(list->fogcoord + idx, glstate->fogcoord, sizeof(GLfloat) * 1);
     } else {
         if (!list->vert)    list->vert = alloc_sublist(4, list->cap); 
         else                resize_renderlist(list);
+        if (!list->vert || list->len >= list->cap)
+            return 0;
         if (list->normal)   memcpy(list->normal + (l * 3), list->lastNormal, sizeof(GLfloat) * 3);
         if (list->fogcoord) memcpy(list->fogcoord + (l * 1), glstate->fogcoord, sizeof(GLfloat) * 1);
     }
@@ -25,11 +30,13 @@ static inline void rlVertexCommon(renderlist_t *list, int idx, int l) {
     if (list->tex[1])   memcpy(list->tex[1] + idx, glstate->texcoord[1], sizeof(GLfloat) * 4);
     for (int a=2; a<list->maxtex; a++)
         if (list->tex[a])   memcpy(list->tex[a] + (l * 4), glstate->texcoord[a], sizeof(GLfloat) * 4);
+    return 1;
 }
 
 void FASTMATH rlVertex4f(renderlist_t *list, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
     const int idx = (list->use_glstate)?(list->len * 5*4):(list->len * 4);
-    rlVertexCommon(list, idx, list->len);
+    if (!rlVertexCommon(list, idx, list->len))
+        return;
     ++list->len;
 
     GLfloat * const vert = list->vert + idx;
@@ -37,7 +44,8 @@ void FASTMATH rlVertex4f(renderlist_t *list, GLfloat x, GLfloat y, GLfloat z, GL
 }
 void FASTMATH rlVertex3fv(renderlist_t *list, GLfloat* v) {
     const int idx = (list->use_glstate)?(list->len * 5*4):(list->len * 4);
-    rlVertexCommon(list, idx, list->len);
+    if (!rlVertexCommon(list, idx, list->len))
+        return;
 
     GLfloat * const vert = list->vert + idx;
     ++list->len;
@@ -46,7 +54,8 @@ void FASTMATH rlVertex3fv(renderlist_t *list, GLfloat* v) {
 }
 void FASTMATH rlVertex4fv(renderlist_t *list, GLfloat* v) {
     const int idx = (list->use_glstate)?(list->len * 5*4):(list->len * 4);
-    rlVertexCommon(list, idx, list->len);
+    if (!rlVertexCommon(list, idx, list->len))
+        return;
 
     GLfloat * const vert = list->vert + idx;
     ++list->len;
@@ -65,7 +74,10 @@ void rlEnd(renderlist_t *list) {
         int istart = list->cur_istart;
         int ivert = 0;
         int len = list->len-istart;
-        resize_indices_renderlist(list, indices_getindicesize(list->merger_mode, len));
+        int add_idx = indices_getindicesize(list->merger_mode, len);
+        resize_indices_renderlist(list, add_idx);
+        unsigned long cap_idx = list->use_glstate ? (unsigned long)glstate->merger_indice_cap : (unsigned long)list->indice_cap;
+        if (list->indices && add_idx >= 0 && list->ilen + (unsigned long)add_idx <= cap_idx)
         switch (list->merger_mode) {
             case GL_LINE_STRIP:
                 if(len>1) {
@@ -147,9 +159,15 @@ static inline void rlNormalCommon(renderlist_t *list) {
     if (list->normal == NULL) {
         const int stride = (list->use_glstate)?(5*4):3;
         if(list->use_glstate) {
+            if (!glstate->merger_master)
+                resize_renderlist(list);
+            if (!glstate->merger_master)
+                return;
             list->normal = glstate->merger_master+4+4+2*4;
         } else {
             list->normal = alloc_sublist(3, list->cap);
+            if (!list->normal)
+                return;
         }
         // catch up
         for (int i = 0; i < list->len; i++) {
@@ -175,9 +193,15 @@ static inline void rlColorCommon(renderlist_t *list) {
         list->lastColorsSet = 1;
         const int stride = (list->use_glstate)?(5*4):4;
         if(list->use_glstate) {
+            if (!glstate->merger_master)
+                resize_renderlist(list);
+            if (!glstate->merger_master)
+                return;
             list->color = glstate->merger_master+4;
         } else {
             list->color = alloc_sublist(4, list->cap);
+            if (!list->color)
+                return;
         }
         // catch up
         for (int i = 0; i < list->len; i++) {
@@ -199,13 +223,20 @@ void FASTMATH rlColor4fv(renderlist_t *list, GLfloat* v) {
 }
 
 void FASTMATH rlSecondary3f(renderlist_t *list, GLfloat r, GLfloat g, GLfloat b) {
+    GLfloat *color = glstate->secondary;
+    color[0] = r; color[1] = g; color[2] = b; color[3] = 0.0f;
+
     if (list->secondary == NULL) {
         if(list->use_glstate) {
-            if(!glstate->merger_secondary)
-                glstate->merger_secondary = (GLfloat*)malloc(sizeof(GLfloat)*4*glstate->merger_cap);
+            if (!glstate->merger_master)
+                resize_renderlist(list);
+            if (!gl4es_merger_alloc_opt_buffer(list, &glstate->merger_secondary))
+                return;
             list->secondary = glstate->merger_secondary;
         } else {
             list->secondary = alloc_sublist(4, list->cap);
+            if (!list->secondary)
+                return;
         }
         // catch up
         GLfloat *secondary = list->secondary;
@@ -214,9 +245,6 @@ void FASTMATH rlSecondary3f(renderlist_t *list, GLfloat r, GLfloat g, GLfloat b)
             secondary += 4;
         }
     }
-
-    GLfloat *color = glstate->secondary;
-    color[0] = r; color[1] = g; color[2] = b; color[3] = 0.0f;
 }
 
 void rlMaterialfv(renderlist_t *list, GLenum face, GLenum pname, const GLfloat * params) {
@@ -312,20 +340,28 @@ void rlTexGenfv(renderlist_t *list, GLenum coord, GLenum pname, const GLfloat * 
 }
 
 void rlMultiTexCoordCommon(renderlist_t* list, int tmu) {
+    if (tmu < 0 || tmu >= MAX_TEX)
+        return;
     if (list->tex[tmu] == NULL) {
-        if (list->maxtex<tmu+1) list->maxtex = tmu+1;
         const int stride = (list->use_glstate && tmu<2)?(5*4):4;
         if(list->use_glstate) {
-            if(tmu<2)
+            if (!glstate->merger_master)
+                resize_renderlist(list);
+            if(tmu<2) {
+                if (!glstate->merger_master)
+                    return;
                 list->tex[tmu] = glstate->merger_master+4+4+tmu*4;
-            else {
-                if(!glstate->merger_tex[tmu-2])
-                    glstate->merger_tex[tmu-2] = (GLfloat*)malloc(sizeof(GLfloat)*4*glstate->merger_cap);
+            } else {
+                if (!gl4es_merger_alloc_opt_buffer(list, &glstate->merger_tex[tmu-2]))
+                    return;
                 list->tex[tmu] = glstate->merger_tex[tmu-2];
             }
         } else {
             list->tex[tmu] = alloc_sublist(4, list->cap);
+            if (!list->tex[tmu])
+                return;
         }
+        if (list->maxtex<tmu+1) list->maxtex = tmu+1;
         // catch up
         GLfloat *tex = list->tex[tmu];
         for (int i = 0; i < list->len; i++) {
@@ -362,9 +398,15 @@ void FASTMATH rlFogCoordf(renderlist_t *list, GLfloat coord) {
     if (list->fogcoord == NULL) {
         const int stride = (list->use_glstate)?(5*4):1;
         if(list->use_glstate) {
+            if (!glstate->merger_master)
+                resize_renderlist(list);
+            if (!glstate->merger_master)
+                return;
             list->fogcoord = glstate->merger_master+4+4+2*4+3;
         } else {
             list->fogcoord = alloc_sublist(1, list->cap);
+            if (!list->fogcoord)
+                return;
         }
         // catch up
         GLfloat *fog = list->fogcoord;
@@ -490,7 +532,7 @@ void rlTexEnviv(renderlist_t *list, GLenum target, GLenum pname, const GLint * p
 renderlist_t* NewDrawStage(renderlist_t* l, GLenum m) {
     if(globals4es.mergelist && !glstate->polygon_mode
         && ((isempty_renderlist(l) && l->prev && l->prev->open && l->prev->mode==m && l->prev->mode_init==m)
-            || (l->stage==STAGE_POSTDRAW && l->open))
+            || (l->stage==STAGE_POSTDRAW && l->open && !(l->use_glstate && gl4es_mem_merger_at_cap())))
         && ((l->mode_dimension==rendermode_dimensions(m) && l->mode_dimension>0)))
     {
         return recycle_renderlist(l, m);

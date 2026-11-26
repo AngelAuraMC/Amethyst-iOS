@@ -103,7 +103,14 @@ void APIENTRY_GL4ES gl4es_glCopyTexImage2D(GLenum target,  GLint level,  GLenum 
         if (glstate->fpe_state && glstate->fpe_bound_changed < glstate->texture.active+1)
             glstate->fpe_bound_changed = glstate->texture.active+1;
     } else {
-        void* tmp = malloc(width*height*4);
+        void* tmp = malloc((size_t)width*height*4);
+        if (!tmp) {
+            readfboEnd();
+            glstate->vao->pack = pack;
+            glstate->vao->unpack = unpack;
+            errorShim(GL_OUT_OF_MEMORY);
+            return;
+        }
         gl4es_glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, tmp);
         gl4es_glTexImage2D(target, level, internalformat, width, height, border, GL_RGBA, GL_UNSIGNED_BYTE, tmp);
         free(tmp);
@@ -175,7 +182,14 @@ void APIENTRY_GL4ES gl4es_glCopyTexSubImage2D(GLenum target, GLint level, GLint 
                     gles_glGenerateMipmap(to_target(itarget));
             }
         } else {
-            void* tmp = malloc(width*height*4);
+            void* tmp = malloc((size_t)width*height*4);
+            if (!tmp) {
+                readfboEnd();
+                glstate->vao->pack = pack;
+                glstate->vao->unpack = unpack;
+                errorShim(GL_OUT_OF_MEMORY);
+                return;
+            }
             GLenum format = bound->format;
             GLenum type = bound->type;
             gl4es_glReadPixels(x, y, width, height, format, type, tmp);
@@ -197,11 +211,23 @@ void APIENTRY_GL4ES gl4es_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei 
         errorShim(GL_INVALID_OPERATION);
         return;	// never in list
     }
+    if (width < 0 || height < 0) {
+        errorShim(GL_INVALID_VALUE);
+        return;
+    }
+    if (width == 0 || height == 0) {
+        noerrorShim();
+        return;
+    }
     LOAD_GLES(glReadPixels);
     errorGL();
     GLvoid* dst = data;
     if (glstate->vao->pack)
-        dst = (char*)dst + (uintptr_t)glstate->vao->pack->data;
+        dst = glstate->vao->pack->data ? (void*)((uintptr_t)dst + (uintptr_t)glstate->vao->pack->data) : NULL;
+    if (!dst) {
+        errorShim(GL_INVALID_OPERATION);
+        return;
+    }
         
     readfboBegin();
     if ((format == GL_RGBA && type == GL_UNSIGNED_BYTE)     // should not use default GL_RGBA on Pandora as it's very slow...
@@ -217,7 +243,12 @@ void APIENTRY_GL4ES gl4es_glReadPixels(GLint x, GLint y, GLsizei width, GLsizei 
     int use_bgra = 0;
     if(glstate->readf==GL_BGRA && glstate->readt==GL_UNSIGNED_BYTE)
         use_bgra = 1;   // if IMPLEMENTATION_READ is BGRA, then use it as it's probably faster then RGBA.
-    GLvoid *pixels = malloc(width*height*4);
+    GLvoid *pixels = malloc((size_t)width*height*4);
+    if (!pixels) {
+        readfboEnd();
+        errorShim(GL_OUT_OF_MEMORY);
+        return;
+    }
     gles_glReadPixels(x, y, width, height, use_bgra?GL_BGRA:GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     if (! pixel_convert(pixels, &dst, width, height,
                         use_bgra?GL_BGRA:GL_RGBA, GL_UNSIGNED_BYTE, format, type, 0,glstate->texture.pack_align)) {
@@ -245,9 +276,24 @@ void APIENTRY_GL4ES gl4es_glGetTexImage(GLenum target, GLint level, GLenum forma
     int shrink = bound->shrink;
     if (level != 0) {
         //printf("STUBBED glGetTexImage with level=%i\n", level);
-        void* tmp = malloc(width*height*pixel_sizeof(format, type)); // tmp space...
+        glbuffer_t *pack = glstate->vao->pack;
+        GLvoid *dst = img;
+        if (pack)
+            dst = pack->data ? (void*)((uintptr_t)dst + (uintptr_t)pack->data) : NULL;
+        if (!dst) {
+            errorShim(GL_INVALID_OPERATION);
+            return;
+        }
+        size_t pxsize = (size_t)pixel_sizeof(format, type);
+        void* tmp = malloc((size_t)width*height*pxsize); // tmp space...
+        if (!tmp) {
+            errorShim(GL_OUT_OF_MEMORY);
+            return;
+        }
         void* tmp2;
+        glstate->vao->pack = NULL;
         gl4es_glGetTexImage(map_tex_target(target), 0, format, type, tmp);
+        glstate->vao->pack = pack;
         for (int i=0; i<level; i++) {
             pixel_halfscale(tmp, &tmp2, width, height, format, type);
             free(tmp);
@@ -255,7 +301,7 @@ void APIENTRY_GL4ES gl4es_glGetTexImage(GLenum target, GLint level, GLenum forma
             width = nlevel(width, 1);
             height = nlevel(height, 1);
         }
-        memcpy(img, tmp, width*height*pixel_sizeof(format, type));
+        memcpy(dst, tmp, (size_t)width*height*pxsize);
         free(tmp);
         return;
     }
@@ -268,7 +314,11 @@ void APIENTRY_GL4ES gl4es_glGetTexImage(GLenum target, GLint level, GLenum forma
     
     GLvoid *dst = img;
     if (glstate->vao->pack)
-        dst = (char*)dst + (uintptr_t)glstate->vao->pack->data;
+        dst = glstate->vao->pack->data ? (void*)((uintptr_t)dst + (uintptr_t)glstate->vao->pack->data) : NULL;
+    if (!dst) {
+        errorShim(GL_INVALID_OPERATION);
+        return;
+    }
 #ifdef TEXSTREAM
     if (globals4es.texstream && bound->streamed) {
         noerrorShim();

@@ -772,21 +772,23 @@ bool pixel_convert_strided(const GLvoid *src, GLvoid **dst,
                            GLenum src_format, GLenum src_type,
                            GLenum dst_format, GLenum dst_type, GLuint stride, GLuint align,
                            GLuint src_row_length, GLuint src_skip_pixels, GLuint src_skip_rows) {
+    if (!src || !width || !height)
+        return false;
     const colorlayout_t *src_color, *dst_color;
-    GLuint pixels = width * height;
     if(src_type==GL_INT8_REV) src_type=GL_UNSIGNED_BYTE;
     if(dst_type==GL_INT8_REV) dst_type=GL_UNSIGNED_BYTE;
-    GLuint dst_size = height * widthalign(width * pixel_sizeof(dst_format, dst_type), align);
-    GLuint dst_width2 = widthalign((stride?stride:width) * pixel_sizeof(dst_format, dst_type), align);
-    GLuint dst_width = dst_width2 - (width * pixel_sizeof(dst_format, dst_type));
+    size_t dst_pixel_size = pixel_sizeof(dst_format, dst_type);
+    size_t dst_size = (size_t)height * widthalign((size_t)width * dst_pixel_size, align);
+    size_t dst_width2 = widthalign((size_t)(stride?stride:width) * dst_pixel_size, align);
+    size_t dst_width = dst_width2 - ((size_t)width * dst_pixel_size);
 
-    GLuint src_pixel_size = pixel_sizeof(src_format, src_type);
-    GLuint src_row = (src_row_length && src_row_length != width) ? src_row_length : width;
-    GLuint src_width = widthalign(src_row * src_pixel_size, align);
-    GLuint src_widthadj = src_width - (width * src_pixel_size);
+    size_t src_pixel_size = pixel_sizeof(src_format, src_type);
+    size_t src_row = (src_row_length && src_row_length != width) ? src_row_length : width;
+    size_t src_width = widthalign(src_row * src_pixel_size, align);
+    size_t src_widthadj = src_width - ((size_t)width * src_pixel_size);
 
     if (src_skip_pixels || src_skip_rows) {
-        src = (const char*)src + (uintptr_t)src_skip_rows * src_width + (uintptr_t)src_skip_pixels * src_pixel_size;
+        src = (const char*)src + (size_t)src_skip_rows * src_width + (size_t)src_skip_pixels * src_pixel_size;
     }
 
     if(src_type==GL_HALF_FLOAT) src_type=GL_HALF_FLOAT_OES;
@@ -795,7 +797,7 @@ bool pixel_convert_strided(const GLvoid *src, GLvoid **dst,
     if ((src_type == dst_type) && (dst_format == src_format)) {
         if (*dst == src && !src_row_length && !src_skip_pixels && !src_skip_rows)
             return true;
-        if (!dst_size || !pixel_sizeof(src_format, src_type)) {
+        if (!dst_size || !src_pixel_size) {
             LOGE("pixel conversion, unknown format size, anticipated abort\n");
             return false;
         }
@@ -804,28 +806,28 @@ bool pixel_convert_strided(const GLvoid *src, GLvoid **dst,
         if (*dst == NULL)
             return false;
         if (stride || src_widthadj) {
-            GLsizei row_copy = width * pixel_sizeof(src_format, src_type);
-            for (int yy = 0; yy < height; yy++)
-                memcpy((char*)(*dst) + yy * dst_width2, (const char*)src + yy * src_width, row_copy);
+            size_t row_copy = (size_t)width * src_pixel_size;
+            for (GLuint yy = 0; yy < height; yy++)
+                memcpy((char*)(*dst) + (size_t)yy * dst_width2, (const char*)src + (size_t)yy * src_width, row_copy);
         } else
 			memcpy(*dst, src, dst_size);
         return true;
     }
     src_color = get_color_map(src_format);
     dst_color = get_color_map(dst_format);
-    if (!dst_size || !pixel_sizeof(src_format, src_type)
+    if (!dst_size || !src_pixel_size
         || !src_color->type || !dst_color->type) {
         LOGE("pixel conversion, anticipated abort\n");
         return false;
     }
-    GLsizei src_stride = pixel_sizeof(src_format, src_type);
-    GLsizei dst_stride = pixel_sizeof(dst_format, dst_type);
+    GLsizei src_stride = (GLsizei)src_pixel_size;
+    GLsizei dst_stride = (GLsizei)dst_pixel_size;
     if (*dst == src || *dst == NULL)
         *dst = malloc(dst_size);
     if (*dst == NULL)
         return false;
-    uintptr_t src_pos = (src_skip_pixels || src_skip_rows) ? (uintptr_t)src : widthalign((uintptr_t)src, align);
-    uintptr_t dst_pos = widthalign((uintptr_t)*dst, align);
+    uintptr_t src_pos = (uintptr_t)src;
+    uintptr_t dst_pos = (uintptr_t)*dst;
     // fast optimized loop for common conversion cases first...
     // TODO: Rewrite that with some Macro, it's obviously doable to simplify the reading (and writing) of all this
     // simple BGRA <-> RGBA / UNSIGNED_BYTE 
@@ -856,20 +858,14 @@ bool pixel_convert_strided(const GLvoid *src, GLvoid **dst,
             }
 #endif
             for (; j < width; j++) {
-#if defined(__arm__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || defined(__i386__) || defined(__x86_64__)
-                uint32_t tmp = *(const uint32_t*)(s + (size_t)j * 4);
+                uint32_t tmp;
+                memcpy(&tmp, s + (size_t)j * 4, sizeof(tmp));
                 #ifdef __BIG_ENDIAN__
                 tmp = (tmp&0x00ff00ff) | ((tmp&0x0000ff00)<<16) | ((tmp&0xff000000)>>16);
                 #else
                 tmp = (tmp&0xff00ff00) | ((tmp&0x00ff0000)>>16) | ((tmp&0x000000ff)<<16);
                 #endif
-                *(uint32_t*)(d + (size_t)j * 4) = tmp;
-#else
-                const unsigned char *ps = s + (size_t)j * 4;
-                unsigned char *pd = d + (size_t)j * 4;
-                unsigned char b0 = ps[0], b1 = ps[1], b2 = ps[2], b3 = ps[3];
-                pd[0] = b2; pd[1] = b1; pd[2] = b0; pd[3] = b3;
-#endif
+                memcpy(d + (size_t)j * 4, &tmp, sizeof(tmp));
             }
             src_pos += (uintptr_t)width*4 + src_widthadj;
             dst_pos += (uintptr_t)width*4 + dst_width;

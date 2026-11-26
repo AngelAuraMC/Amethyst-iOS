@@ -1,9 +1,14 @@
 #import <Foundation/Foundation.h>
 #import <dispatch/dispatch.h>
+#import "LauncherPreferences.h"
 #import "SurfaceViewController.h"
 
 #include <dlfcn.h>
+#include <os/proc.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "bridge_tbl.h"
 #include "environ.h"
@@ -152,6 +157,65 @@ static void* amethyst_gles_proc_address(const char* name) {
     return sym;
 }
 
+static void ensure_gl4es_mem_env_fallback(void) {
+    const char *existingProfile = getenv("LIBGL_MEM_PROFILE");
+    const char *existingBudget = getenv("AMETHYST_GL4ES_MEM_BUDGET_MB");
+    if (existingProfile && existingBudget) {
+        return;
+    }
+
+    uint64_t physBytes = NSProcessInfo.processInfo.physicalMemory;
+    uint64_t physMB = physBytes >> 20;
+    size_t availBytes = os_proc_available_memory();
+    uint64_t availMB = (uint64_t)(availBytes >> 20);
+    BOOL hasMemorystatus = getEntitlementValue(@"com.apple.private.memorystatus");
+
+    const char *profile = "high";
+    uint64_t budgetMB = 384;
+    if (physMB <= 2560) {
+        profile = "low";
+        budgetMB = 64;
+    } else if (physMB <= 5120) {
+        profile = "medium";
+        budgetMB = 192;
+    }
+
+    if (availBytes > 0) {
+        if (availMB <= 1280 || (!hasMemorystatus && availMB <= 1536)) {
+            profile = "low";
+            budgetMB = (availMB > 1024) ? 64 : 48;
+        } else if ((availMB <= 2560 && strcmp(profile, "high") == 0) ||
+                   (!hasMemorystatus && strcmp(profile, "low") != 0 && physMB <= 5120 && availMB <= 1920)) {
+            profile = "medium";
+            budgetMB = (!hasMemorystatus && availMB <= 1920) ? 128 : 192;
+        }
+
+        if (!hasMemorystatus) {
+            uint64_t headroomCap = availMB / 10;
+            if (headroomCap < 32) {
+                headroomCap = 32;
+            }
+            if (budgetMB > headroomCap) {
+                budgetMB = headroomCap;
+            }
+        }
+    }
+
+    char budgetBuf[32];
+    snprintf(budgetBuf, sizeof(budgetBuf), "%llu", (unsigned long long)budgetMB);
+    if (!existingProfile) {
+        setenv("LIBGL_MEM_PROFILE", profile, 0);
+    }
+    if (!existingProfile && !existingBudget) {
+        setenv("AMETHYST_GL4ES_MEM_BUDGET_MB", budgetBuf, 0);
+    }
+
+    NSLog(@"[Amethyst] GLBridge fallback RAM probe: physical=%llu MB, available=%llu MB, memorystatus=%d -> LIBGL_MEM_PROFILE=%s, AMETHYST_GL4ES_MEM_BUDGET_MB=%s",
+          (unsigned long long)physMB, (unsigned long long)availMB, hasMemorystatus ? 1 : 0,
+          existingProfile ? existingProfile : profile,
+          (!existingProfile && !existingBudget) ? budgetBuf : (existingBudget ? existingBudget : "(unset)"));
+}
+
 static void init_gl4es_116_if_needed(void) {
     static dispatch_once_t once_control;
 
@@ -162,6 +226,8 @@ static void init_gl4es_116_if_needed(void) {
 
     dispatch_once(&once_control, ^{
         NSLog(@"[Amethyst] Context is CURRENT. Initializing GL4ES 1.1.6...");
+
+        ensure_gl4es_mem_env_fallback();
 
         typedef void (*gl4es_set_proc_t)(void *(*)(const char *));
         gl4es_set_proc_t set_proc = (gl4es_set_proc_t)dlsym(gl4esHandle, "set_getprocaddress");

@@ -39,6 +39,8 @@ void APIENTRY_GL4ES gl4es_glVertexAttribPointer(GLuint index, GLint size, GLenum
     if( v->buffer ) {
 		v->real_buffer = v->buffer->real_buffer;
 		v->real_pointer = pointer;
+		if(size == GL_BGRA || type == GL_DOUBLE)
+			v->buffer->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 	} else {
         v->real_buffer = 0;
         v->real_pointer = 0;
@@ -70,6 +72,8 @@ void APIENTRY_GL4ES gl4es_glVertexAttribIPointer(GLuint index, GLint size, GLenu
     if( v->buffer ) {
 		v->real_buffer = v->buffer->real_buffer;
 		v->real_pointer = pointer;
+		if(size == GL_BGRA || type == GL_DOUBLE)
+			v->buffer->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 	} else {
         v->real_buffer = 0;
         v->real_pointer = 0;

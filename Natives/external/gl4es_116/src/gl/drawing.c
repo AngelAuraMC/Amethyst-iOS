@@ -3,6 +3,7 @@
 #include "enum_info.h"
 #include "fpe.h"
 #include "gl4es.h"
+#include "gl4es_mem.h"
 #include "gles.h"
 #include "glstate.h"
 #include "init.h"
@@ -11,6 +12,21 @@
 #include "render.h"
 #include "buffers.h"
 #include "envvars.h"
+
+static inline const void *va_cpu_ptr(const vertexattrib_t *va) {
+    if (va->buffer && !va->buffer->data)
+        return NULL;
+    return (const void*)((uintptr_t)va->pointer + (va->buffer ? (uintptr_t)va->buffer->data : 0));
+}
+
+static inline void *elem_cpu_ptr(const void *indices) {
+    if (glstate->vao->elements) {
+        if (!glstate->vao->elements->data)
+            return NULL;
+        return (void*)((uintptr_t)glstate->vao->elements->data + (uintptr_t)indices);
+    }
+    return (GLvoid*)indices;
+}
 
 //#define DEBUG
 #ifdef DEBUG
@@ -124,16 +140,17 @@ renderlist_t *arrays_to_renderlist(renderlist_t *list, GLenum mode,
             } else
                 list->vert = copy_gl_pointer_tex(&glstate->vao->vertexattrib[ATT_VERTEX], 4, skip, count);
         }
+
         if (glstate->vao->vertexattrib[ATT_COLOR].enabled) {
             if(glstate->vao->shared_arrays) {
                 if(glstate->vao->vertexattrib[ATT_COLOR].size==GL_BGRA)
-                    glstate->vao->color.ptr = copy_gl_pointer_color_bgra(glstate->vao->vertexattrib[ATT_COLOR].pointer, glstate->vao->vertexattrib[ATT_COLOR].stride, 4, 0, count);
+                    glstate->vao->color.ptr = copy_gl_pointer_color_bgra(va_cpu_ptr(&glstate->vao->vertexattrib[ATT_COLOR]), glstate->vao->vertexattrib[ATT_COLOR].stride, 4, 0, count);
                 else
                     glstate->vao->color.ptr = copy_gl_pointer_color(&glstate->vao->vertexattrib[ATT_COLOR], 4, 0, count);
                 list->color = glstate->vao->color.ptr + 4*skip;
             } else {
                 if(glstate->vao->vertexattrib[ATT_COLOR].size==GL_BGRA)
-                    list->color = copy_gl_pointer_color_bgra(glstate->vao->vertexattrib[ATT_COLOR].pointer, glstate->vao->vertexattrib[ATT_COLOR].stride, 4, skip, count);
+                    list->color = copy_gl_pointer_color_bgra(va_cpu_ptr(&glstate->vao->vertexattrib[ATT_COLOR]), glstate->vao->vertexattrib[ATT_COLOR].stride, 4, skip, count);
                 else
                     list->color = copy_gl_pointer_color(&glstate->vao->vertexattrib[ATT_COLOR], 4, skip, count);
             }
@@ -141,13 +158,13 @@ renderlist_t *arrays_to_renderlist(renderlist_t *list, GLenum mode,
         if (glstate->vao->vertexattrib[ATT_SECONDARY].enabled/* && glstate->enable.color_array*/) {
             if(glstate->vao->shared_arrays) {
                 if(glstate->vao->vertexattrib[ATT_SECONDARY].size==GL_BGRA)
-                    glstate->vao->secondary.ptr = copy_gl_pointer_color_bgra(glstate->vao->vertexattrib[ATT_SECONDARY].pointer, glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, 0, count);
+                    glstate->vao->secondary.ptr = copy_gl_pointer_color_bgra(va_cpu_ptr(&glstate->vao->vertexattrib[ATT_SECONDARY]), glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, 0, count);
                 else
                     glstate->vao->secondary.ptr = copy_gl_pointer(&glstate->vao->vertexattrib[ATT_SECONDARY], 4, 0, count);		// alpha chanel is always 0 for secondary...
                 list->secondary = glstate->vao->secondary.ptr + 4*skip;
             } else {
                 if(glstate->vao->vertexattrib[ATT_SECONDARY].size==GL_BGRA)
-                    list->secondary = copy_gl_pointer_color_bgra(glstate->vao->vertexattrib[ATT_SECONDARY].pointer, glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, skip, count);
+                    list->secondary = copy_gl_pointer_color_bgra(va_cpu_ptr(&glstate->vao->vertexattrib[ATT_SECONDARY]), glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, skip, count);
                 else
                     list->secondary = copy_gl_pointer(&glstate->vao->vertexattrib[ATT_SECONDARY], 4, skip, count);		// alpha chanel is always 0 for secondary...
             }
@@ -213,13 +230,13 @@ static renderlist_t *arrays_add_renderlist(renderlist_t *a, GLenum mode,
         if (a->normal) copy_gl_pointer_raw_noalloc(a->normal+a->len*3, &glstate->vao->vertexattrib[ATT_NORMAL], 3, skip, count);
         if (a->color) {
             if(glstate->vao->vertexattrib[ATT_COLOR].size==GL_BGRA)
-                copy_gl_pointer_color_bgra_noalloc(a->color+a->len*4, glstate->vao->vertexattrib[ATT_COLOR].pointer, glstate->vao->vertexattrib[ATT_COLOR].stride, 4, skip, count);
+                copy_gl_pointer_color_bgra_noalloc(a->color+a->len*4, va_cpu_ptr(&glstate->vao->vertexattrib[ATT_COLOR]), glstate->vao->vertexattrib[ATT_COLOR].stride, 4, skip, count);
             else
                 copy_gl_pointer_color_noalloc(a->color+a->len*4, &glstate->vao->vertexattrib[ATT_COLOR], 4, skip, count);
         }
         if (a->secondary) {
             if(glstate->vao->vertexattrib[ATT_SECONDARY].size==GL_BGRA)
-                copy_gl_pointer_color_bgra_noalloc(a->secondary+a->len*4, glstate->vao->vertexattrib[ATT_SECONDARY].pointer, glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, skip, count);
+                copy_gl_pointer_color_bgra_noalloc(a->secondary+a->len*4, va_cpu_ptr(&glstate->vao->vertexattrib[ATT_SECONDARY]), glstate->vao->vertexattrib[ATT_SECONDARY].stride, 4, skip, count);
             else
                 copy_gl_pointer_noalloc(a->secondary+a->len*4, &glstate->vao->vertexattrib[ATT_SECONDARY], 4, skip, count);		// alpha chanel is always 0 for secondary...
         }
@@ -326,10 +343,14 @@ if(count>500000) return;
         mode = GL_TRIANGLE_STRIP;
     if (mode == GL_POLYGON)
         mode = GL_TRIANGLE_FAN;
+    int quad_unbind = 0;
+    GLuint old_quad_ibo = 0;
     if (mode == GL_QUADS) {
+        if (!sindices && !iindices)
+            return;
         mode = GL_TRIANGLES;
         int ilen = (count*3)/2;
-        if (sindices && !glstate->bind_buffer.want_index && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+        if (sindices && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
             && sindices[0] == 0 && sindices[count - 1] == (GLushort)(count - 1)) {
             int is_seq = 1;
             for (int k = 1; k < count - 1; k++) {
@@ -338,13 +359,18 @@ if(count>500000) return;
                     break;
                 }
             }
-            if (is_seq && !glstate->bind_buffer.want_index) {
+            if (is_seq) {
                 if (!len) len = count;
+                if (glstate->bind_buffer.want_index) {
+                    old_quad_ibo = glstate->bind_buffer.want_index;
+                    quad_unbind = 1;
+                    bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                }
                 sindices = glstate->quad_idx;
                 count = ilen;
                 goto quads_done;
             }
-        } else if (iindices && !glstate->bind_buffer.want_index && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
+        } else if (iindices && count > 0 && (count & 3) == 0 && count <= QUAD_IDX_VERTS && quad_ibo_ready()
             && iindices[0] == 0 && iindices[count - 1] == (GLuint)(count - 1)) {
             int is_seq = 1;
             for (int k = 1; k < count - 1; k++) {
@@ -353,13 +379,23 @@ if(count>500000) return;
                     break;
                 }
             }
-            if (is_seq && !glstate->bind_buffer.want_index) {
+            if (is_seq) {
                 if (!len) len = count;
+                if (glstate->bind_buffer.want_index) {
+                    old_quad_ibo = glstate->bind_buffer.want_index;
+                    quad_unbind = 1;
+                    bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                }
                 sindices = glstate->quad_idx;
                 iindices = NULL;
                 count = ilen;
                 goto quads_done;
             }
+        }
+        if (glstate->bind_buffer.want_index) {
+            old_quad_ibo = glstate->bind_buffer.want_index;
+            quad_unbind = 1;
+            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
         if (iindices) {
             gl4es_scratch(ilen*sizeof(GLuint));
@@ -374,7 +410,7 @@ if(count>500000) return;
                 tmp[j+5] = iindices[i+3];
             }
             iindices = tmp;
-        } else {
+        } else if (sindices) {
             gl4es_scratch(ilen*sizeof(GLushort));
             GLushort *tmp = (GLushort*)glstate->scratch;
             for (int i=0, j=0; i+3<count; i+=4, j+=6) {
@@ -387,6 +423,10 @@ if(count>500000) return;
                 tmp[j+5] = sindices[i+3];
             }
             sindices = tmp;
+        } else {
+            if (quad_unbind)
+                bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_quad_ibo);
+            return;
         }
         count = ilen;
 quads_done: ;
@@ -487,6 +527,8 @@ quads_done: ;
             TEXTURE(old_tex);
         #undef TEXTURE
     }
+    if (quad_unbind)
+        bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_quad_ibo);
 }
 
 static int quad_ibo_ready(void) {
@@ -529,44 +571,31 @@ static int quad_ibo_ready(void) {
     return 1;
 }
 
-static void draw_quad_arrays(GLint first, GLsizei count) {
+static void draw_quad_arrays_common(GLint first, GLsizei count, GLsizei primcount) {
     GLsizei len = first + count;
     if (first >= 0 && (first & 3) == 0 && count > 0 && (count & 3) == 0
         && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
         && quad_ibo_ready()) {
         GLuint old_buffer = glstate->bind_buffer.want_index;
         bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, glstate->quad_idx + (first*3/2), NULL, 1);
+        glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, glstate->quad_idx + (first*3/2), NULL, primcount);
         bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
         return;
     }
-    static GLushort *indices = NULL;
-    static int indcnt = 0;
-    static int indfirst = 0;
-    int realfirst = ((first%4)==0)?0:first;
-    int realcount = count + (first-realfirst);
-    if((indcnt < realcount) || (indfirst!=realfirst)) {
-        if(indcnt < realcount) {
-            indcnt = realcount;
-            if (indices) free(indices);
-            indices = (GLushort*)malloc(sizeof(GLushort)*(indcnt*3/2));
-            if(!indices) { indcnt = 0; return; }
-        }
-        indfirst = realfirst;
-        GLushort *p = indices;
-        for (int i=0, j=indfirst; i+3<indcnt; i+=4, j+=4) {
-                *(p++) = j + 0;
-                *(p++) = j + 1;
-                *(p++) = j + 2;
-                *(p++) = j + 0;
-                *(p++) = j + 2;
-                *(p++) = j + 3;
-        }
-    }
+    const unsigned short *qidx = NULL;
+    unsigned short *transient = NULL;
+    if (!gl4es_mem_prepare_quad_indices(first, count, &qidx, &transient) || !qidx)
+        return;
     GLuint old_buffer = glstate->bind_buffer.want_index;
     bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, indices+(first-indfirst)*3/2, NULL, 1);
-    wantBufferIndex(old_buffer);
+    glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, (GLushort*)qidx, NULL, primcount);
+    bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
+    if (transient)
+        free(transient);
+}
+
+static void draw_quad_arrays(GLint first, GLsizei count) {
+    draw_quad_arrays_common(first, count, 1);
 }
 
 #define MIN_BATCH  globals4es.minbatch
@@ -581,6 +610,10 @@ void APIENTRY_GL4ES gl4es_glDrawRangeElements(GLenum mode, GLuint start, GLuint 
 		return;
 	}
     if (count==0) {
+        noerrorShim();
+        return;
+    }
+    if (glstate->vao->elements && !glstate->vao->elements->data) {
         noerrorShim();
         return;
     }
@@ -606,13 +639,13 @@ void APIENTRY_GL4ES gl4es_glDrawRangeElements(GLenum mode, GLuint start, GLuint 
         (!compiling && !intercept && type==GL_UNSIGNED_INT && hardext.elementuint)
         );
     if(need_free) {
-        sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+        sindices = copy_gl_array(elem_cpu_ptr(indices),
             type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
     } else {
         if(type==GL_UNSIGNED_INT)
-            iindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            iindices = elem_cpu_ptr(indices);
         else
-            sindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            sindices = elem_cpu_ptr(indices);
     }
 
     if (compiling) {
@@ -667,9 +700,16 @@ void APIENTRY_GL4ES gl4es_glDrawRangeElements(GLenum mode, GLuint start, GLuint 
         
         return;
     } else {
+        GLuint old_index = 0;
+        if(need_free) {
+            old_index = glstate->bind_buffer.want_index;
+            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
         glDrawElementsCommon(mode, 0, count, end+1, sindices, iindices, 1);
-        if(need_free)
+        if(need_free) {
             free(sindices);
+            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_index);
+        }
     }
 }
 AliasExport(void,glDrawRangeElements,,(GLenum mode,GLuint start,GLuint end,GLsizei count,GLenum type,const void *indices));
@@ -687,6 +727,10 @@ void APIENTRY_GL4ES gl4es_glDrawElements(GLenum mode, GLsizei count, GLenum type
 		return;
 	}
     if (count==0) {
+        noerrorShim();
+        return;
+    }
+    if (glstate->vao->elements && !glstate->vao->elements->data) {
         noerrorShim();
         return;
     }
@@ -713,14 +757,14 @@ void APIENTRY_GL4ES gl4es_glDrawElements(GLenum mode, GLsizei count, GLenum type
         (!compiling && !intercept && type==GL_UNSIGNED_INT && hardext.elementuint)
         );
     if(need_free) {
-        sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+        sindices = copy_gl_array(elem_cpu_ptr(indices),
             type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
         old_index = wantBufferIndex(0);
     } else {
         if(type==GL_UNSIGNED_INT)
-            iindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            iindices = elem_cpu_ptr(indices);
         else
-            sindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            sindices = elem_cpu_ptr(indices);
     }
 
     if (compiling) {
@@ -961,6 +1005,10 @@ void APIENTRY_GL4ES gl4es_glMultiDrawElements( GLenum mode, GLsizei *counts, GLe
         noerrorShim();
         return;
     }
+    if (glstate->vao->elements && !glstate->vao->elements->data) {
+        noerrorShim();
+        return;
+    }
     bool compiling = (glstate->list.active);
     bool intercept = should_intercept_render(mode);
 
@@ -1079,6 +1127,10 @@ AliasExport(void,glMultiDrawElements,,( GLenum mode, GLsizei *count, GLenum type
 void APIENTRY_GL4ES gl4es_glMultiDrawElementsBaseVertex( GLenum mode, GLsizei *counts, GLenum type, const void * const *indices, GLsizei primcount, const GLint * basevertex) {
     DBG(printf("glMultiDrawElementsBaseVertex(%s, %p, %s, @%p, %d, @%p), inlist=%i, pending=%d\n", PrintEnum(mode), counts, PrintEnum(type), indices, primcount, basevertex, (glstate->list.active)?1:0, glstate->list.pending);)
     // divide the call, should try something better one day...
+    if (glstate->vao->elements && !glstate->vao->elements->data) {
+        noerrorShim();
+        return;
+    }
     bool compiling = (glstate->list.active);
     bool intercept = should_intercept_render(mode);
     //BATCH Mode
@@ -1116,10 +1168,10 @@ void APIENTRY_GL4ES gl4es_glMultiDrawElementsBaseVertex( GLenum mode, GLsizei *c
         GLuint *iindices = NULL;
 
         if(type==GL_UNSIGNED_INT && hardext.elementuint && !compiling && !intercept)
-            iindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            iindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_INT, 1, 0, count, NULL);
         else
-            sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            sindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
 
         if (compiling) {
@@ -1196,6 +1248,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsBaseVertex(GLenum mode, GLsizei count, G
             noerrorShim();
             return;
         }
+        if (glstate->vao->elements && !glstate->vao->elements->data) {
+            noerrorShim();
+            return;
+        }
 
         bool compiling = (glstate->list.active);
         bool intercept = should_intercept_render(mode);
@@ -1217,10 +1273,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsBaseVertex(GLenum mode, GLsizei count, G
         GLuint *iindices = NULL;
 
         if(type==GL_UNSIGNED_INT && hardext.elementuint && !compiling && !intercept)
-            iindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            iindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_INT, 1, 0, count, NULL);
         else
-            sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            sindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
 
         if (compiling) {
@@ -1265,7 +1321,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsBaseVertex(GLenum mode, GLsizei count, G
                 for(int i=0; i<count; i++) iindices[i]+=basevertex;
             else
                 for(int i=0; i<count; i++) sindices[i]+=basevertex;
+            GLuint old_index = glstate->bind_buffer.want_index;
+            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glDrawElementsCommon(mode, 0, count, 0, sindices, iindices, 1);
+            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_index);
             if(iindices)
                 free(iindices);
             else
@@ -1292,6 +1351,10 @@ void APIENTRY_GL4ES gl4es_glDrawRangeElementsBaseVertex(GLenum mode, GLuint star
             noerrorShim();
             return;
         }
+        if (glstate->vao->elements && !glstate->vao->elements->data) {
+            noerrorShim();
+            return;
+        }
 
         bool compiling = (glstate->list.active);
         bool intercept = should_intercept_render(mode);
@@ -1312,10 +1375,10 @@ void APIENTRY_GL4ES gl4es_glDrawRangeElementsBaseVertex(GLenum mode, GLuint star
         GLushort *sindices = NULL;
         GLuint *iindices = NULL;
         if(type==GL_UNSIGNED_INT && hardext.elementuint && !compiling && !intercept)
-            iindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            iindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_INT, 1, 0, count, NULL);
         else
-            sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            sindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
 
         if (compiling) {
@@ -1433,45 +1496,7 @@ void APIENTRY_GL4ES gl4es_glDrawArraysInstanced(GLenum mode, GLint first, GLsize
         free_renderlist(list);
     } else {
         if (mode==GL_QUADS) {
-            GLsizei len = first + count;
-            if (first >= 0 && (first & 3) == 0 && count > 0 && (count & 3) == 0
-                && (uint64_t)(uint32_t)first + (uint64_t)(uint32_t)count <= (uint64_t)QUAD_IDX_VERTS
-                && quad_ibo_ready()) {
-                GLuint old_buffer = glstate->bind_buffer.want_index;
-                bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-                glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len,
-                                     glstate->quad_idx + (first*3/2), NULL, primcount);
-                bindBuffer(GL_ELEMENT_ARRAY_BUFFER, old_buffer);
-                return;
-            }
-            static GLushort *indices = NULL;
-            static int indcnt = 0;
-            static int indfirst = 0;
-            int realfirst = ((first%4)==0)?0:first;
-            int realcount = count + (first-realfirst);
-            if((indcnt < realcount) || (indfirst!=realfirst)) {
-                if(indcnt < realcount) {
-                    indcnt = realcount;
-                    if (indices) free(indices);
-                    indices = (GLushort*)malloc(sizeof(GLushort)*(indcnt*3/2));
-                    if(!indices) { indcnt = 0; return; }
-                }
-                indfirst = realfirst;
-                GLushort *p = indices;
-                for (int i=0, j=indfirst; i+3<indcnt; i+=4, j+=4) {
-                        *(p++) = j + 0;
-                        *(p++) = j + 1;
-                        *(p++) = j + 2;
-
-                        *(p++) = j + 0;
-                        *(p++) = j + 2;
-                        *(p++) = j + 3;
-                }
-            }
-            GLuint old_buffer = glstate->bind_buffer.want_index;
-            bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            glDrawElementsCommon(GL_TRIANGLES, 0, count*3/2, len, indices+(first-indfirst)*3/2, NULL, primcount);
-            wantBufferIndex(old_buffer);
+            draw_quad_arrays_common(first, count, primcount);
             return;
         }
 
@@ -1490,6 +1515,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsInstanced(GLenum mode, GLsizei count, GL
 		return;
 	}
     if (count==0) {
+        noerrorShim();
+        return;
+    }
+    if (glstate->vao->elements && !glstate->vao->elements->data) {
         noerrorShim();
         return;
     }
@@ -1516,14 +1545,14 @@ void APIENTRY_GL4ES gl4es_glDrawElementsInstanced(GLenum mode, GLsizei count, GL
         (!compiling && !intercept && type==GL_UNSIGNED_INT && hardext.elementuint)
         );
     if(need_free) {
-        sindices = copy_gl_array((glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):indices,
+        sindices = copy_gl_array(elem_cpu_ptr(indices),
             type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
         old_index = wantBufferIndex(0);
     } else {
         if(type==GL_UNSIGNED_INT)
-            iindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            iindices = elem_cpu_ptr(indices);
         else
-            sindices = (glstate->vao->elements)?((void*)((char*)glstate->vao->elements->data + (uintptr_t)indices)):(GLvoid*)indices;
+            sindices = elem_cpu_ptr(indices);
     }
 
     if (compiling) {
@@ -1601,6 +1630,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei
             noerrorShim();
             return;
         }
+        if (glstate->vao->elements && !glstate->vao->elements->data) {
+            noerrorShim();
+            return;
+        }
 
         bool compiling = (glstate->list.active);
         bool intercept = should_intercept_render(mode);
@@ -1622,10 +1655,10 @@ void APIENTRY_GL4ES gl4es_glDrawElementsInstancedBaseVertex(GLenum mode, GLsizei
         GLuint *iindices = NULL;
 
         if(type==GL_UNSIGNED_INT && hardext.elementuint && !compiling && !intercept)
-            iindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            iindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_INT, 1, 0, count, NULL);
         else
-            sindices = copy_gl_array((glstate->vao->elements)?(void*)((char*)glstate->vao->elements->data + (uintptr_t)indices):indices,
+            sindices = copy_gl_array(elem_cpu_ptr(indices),
                 type, 1, 0, GL_UNSIGNED_SHORT, 1, 0, count, NULL);
 
         if (compiling) {

@@ -387,8 +387,14 @@ dep_gl4es_116:
 		grep -q "_initialize_gl4es" $(WORKINGDIR)/gl4es_116_syms.txt || { \
 			echo "ERROR: Missing required symbol _initialize_gl4es in libgl4es_116.dylib"; rm -f $(WORKINGDIR)/gl4es_116_syms.txt; exit 1; \
 		}; \
+		grep -q "_gl4es_trim_memory" $(WORKINGDIR)/gl4es_116_syms.txt || { \
+			echo "ERROR: Missing required symbol _gl4es_trim_memory in libgl4es_116.dylib"; rm -f $(WORKINGDIR)/gl4es_116_syms.txt; exit 1; \
+		}; \
+		grep -q "_gl4es_get_mem_stats" $(WORKINGDIR)/gl4es_116_syms.txt || { \
+			echo "ERROR: Missing required symbol _gl4es_get_mem_stats in libgl4es_116.dylib"; rm -f $(WORKINGDIR)/gl4es_116_syms.txt; exit 1; \
+		}; \
 		rm -f $(WORKINGDIR)/gl4es_116_syms.txt; \
-		echo "Successfully verified libgl4es_116.dylib Mach-O arm64 and critical symbols (_glBegin, _glScissor, _gl4es_GetProcAddress, _initialize_gl4es)."; \
+		echo "Successfully verified libgl4es_116.dylib Mach-O arm64 and critical symbols (_glBegin, _glScissor, _gl4es_GetProcAddress, _initialize_gl4es, _gl4es_trim_memory, _gl4es_get_mem_stats)."; \
 	fi
 	mkdir -p $(SOURCEDIR)/Natives/resources/Frameworks
 	cp $(WORKINGDIR)/libgl4es_116.dylib $(SOURCEDIR)/Natives/resources/Frameworks/libgl4es_116.dylib

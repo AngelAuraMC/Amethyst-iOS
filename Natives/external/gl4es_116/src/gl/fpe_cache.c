@@ -10,6 +10,8 @@
 #include "program.h"
 #include "fpe_cache.h"
 #include "fpe.h"
+#include "gl4es.h"
+#include "glstate.h"
 #include "fpe_shader.h"
 #include "shaderconv.h"
 #include "loader.h"
@@ -83,6 +85,140 @@ static kh_inline khint_t kh_get_fpecachelist_hash(const kh_fpecachelist_t *h, kh
 
 // ********* Cache handling *********
 
+typedef struct fpe_lru_node_s {
+    fpe_fpe_t               entry;
+    struct fpe_lru_node_s  *lru_prev;
+    struct fpe_lru_node_s  *lru_next;
+} fpe_lru_node_t;
+
+static fpe_cache_t *g_fpe_caches_head = NULL;
+static size_t g_fpe_total_entries = 0;
+
+static void fpe_lru_push_front(fpe_cache_t *cur, fpe_lru_node_t *node) {
+    node->lru_prev = NULL;
+    node->lru_next = cur->lru_head;
+    if (cur->lru_head)
+        cur->lru_head->lru_prev = node;
+    else
+        cur->lru_tail = node;
+    cur->lru_head = node;
+}
+
+static void fpe_lru_unlink(fpe_cache_t *cur, fpe_lru_node_t *node) {
+    if (node->lru_prev)
+        node->lru_prev->lru_next = node->lru_next;
+    else if (cur->lru_head == node)
+        cur->lru_head = node->lru_next;
+    if (node->lru_next)
+        node->lru_next->lru_prev = node->lru_prev;
+    else if (cur->lru_tail == node)
+        cur->lru_tail = node->lru_prev;
+    node->lru_prev = NULL;
+    node->lru_next = NULL;
+}
+
+static void fpe_lru_touch(fpe_cache_t *cur, fpe_lru_node_t *node) {
+    if (!cur || !node || cur->lru_head == node)
+        return;
+    fpe_lru_unlink(cur, node);
+    fpe_lru_push_front(cur, node);
+}
+
+static void fpe_mru_remove(fpe_cache_t *cur, const fpe_fpe_t *entry) {
+    if (!cur || !entry) return;
+    int dst = 0;
+    for (int i = 0; i < cur->mru_count; ++i) {
+        if (cur->mru[i] != entry)
+            cur->mru[dst++] = cur->mru[i];
+    }
+    for (int i = dst; i < FPE_MRU_SIZE; ++i)
+        cur->mru[i] = NULL;
+    cur->mru_count = dst;
+}
+
+static void fpe_mru_promote(fpe_cache_t *cur, fpe_fpe_t *entry) {
+    int limit = (cur->mru_count < FPE_MRU_SIZE) ? cur->mru_count : (FPE_MRU_SIZE - 1);
+    for (int j = limit; j > 0; --j) {
+        cur->mru[j] = cur->mru[j - 1];
+    }
+    cur->mru[0] = entry;
+    if (cur->mru_count < FPE_MRU_SIZE)
+        cur->mru_count++;
+}
+
+static int fpe_is_protected(const fpe_fpe_t *e) {
+    if (!glstate || !e)
+        return 0;
+    if (e == glstate->fpe)
+        return 1;
+    if (glstate->gleshard) {
+        if (e->glprogram && e->glprogram == glstate->gleshard->glprogram)
+            return 1;
+        if (e->prog && e->prog == glstate->gleshard->program)
+            return 1;
+    }
+    return 0;
+}
+
+static size_t fpe_owner_total_entries(const struct glsl_s *owner_glsl) {
+    size_t total = 0;
+    for (fpe_cache_t *cache = g_fpe_caches_head; cache; cache = cache->cache_next) {
+        if (cache->owner_glsl == owner_glsl)
+            total += cache->count;
+    }
+    return total;
+}
+
+static void fpe_evict_node(fpe_cache_t *cur, fpe_lru_node_t *node, int freeprog) {
+    if (!cur || !node) return;
+    fpe_fpe_t *victim = &node->entry;
+
+    fpe_lru_unlink(cur, node);
+    if (cur->count > 0) cur->count--;
+    if (g_fpe_total_entries > 0) g_fpe_total_entries--;
+    gl4es_mem_set_fpe_cache_entries(g_fpe_total_entries);
+
+    fpe_mru_remove(cur, victim);
+
+    if (cur->map) {
+        khint_t hv = victim->hash ? (khint_t)(victim->hash ^ (victim->hash >> 32))
+                                  : _hash_fpe_kh(&victim->state);
+        khint_t vk = kh_get_fpecachelist_hash(cur->map, &victim->state, hv);
+        if (vk != kh_end(cur->map))
+            kh_del(fpecachelist, cur->map, vk);
+    }
+
+    if (freeprog && glstate && glstate->glsl &&
+        (!cur->owner_glsl || cur->owner_glsl == glstate->glsl)) {
+        if (glstate->fpe == victim)
+            glstate->fpe = NULL;
+        if (glstate->gleshard) {
+            if ((victim->glprogram && glstate->gleshard->glprogram == victim->glprogram) ||
+                (victim->prog && glstate->gleshard->program == victim->prog)) {
+                glstate->gleshard->program = 0;
+                glstate->gleshard->glprogram = NULL;
+            }
+        }
+        if (victim->prog && glstate->glsl->programs) {
+            khint_t pk = kh_get(programlist, glstate->glsl->programs, victim->prog);
+            if (pk != kh_end(glstate->glsl->programs))
+                gl4es_glDeleteProgram(victim->prog);
+        }
+        if (victim->vert && glstate->glsl->shaders) {
+            khint_t sk = kh_get(shaderlist, glstate->glsl->shaders, victim->vert);
+            if (sk != kh_end(glstate->glsl->shaders))
+                gl4es_glDeleteShader(victim->vert);
+        }
+        if (victim->frag && glstate->glsl->shaders) {
+            khint_t sk = kh_get(shaderlist, glstate->glsl->shaders, victim->frag);
+            if (sk != kh_end(glstate->glsl->shaders))
+                gl4es_glDeleteShader(victim->frag);
+        }
+    }
+
+    free(node);
+}
+
 fpe_cache_t* fpe_NewCache(void) {
     fpe_cache_t *cache = (fpe_cache_t*)calloc(1, sizeof(fpe_cache_t));
     if (cache) {
@@ -91,28 +227,45 @@ fpe_cache_t* fpe_NewCache(void) {
             free(cache);
             return NULL;
         }
+        cache->owner_glsl = glstate ? glstate->glsl : NULL;
+        cache->cache_prev = NULL;
+        cache->cache_next = g_fpe_caches_head;
+        if (g_fpe_caches_head)
+            g_fpe_caches_head->cache_prev = cache;
+        g_fpe_caches_head = cache;
     }
     return cache;
 }
 
 void fpe_disposeCache(fpe_cache_t* cache, int freeprog) {
     if(!cache) return;
+    if (cache->cache_prev)
+        cache->cache_prev->cache_next = cache->cache_next;
+    else if (g_fpe_caches_head == cache)
+        g_fpe_caches_head = cache->cache_next;
+    if (cache->cache_next)
+        cache->cache_next->cache_prev = cache->cache_prev;
+    cache->cache_prev = NULL;
+    cache->cache_next = NULL;
+
+    if (freeprog && glstate && glstate->list.pending && !glstate->list.begin && !glstate->list.compiling)
+        gl4es_flush();
+
+    while (cache->lru_head) {
+        fpe_evict_node(cache, cache->lru_head, freeprog);
+    }
     if(cache->map) {
-        fpe_fpe_t *m;
-        kh_foreach_value(cache->map, m, 
-            if(freeprog) {
-                if(m->glprogram)
-                    gl4es_glDeleteProgram(m->glprogram->id);
-            }
-            free(m);
-        )
         kh_destroy(fpecachelist, cache->map);
+        cache->map = NULL;
     }
     free(cache);
 }
 
 fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
+    (void)fixed;
     if(!cur || !state || !cur->map) return NULL;
+    if (!cur->owner_glsl && glstate)
+        cur->owner_glsl = glstate->glsl;
 
     uint64_t key_hash = _hash_fpe(state);
 
@@ -125,6 +278,7 @@ fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
                 }
                 cur->mru[0] = entry;
             }
+            fpe_lru_touch(cur, (fpe_lru_node_t*)entry);
             return entry;
         }
     }
@@ -136,26 +290,79 @@ fpe_fpe_t *fpe_GetCache(fpe_cache_t *cur, fpe_state_t *state, int fixed) {
         result = kh_value(cur->map, k);
         if(!result->hash)
             result->hash = key_hash;
+        fpe_lru_touch(cur, (fpe_lru_node_t*)result);
     } else {
-        result = (fpe_fpe_t*)calloc(1, sizeof(fpe_fpe_t));
-        if(!result) return NULL;
+        size_t max_entries = gl4es_mem_fpe_cache_max_entries();
+        if (max_entries == 0) max_entries = 1;
+        if (!glstate || !glstate->list.pending) {
+            size_t owner_total = fpe_owner_total_entries(cur->owner_glsl);
+            fpe_lru_node_t *cand = cur->lru_tail;
+            while (owner_total >= max_entries && cand) {
+                fpe_lru_node_t *prev = cand->lru_prev;
+                if (!fpe_is_protected(&cand->entry)) {
+                    fpe_evict_node(cur, cand, 1);
+                    if (owner_total > 0) owner_total--;
+                }
+                cand = prev;
+            }
+            if (owner_total >= max_entries) {
+                for (fpe_cache_t *sib = g_fpe_caches_head; sib && owner_total >= max_entries; sib = sib->cache_next) {
+                    if (sib == cur || sib->owner_glsl != cur->owner_glsl)
+                        continue;
+                    cand = sib->lru_tail;
+                    while (owner_total >= max_entries && cand) {
+                        fpe_lru_node_t *prev = cand->lru_prev;
+                        if (!fpe_is_protected(&cand->entry)) {
+                            fpe_evict_node(sib, cand, 1);
+                            if (owner_total > 0) owner_total--;
+                        }
+                        cand = prev;
+                    }
+                }
+            }
+        }
+        fpe_lru_node_t *node = (fpe_lru_node_t*)calloc(1, sizeof(fpe_lru_node_t));
+        if(!node) return NULL;
+        result = &node->entry;
         result->hash = key_hash;
         memcpy(&result->state, state, sizeof(fpe_state_t));
-        int r;
+        int r = 0;
         k = kh_put(fpecachelist, cur->map, &result->state, &r);
+        if (r < 0 || k == kh_end(cur->map)) {
+            free(node);
+            return NULL;
+        }
         kh_value(cur->map, k) = result;
+        fpe_lru_push_front(cur, node);
+        cur->count++;
+        g_fpe_total_entries++;
+        gl4es_mem_set_fpe_cache_entries(g_fpe_total_entries);
     }
 
-    int shift_limit = (cur->mru_count < FPE_MRU_SIZE) ? cur->mru_count : (FPE_MRU_SIZE - 1);
-    for(int j = shift_limit; j > 0; --j) {
-        cur->mru[j] = cur->mru[j-1];
-    }
-    cur->mru[0] = result;
-    if(cur->mru_count < FPE_MRU_SIZE) {
-        cur->mru_count++;
-    }
-
+    fpe_mru_promote(cur, result);
     return result;
+}
+
+void fpe_CacheTrim(int urgency) {
+    if (!glstate || !glstate->glsl || glstate->list.pending)
+        return;
+    size_t max_e = gl4es_mem_fpe_cache_max_entries();
+    size_t target = (urgency <= 0) ? max_e : ((urgency == 1) ? (max_e / 2) : 0);
+    size_t total = fpe_owner_total_entries(glstate->glsl);
+
+    for (fpe_cache_t *cache = g_fpe_caches_head; cache && total > target; cache = cache->cache_next) {
+        if (cache->owner_glsl != glstate->glsl)
+            continue;
+        fpe_lru_node_t *cand = cache->lru_tail;
+        while (total > target && cand) {
+            fpe_lru_node_t *prev = cand->lru_prev;
+            if (!fpe_is_protected(&cand->entry)) {
+                fpe_evict_node(cache, cand, 1);
+                if (total > 0) total--;
+            }
+            cand = prev;
+        }
+    }
 }
 
 typedef struct psa_s {
@@ -164,6 +371,8 @@ typedef struct psa_s {
     int         size;
     void*       prog;
     struct psa_s *dead_next;
+    struct psa_s *lru_prev;
+    struct psa_s *lru_next;
 } psa_t;
 
 KHASH_MAP_INIT_FPE(psalist, psa_t *);
@@ -172,7 +381,10 @@ KHASH_MAP_INIT_FPE(psalist, psa_t *);
 typedef struct gl4es_psa_s {
     int             size;
     int             dirty;
-    kh_psalist_t*   cache;    
+    kh_psalist_t*   cache;
+    psa_t*          lru_head;
+    psa_t*          lru_tail;
+    size_t          total_bytes;
 #ifdef PSA_BG_SAVE
     volatile int    busy;
     int             thread_valid;
@@ -187,6 +399,61 @@ static char *psa_name = NULL;
 
 #define PSA_MAX_ENTRIES     65536
 #define PSA_MAX_PROG_SIZE   (8*1024*1024)
+
+static void psa_lru_push_front(psa_t *p) {
+    if (!psa || !p) return;
+    p->lru_prev = NULL;
+    p->lru_next = psa->lru_head;
+    if (psa->lru_head)
+        psa->lru_head->lru_prev = p;
+    else
+        psa->lru_tail = p;
+    psa->lru_head = p;
+}
+
+static void psa_lru_unlink(psa_t *p) {
+    if (!psa || !p) return;
+    if (p->lru_prev)
+        p->lru_prev->lru_next = p->lru_next;
+    else if (psa->lru_head == p)
+        psa->lru_head = p->lru_next;
+    if (p->lru_next)
+        p->lru_next->lru_prev = p->lru_prev;
+    else if (psa->lru_tail == p)
+        psa->lru_tail = p->lru_prev;
+    p->lru_prev = NULL;
+    p->lru_next = NULL;
+}
+
+static void psa_lru_touch(psa_t *p) {
+    if (!psa || !p || psa->lru_head == p)
+        return;
+    psa_lru_unlink(p);
+    psa_lru_push_front(p);
+}
+
+static void psa_retire_locked(psa_t *victim) {
+    if (!psa || !victim) return;
+    psa_lru_unlink(victim);
+    size_t entry_bytes = sizeof(psa_t) + (size_t)(victim->size > 0 ? victim->size : 0);
+    psa->total_bytes = (psa->total_bytes >= entry_bytes) ? (psa->total_bytes - entry_bytes) : 0;
+
+    if (psa->cache) {
+        khint_t vk = kh_get(psalist, psa->cache, &victim->state);
+        if (vk != kh_end(psa->cache))
+            kh_del(psalist, psa->cache, vk);
+    }
+
+#ifdef PSA_BG_SAVE
+    if (PSA_LD(psa->busy)) {
+        victim->dead_next = psa->dead;
+        psa->dead = victim;
+        return;
+    }
+#endif
+    free(victim->prog);
+    free(victim);
+}
 
 static uint64_t psa_fnv(uint64_t h, const char* s)
 {
@@ -266,7 +533,11 @@ void fpe_readPSA(void)
         fclose(f);
         return;
     }
+    size_t max_entries = gl4es_mem_psa_max_entries();
+    size_t max_bytes = gl4es_mem_psa_max_bytes();
     for (int i=0; i<n; ++i) {
+        if ((size_t)kh_size(psa->cache) >= max_entries)
+            break;
         psa_t *p = (psa_t*)calloc(1, sizeof(psa_t));
         if(!p)
             break;
@@ -274,6 +545,11 @@ void fpe_readPSA(void)
         || fread(&p->format, sizeof(p->format), 1, f)!=1
         || fread(&p->size, sizeof(p->size), 1, f)!=1
         || p->size<=0 || p->size>PSA_MAX_PROG_SIZE) {
+            free(p);
+            break;
+        }
+        size_t entry_bytes = sizeof(psa_t) + (size_t)p->size;
+        if (psa->total_bytes + entry_bytes > max_bytes) {
             free(p);
             break;
         }
@@ -285,15 +561,18 @@ void fpe_readPSA(void)
         }
         int ret;
         khint_t k = kh_put(psalist, psa->cache, &p->state, &ret);
-        if(!ret) {
+        if(ret <= 0 || k == kh_end(psa->cache)) {
             free(p->prog);
             free(p);
             continue;
         }
         kh_value(psa->cache, k) = p;
+        psa_lru_push_front(p);
+        psa->total_bytes += entry_bytes;
     }
     fclose(f);
-    psa->size = kh_size(psa->cache);
+    psa->size = (int)kh_size(psa->cache);
+    gl4es_mem_set_psa_stats((size_t)psa->size, psa->total_bytes);
     SHUT_LOGD("Loaded a PSA with %d Precompiled Programs\n", psa->size);
 }
 
@@ -512,6 +791,7 @@ void fpe_FreePSA(void)
     psa = NULL;
     free(psa_name);
     psa_name = NULL;
+    gl4es_mem_set_psa_stats(0, 0);
 }
 
 int fpe_GetProgramPSA(GLuint program, fpe_state_t* state)
@@ -525,6 +805,7 @@ int fpe_GetProgramPSA(GLuint program, fpe_state_t* state)
     if(k==kh_end(psa->cache))
         return 0; // not here
     psa_t *p = kh_value(psa->cache, k);
+    psa_lru_touch(p);
     // try to load...
     return gl4es_useProgramBinary(program, p->size, p->format, p->prog);
 }
@@ -536,13 +817,23 @@ void fpe_AddProgramPSA(GLuint program, fpe_state_t* state)
     // if state contains custom vertex of fragment shader, then ignore
     if(state->vertex_prg_enable || state->fragment_prg_enable)
         return;
+    size_t max_entries = gl4es_mem_psa_max_entries();
+    size_t max_bytes = gl4es_mem_psa_max_bytes();
+    if (max_entries == 0 || max_bytes <= sizeof(psa_t))
+        return;
     psa_t *p = (psa_t*)calloc(1, sizeof(psa_t));
     if(!p)
         return;
     memcpy(&p->state, state, sizeof(p->state));
 
     int l = gl4es_getProgramBinary(program, &p->size, &p->format, &p->prog);
-    if(l==0) { // there was an error...
+    if(l==0 || p->size<=0 || p->size>PSA_MAX_PROG_SIZE) { // there was an error...
+        free(p->prog);
+        free(p);
+        return;
+    }
+    size_t entry_bytes = sizeof(psa_t) + (size_t)p->size;
+    if (entry_bytes > max_bytes) {
         free(p->prog);
         free(p);
         return;
@@ -551,29 +842,64 @@ void fpe_AddProgramPSA(GLuint program, fpe_state_t* state)
 #ifdef PSA_BG_SAVE
     pthread_mutex_lock(&psa_lock);
 #endif
-    int ret;
+    khint_t existing = kh_get(psalist, psa->cache, &p->state);
+    if (existing != kh_end(psa->cache)) {
+        psa_retire_locked(kh_value(psa->cache, existing));
+    }
+    int ret = 0;
     khint_t k = kh_put(psalist, psa->cache, &p->state, &ret);
-    if(!ret) {
-        psa_t *p2 = kh_value(psa->cache, k);
+    if (ret <= 0 || k == kh_end(psa->cache)) {
 #ifdef PSA_BG_SAVE
-        if(PSA_LD(psa->busy)) {
-            p2->dead_next = psa->dead;
-            psa->dead = p2;
-            p2 = NULL;
-        }
+        pthread_mutex_unlock(&psa_lock);
 #endif
-        if(p2) {
-            free(p2->prog);
-            free(p2);
-        }
+        free(p->prog);
+        free(p);
+        return;
     }
     kh_key(psa->cache, k) = &p->state;
     kh_value(psa->cache, k) = p;
-    psa->size = kh_size(psa->cache);
+    psa_lru_push_front(p);
+    psa->total_bytes += entry_bytes;
+
+    while ((size_t)kh_size(psa->cache) > max_entries || psa->total_bytes > max_bytes) {
+        psa_t *victim = psa->lru_tail;
+        if (!victim || victim == p)
+            break;
+        psa_retire_locked(victim);
+    }
+
+    psa->size = (int)kh_size(psa->cache);
+    gl4es_mem_set_psa_stats((size_t)psa->size, psa->total_bytes);
 #ifdef PSA_BG_SAVE
     PSA_ST(psa->dirty, 1);
     pthread_mutex_unlock(&psa_lock);
 #else
     psa->dirty = 1;
+#endif
+}
+
+void fpe_PSATrim(int urgency)
+{
+    if(!psa || !psa->cache)
+        return;
+    size_t max_e = gl4es_mem_psa_max_entries();
+    size_t max_b = gl4es_mem_psa_max_bytes();
+    if (urgency == 1) {
+        max_e /= 2;
+        max_b /= 2;
+    } else if (urgency >= 2) {
+        max_e = 0;
+        max_b = 0;
+    }
+#ifdef PSA_BG_SAVE
+    pthread_mutex_lock(&psa_lock);
+#endif
+    while (psa->lru_tail && ((size_t)kh_size(psa->cache) > max_e || psa->total_bytes > max_b)) {
+        psa_retire_locked(psa->lru_tail);
+    }
+    psa->size = (int)kh_size(psa->cache);
+    gl4es_mem_set_psa_stats((size_t)psa->size, psa->total_bytes);
+#ifdef PSA_BG_SAVE
+    pthread_mutex_unlock(&psa_lock);
 #endif
 }

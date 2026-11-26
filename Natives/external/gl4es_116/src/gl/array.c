@@ -307,63 +307,74 @@ GLvoid *copy_gl_array_convert(const GLvoid *src,
     return dst;
 }
 
+static inline const GLvoid *gl_pointer_cpu_addr(const vertexattrib_t *ptr) {
+    if (ptr->buffer && !ptr->buffer->data)
+        return NULL;
+    return (const GLvoid*)((uintptr_t)ptr->pointer + (ptr->buffer ? (uintptr_t)ptr->buffer->data : 0));
+}
+
 GLvoid *copy_gl_pointer(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
 	float filler = 0.0f;
-    return copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    return copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, &filler, NULL);
 }
 GLvoid *copy_gl_pointer_color(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
 	float filler = 1.0f;
-    return copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    return copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, &filler, NULL);
 }
 GLvoid *copy_gl_pointer_bytecolor(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
 	GLubyte filler = 255;
-    return copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    return copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_UNSIGNED_BYTE, width, skip, count, &filler, NULL);
 }
 
 GLvoid *copy_gl_pointer_raw(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
-    return copy_gl_array((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    return copy_gl_array(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, NULL);
 }
 
 GLvoid *copy_gl_pointer_tex(vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
     //float filler = 1.0f;
-    return copy_gl_array_texcoord((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    return copy_gl_array_texcoord(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          /*GL_FLOAT,*/ width, skip, count, /*&filler,*/ NULL);
 }
 
 void copy_gl_pointer_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
     float filler = 0.0f;
-    copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, &filler, dest);
 }
 void copy_gl_pointer_color_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
 	float filler = 1.0f;
-    copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, &filler, dest);
 }
 void copy_gl_pointer_bytecolor_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
 	GLubyte filler = 255;
-    copy_gl_array_convert((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    copy_gl_array_convert(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_UNSIGNED_BYTE, width, skip, count, &filler, dest);
 }
 void copy_gl_pointer_raw_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
-    copy_gl_array((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    copy_gl_array(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          GL_FLOAT, width, skip, count, dest);
 }
 void copy_gl_pointer_tex_noalloc(void* dest, vertexattrib_t *ptr, GLsizei width, GLsizei skip, GLsizei count) {
     //float filler = 1.0f;
-    copy_gl_array_texcoord((const GLvoid*)((uintptr_t)ptr->pointer+(uintptr_t)ptr->real_pointer), ptr->type, ptr->size, ptr->stride,
+    copy_gl_array_texcoord(gl_pointer_cpu_addr(ptr), ptr->type, ptr->size, ptr->stride,
                          /*GL_FLOAT,*/ width, skip, count, /*&filler,*/ dest);
 }
 
 GLfloat *gl_pointer_index(vertexattrib_t *p, GLint index) {
     static GLfloat buf[4];
+    const GLvoid *base = gl_pointer_cpu_addr(p);
+    if (!base) {
+        memset(buf, 0, sizeof(buf));
+        return buf;
+    }
     GLsizei size = gl_sizeof(p->type);
     GLsizei stride = p->stride ? p->stride : (size * p->size);
-    uintptr_t ptr = (uintptr_t)p->pointer+(uintptr_t)p->real_pointer + (stride * index);
+    uintptr_t ptr = (uintptr_t)base + (size_t)stride * (size_t)index;
 
     GL_TYPE_SWITCH(src, ptr, p->type,
         for (int i = 0; i < p->size; i++) {

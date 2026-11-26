@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <mach/mach.h>
+#include <os/proc.h>
 
 #include "utils.h"
 
@@ -53,6 +54,64 @@ void init_loadDefaultEnv() {
 
     // Runs JVM in a separate thread
     setenv("HACK_IGNORE_START_ON_FIRST_THREAD", "1", 1);
+}
+
+static BOOL s_autoSetGl4esMemBudget = NO;
+
+static void init_probeMemoryEnv(void) {
+    const char *existingProfile = getenv("LIBGL_MEM_PROFILE");
+    const char *existingBudget = getenv("AMETHYST_GL4ES_MEM_BUDGET_MB");
+    uint64_t physBytes = NSProcessInfo.processInfo.physicalMemory;
+    uint64_t physMB = physBytes >> 20;
+    size_t availBytes = os_proc_available_memory();
+    uint64_t availMB = (uint64_t)(availBytes >> 20);
+    BOOL hasMemorystatus = getEntitlementValue(@"com.apple.private.memorystatus");
+
+    const char *profile = "high";
+    uint64_t budgetMB = 384;
+    if (physMB <= 2560) {
+        profile = "low";
+        budgetMB = 64;
+    } else if (physMB <= 5120) {
+        profile = "medium";
+        budgetMB = 192;
+    }
+
+    if (availBytes > 0) {
+        if (availMB <= 1280 || (!hasMemorystatus && availMB <= 1536)) {
+            profile = "low";
+            budgetMB = (availMB > 1024) ? 64 : 48;
+        } else if ((availMB <= 2560 && strcmp(profile, "high") == 0) ||
+                   (!hasMemorystatus && strcmp(profile, "low") != 0 && physMB <= 5120 && availMB <= 1920)) {
+            profile = "medium";
+            budgetMB = (!hasMemorystatus && availMB <= 1920) ? 128 : 192;
+        }
+
+        if (!hasMemorystatus) {
+            uint64_t headroomCap = availMB / 10;
+            if (headroomCap < 32) {
+                headroomCap = 32;
+            }
+            if (budgetMB > headroomCap) {
+                budgetMB = headroomCap;
+            }
+        }
+    }
+
+    char budgetBuf[32];
+    snprintf(budgetBuf, sizeof(budgetBuf), "%llu", (unsigned long long)budgetMB);
+    setenv("LIBGL_MEM_PROFILE", profile, 0);
+    s_autoSetGl4esMemBudget = NO;
+    if (!existingProfile && !existingBudget) {
+        if (setenv("AMETHYST_GL4ES_MEM_BUDGET_MB", budgetBuf, 0) == 0) {
+            s_autoSetGl4esMemBudget = YES;
+        }
+    }
+
+    NSLog(@"[JavaLauncher] RAM probe: physical=%llu MB, available=%llu MB, memorystatus=%d -> LIBGL_MEM_PROFILE=%s, AMETHYST_GL4ES_MEM_BUDGET_MB=%s",
+          (unsigned long long)physMB, (unsigned long long)availMB, hasMemorystatus ? 1 : 0,
+          existingProfile ? existingProfile : profile,
+          s_autoSetGl4esMemBudget ? budgetBuf : (existingBudget ? existingBudget : "(unset)"));
 }
 
 void init_applyExperimentalSettings() {
@@ -103,6 +162,8 @@ void init_loadCustomEnv() {
     NSString *envvars = getPrefObject(@"java.env_variables");
     if (envvars == nil) return;
     NSLog(@"[JavaLauncher] Reading custom environment variables");
+    BOOL customSetMemProfile = NO;
+    BOOL customSetMemBudget = NO;
     for (NSString *line in [envvars componentsSeparatedByCharactersInSet:NSCharacterSet.whitespaceCharacterSet]) {
         if (![line containsString:@"="]) {
             NSLog(@"[JavaLauncher] Warning: skipped empty value custom env variable: %@", line);
@@ -111,8 +172,17 @@ void init_loadCustomEnv() {
         NSRange range = [line rangeOfString:@"="];
         NSString *key = [line substringToIndex:range.location];
         NSString *value = [line substringFromIndex:range.location+range.length];
+        if ([key isEqualToString:@"LIBGL_MEM_PROFILE"]) {
+            customSetMemProfile = YES;
+        } else if ([key isEqualToString:@"AMETHYST_GL4ES_MEM_BUDGET_MB"]) {
+            customSetMemBudget = YES;
+        }
         setenv(key.UTF8String, value.UTF8String, 1);
         NSLog(@"[JavaLauncher] Added custom env variable: %@", line);
+    }
+    if (customSetMemProfile && !customSetMemBudget && s_autoSetGl4esMemBudget) {
+        unsetenv("AMETHYST_GL4ES_MEM_BUDGET_MB");
+        s_autoSetGl4esMemBudget = NO;
     }
 }
 
@@ -149,6 +219,7 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
     NSLog(@"[JavaLauncher] Beginning JVM launch");
 
     init_loadDefaultEnv();
+    init_probeMemoryEnv();
     init_applyExperimentalSettings();
     init_loadCustomEnv();
     amethyst_refresh_benchmark_state();

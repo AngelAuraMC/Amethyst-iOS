@@ -14,6 +14,7 @@
 #include "fpe_cache.h"
 #include "framebuffers.h"
 #include "glstate.h"
+#include "gl4es_mem.h"
 #include "init.h"
 #include "loader.h"
 #include "matrix.h"
@@ -62,9 +63,10 @@ int adjust_vertices(GLenum mode, int nb) {
 
 #undef client_state
 #define clone_gl_pointer(t, s, n)\
-    t.size = s; t.type = type; t.stride = stride; t.pointer = (void*)((char*)pointer + (uintptr_t)((glstate->vao->vertex)?glstate->vao->vertex->data:0));\
+    t.size = s; t.type = type; t.stride = stride; t.pointer = (void*)((uintptr_t)pointer + (uintptr_t)((glstate->vao->vertex)?glstate->vao->vertex->data:0));\
+    t.buffer = NULL;\
     t.real_buffer=(glstate->vao->vertex)?glstate->vao->vertex->real_buffer:0; t.real_pointer=(glstate->vao->vertex)?pointer:0;   \
-    t.normalized=n; t.divisor=0
+    t.normalized=n; t.integer=0; t.divisor=0
 #define break_lockarrays(t)\
     if(glstate->vao->vertexattrib[t].real_buffer && glstate->vao->locked_mapped[t]) {    \
         glstate->vao->vertexattrib[t].real_buffer = 0; \
@@ -81,6 +83,8 @@ void APIENTRY_GL4ES gl4es_glVertexPointer(GLint size, GLenum type,
     noerrorShimNoPurge();
     break_lockarrays(ATT_VERTEX);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_VERTEX], size, GL_FALSE);
+    if(glstate->vao->vertex && type == GL_DOUBLE)
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 }
 void APIENTRY_GL4ES gl4es_glColorPointer(GLint size, GLenum type,
                      GLsizei stride, const GLvoid *pointer) {
@@ -92,12 +96,16 @@ void APIENTRY_GL4ES gl4es_glColorPointer(GLint size, GLenum type,
     noerrorShimNoPurge();
     break_lockarrays(ATT_COLOR);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_COLOR], size, (type==GL_FLOAT)?GL_FALSE:GL_TRUE);
+    if(glstate->vao->vertex && (size == GL_BGRA || type == GL_DOUBLE))
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 }
 void APIENTRY_GL4ES gl4es_glNormalPointer(GLenum type, GLsizei stride, const GLvoid *pointer) {
     DBG(printf("glNormalPointer(%s, %d, %p)\n", PrintEnum(type), stride, pointer);)
     noerrorShimNoPurge();
     break_lockarrays(ATT_NORMAL);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_NORMAL], 3, GL_FALSE);
+    if(glstate->vao->vertex && type == GL_DOUBLE)
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 }
 void APIENTRY_GL4ES gl4es_glTexCoordPointer(GLint size, GLenum type,
                      GLsizei stride, const GLvoid *pointer) {
@@ -109,6 +117,8 @@ void APIENTRY_GL4ES gl4es_glTexCoordPointer(GLint size, GLenum type,
     noerrorShimNoPurge();
     break_lockarrays(ATT_MULTITEXCOORD0+glstate->texture.client);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_MULTITEXCOORD0+glstate->texture.client], size, GL_FALSE);
+    if(glstate->vao->vertex && type == GL_DOUBLE)
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
 }
 void APIENTRY_GL4ES gl4es_glSecondaryColorPointer(GLint size, GLenum type, 
 					GLsizei stride, const GLvoid *pointer) {
@@ -119,6 +129,8 @@ void APIENTRY_GL4ES gl4es_glSecondaryColorPointer(GLint size, GLenum type,
     }
     break_lockarrays(ATT_SECONDARY);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_SECONDARY], size, (type==GL_FLOAT)?GL_FALSE:GL_TRUE);
+    if(glstate->vao->vertex && (size == GL_BGRA || type == GL_DOUBLE))
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
     noerrorShimNoPurge();
 }
 void APIENTRY_GL4ES gl4es_glFogCoordPointer(GLenum type, GLsizei stride, const GLvoid *pointer) {
@@ -129,6 +141,8 @@ void APIENTRY_GL4ES gl4es_glFogCoordPointer(GLenum type, GLsizei stride, const G
     }
     break_lockarrays(ATT_FOGCOORD);
     clone_gl_pointer(glstate->vao->vertexattrib[ATT_FOGCOORD], 1, (type==GL_FLOAT)?GL_FALSE:GL_TRUE);
+    if(glstate->vao->vertex && type == GL_DOUBLE)
+        glstate->vao->vertex->flags |= GL4ES_BUFF_NEEDS_SHADOW;
     noerrorShimNoPurge();
 }
 
@@ -250,6 +264,8 @@ void APIENTRY_GL4ES gl4es_glBegin(GLenum mode) {
         glstate->list.active = alloc_renderlist();
     // small optim... continue a render command if possible
     glstate->list.active = NewDrawStage(glstate->list.active, mode);
+    if (glstate->list.active && glstate->list.active->use_glstate && !glstate->merger_master)
+        resize_renderlist(glstate->list.active);
     glstate->list.pending = 0;
     glstate->list.active->use_vbo_array = 2;
     noerrorShimNoPurge();	// TODO, check Enum validity
@@ -857,6 +873,7 @@ void APIENTRY_GL4ES gl4es_glEndList(void) {
         glstate->list.compiling = false;
         end_renderlist(glstate->list.active);
         glstate->list.active = NULL;
+        gl4es_list_sync_chain_cpu_bytes(kh_value(lists, k));
 
         if (glstate->list.mode == GL_COMPILE_AND_EXECUTE) {
         	noerrorShim();
@@ -1028,6 +1045,7 @@ void APIENTRY_GL4ES gl4es_glFlush(void) {
     
     gles_glFlush();
     errorGL();
+    gl4es_mem_drain_pending_trim();
 
 #ifndef NOX11
     if(glstate->emulatedPixmap && !glstate->emulatedWin)
@@ -1045,6 +1063,7 @@ void APIENTRY_GL4ES gl4es_glFinish(void) {
     
     gles_glFinish();
     errorGL();
+    gl4es_mem_drain_pending_trim();
 }
 AliasExport_V(void,glFinish);
 
@@ -1141,10 +1160,12 @@ AliasExport(void,glColorMask,,(GLboolean red, GLboolean green, GLboolean blue, G
 
 void APIENTRY_GL4ES gl4es_glClear(GLbitfield mask) {
     PUSH_IF_COMPILING(glClear);
+    FLUSH_BEGINEND;
 
     mask &= GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
     LOAD_GLES(glClear);
     gles_glClear(mask);
+    gl4es_mem_drain_pending_trim();
     fpe_PSATick();
 }
 AliasExport(void,glClear,,(GLbitfield mask));
@@ -1163,11 +1184,15 @@ void APIENTRY_GL4ES gl4es_glClampColor(GLenum target, GLenum clamp)
 AliasExport(void,glClampColor,,(GLenum target, GLenum clamp));
 
 static int scratch_capacity(int cur, int need) {
+    size_t max_cap = gl4es_mem_gl_scratch_cap();
+    if (need > 0 && (size_t)need > max_cap)
+        return need;
     long long cap = need;
     long long grown = (long long)cur + ((long long)cur >> 2);
     if(cap < grown) cap = grown;
     cap = (cap + 0xFFFF) & ~0xFFFFLL;
-    if(cap > 0x7FFFFFFFLL) cap = need;
+    if ((size_t)cap > max_cap) cap = (long long)max_cap;
+    if(cap > 0x7FFFFFFFLL || cap < need) cap = need;
     return (int)cap;
 }
 
@@ -1179,10 +1204,14 @@ void gl4es_scratch(int alloc) {
             cap = alloc;
             n = malloc(cap);
         }
-        if(glstate->scratch)
-            free(glstate->scratch);
-        glstate->scratch = n;
-        glstate->scratch_alloc = n?cap:0;
+        if (n) {
+            size_t old_alloc = (size_t)glstate->scratch_alloc;
+            if(glstate->scratch)
+                free(glstate->scratch);
+            glstate->scratch = n;
+            glstate->scratch_alloc = cap;
+            gl4es_mem_track_scratch(old_alloc, (size_t)cap);
+        }
     }
 }
 
@@ -1238,6 +1267,7 @@ NonAliasExportDecl(void,gl4es_pre_swap,())
 {
     if (glstate->list.active) gl4es_flush();
     if (glstate->raster.bm_drawing) bitmap_flush();
+    gl4es_mem_drain_pending_trim();
 
     if (globals4es.usefbo) {
         unbindMainFBO();
@@ -1293,6 +1323,7 @@ NonAliasExportDecl(void,gl4es_post_swap,())
 #endif
 {
 		show_fps();
+    gl4es_mem_drain_pending_trim();
     fpe_PSATick();
 
     // If drawing in fbo, rebind it...

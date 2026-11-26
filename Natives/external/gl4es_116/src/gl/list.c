@@ -1,8 +1,11 @@
 #include "list.h"
 
+#include <limits.h>
+#include <stdint.h>
 #include "../glx/hardext.h"
 #include "const.h"
 #include "gl4es.h"
+#include "gl4es_mem.h"
 #include "glstate.h"
 #include "init.h"
 #include "loader.h"
@@ -14,6 +17,162 @@ KHASH_MAP_IMPL_INT(light, renderlight_t *);
 KHASH_MAP_IMPL_INT(texgen, rendertexgen_t *);
 KHASH_MAP_IMPL_INT(texenv, rendertexenv_t *);
 KHASH_MAP_IMPL_INT(gllisthead, renderlist_t*);
+
+typedef struct renderlist_mem_meta_s {
+    int      *shared_vbos;
+    uint32_t  vbo_arrays_mask;
+    uint8_t   cpu_arrays_trimmed;
+    uint8_t   cpu_indices_trimmed;
+    size_t    cpu_mem_bytes;
+} renderlist_mem_meta_t;
+
+KHASH_MAP_INIT_INT64(rlmeta, renderlist_mem_meta_t *);
+static khash_t(rlmeta) *s_rl_meta_map = NULL;
+
+static renderlist_mem_meta_t *rl_meta_find(const renderlist_t *list) {
+    if (!s_rl_meta_map || !list)
+        return NULL;
+    khint_t k = kh_get(rlmeta, s_rl_meta_map, (khint64_t)(uintptr_t)list);
+    if (k == kh_end(s_rl_meta_map))
+        return NULL;
+    return kh_value(s_rl_meta_map, k);
+}
+
+static renderlist_mem_meta_t *rl_meta_get_or_create(renderlist_t *list) {
+    if (!list)
+        return NULL;
+    if (!s_rl_meta_map) {
+        s_rl_meta_map = kh_init(rlmeta);
+        if (!s_rl_meta_map)
+            return NULL;
+    }
+    khint_t k = kh_get(rlmeta, s_rl_meta_map, (khint64_t)(uintptr_t)list);
+    if (k != kh_end(s_rl_meta_map))
+        return kh_value(s_rl_meta_map, k);
+    int ret = 0;
+    k = kh_put(rlmeta, s_rl_meta_map, (khint64_t)(uintptr_t)list, &ret);
+    if (ret <= 0 || k == kh_end(s_rl_meta_map))
+        return NULL;
+    renderlist_mem_meta_t *meta = (renderlist_mem_meta_t *)calloc(1, sizeof(renderlist_mem_meta_t));
+    if (!meta) {
+        kh_del(rlmeta, s_rl_meta_map, k);
+        return NULL;
+    }
+    kh_value(s_rl_meta_map, k) = meta;
+    return meta;
+}
+
+static void rl_meta_remove(renderlist_t *list) {
+    if (!s_rl_meta_map || !list)
+        return;
+    khint_t k = kh_get(rlmeta, s_rl_meta_map, (khint64_t)(uintptr_t)list);
+    if (k != kh_end(s_rl_meta_map)) {
+        renderlist_mem_meta_t *meta = kh_value(s_rl_meta_map, k);
+        if (meta) {
+            gl4es_mem_track_displaylist(meta->cpu_mem_bytes, 0);
+            free(meta);
+        }
+        kh_del(rlmeta, s_rl_meta_map, k);
+        if (kh_size(s_rl_meta_map) == 0) {
+            kh_destroy(rlmeta, s_rl_meta_map);
+            s_rl_meta_map = NULL;
+        }
+    }
+}
+
+static size_t merger_current_bytes_for(const glstate_t *st) {
+    if (!st)
+        return 0;
+    size_t total = 0;
+    if (st->merger_master)
+        total += (size_t)st->merger_cap * 20u * sizeof(GLfloat);
+    if (st->merger_secondary)
+        total += (size_t)st->merger_cap * 4u * sizeof(GLfloat);
+    for (int a = 0; a < MAX_TEX - 2; ++a) {
+        if (st->merger_tex[a])
+            total += (size_t)st->merger_cap * 4u * sizeof(GLfloat);
+    }
+    if (st->merger_indices)
+        total += (size_t)st->merger_indice_cap * sizeof(GLushort);
+    return total;
+}
+
+static size_t merger_current_bytes(void) {
+    return merger_current_bytes_for(glstate);
+}
+
+void gl4es_mem_sync_merger_bytes(void) {
+    if (!glstate)
+        return;
+    size_t new_bytes = merger_current_bytes_for(glstate);
+    if (new_bytes != glstate->merger_tracked_bytes) {
+        gl4es_mem_track_scratch(glstate->merger_tracked_bytes, new_bytes);
+        glstate->merger_tracked_bytes = new_bytes;
+    }
+}
+
+void gl4es_mem_reset_merger_bytes_for(struct glstate_s *st) {
+    if (st && st->merger_tracked_bytes > 0) {
+        gl4es_mem_track_scratch(st->merger_tracked_bytes, 0);
+        st->merger_tracked_bytes = 0;
+    }
+}
+
+void gl4es_mem_reset_merger_bytes(void) {
+    gl4es_mem_reset_merger_bytes_for(glstate);
+}
+
+int gl4es_mem_merger_at_cap(void) {
+    if (!glstate)
+        return 0;
+    return merger_current_bytes_for(glstate) >= gl4es_mem_merger_cap() ? 1 : 0;
+}
+
+static void free_merger_buffers(void) {
+    if (!glstate || glstate->merger_used)
+        return;
+    if (glstate->merger_master) {
+        free(glstate->merger_master);
+        glstate->merger_master = NULL;
+    }
+    if (glstate->merger_secondary) {
+        free(glstate->merger_secondary);
+        glstate->merger_secondary = NULL;
+    }
+    for (int a = 0; a < MAX_TEX - 2; ++a) {
+        if (glstate->merger_tex[a]) {
+            free(glstate->merger_tex[a]);
+            glstate->merger_tex[a] = NULL;
+        }
+    }
+    if (glstate->merger_indices) {
+        free(glstate->merger_indices);
+        glstate->merger_indices = NULL;
+    }
+    glstate->merger_cap = 0;
+    glstate->merger_indice_cap = 0;
+    gl4es_mem_reset_merger_bytes();
+}
+
+static int safe_realloc_merger_sublist(GLfloat **ref, int n, int cap) {
+    if (!ref || cap <= 0)
+        return 0;
+    GLfloat *p = (GLfloat *)realloc(*ref, (size_t)n * sizeof(GLfloat) * (size_t)cap);
+    if (!p)
+        return 0;
+    *ref = p;
+    return 1;
+}
+
+static int safe_realloc_opt_sublist(GLfloat **ref, int n, int cap) {
+    if (!ref || !*ref)
+        return 1;
+    GLfloat *p = (GLfloat *)realloc(*ref, (size_t)n * sizeof(GLfloat) * (size_t)cap);
+    if (!p)
+        return 0;
+    *ref = p;
+    return 1;
+}
 
 renderlist_t *alloc_renderlist() {
 
@@ -39,6 +198,9 @@ renderlist_t *alloc_renderlist() {
 
 bool ispurerender_renderlist(renderlist_t *list) {
     // return true if renderlist contains only rendering command, no state changes
+    renderlist_mem_meta_t *meta = rl_meta_find(list);
+    if (meta && (meta->cpu_arrays_trimmed || meta->cpu_indices_trimmed))
+        return false;
     if (list->calls.len)
         return false;
     if (list->matrix_op)
@@ -246,14 +408,31 @@ void renderlist_quads2triangles(renderlist_t *a) {
     int ilen = len*3/2;
     if(a->use_glstate) {
         if(ind) {//need to copy first...
-            ind = (GLushort*)malloc(len*sizeof(GLushort));
-            memcpy(ind, glstate->merger_indices, len*sizeof(GLushort));
+            ind = (GLushort*)malloc((size_t)len*sizeof(GLushort));
+            if (!ind) {
+                a->indices = NULL;
+                a->ilen = 0;
+                return;
+            }
+            memcpy(ind, glstate->merger_indices, (size_t)len*sizeof(GLushort));
             a->shared_indices = NULL;   // should not be needed
         }
         resize_merger_indices(ilen);
+        if (!glstate->merger_indices || glstate->merger_indice_cap < ilen) {
+            if (ind) free(ind);
+            a->indices = NULL;
+            a->ilen = 0;
+            return;
+        }
         a->indices = glstate->merger_indices;
-    } else
-        a->indices = (GLushort*)malloc(ilen*sizeof(GLushort));
+    } else {
+        a->indices = (GLushort*)malloc((size_t)ilen*sizeof(GLushort));
+        if (!a->indices) {
+            if (ind) free(ind);
+            a->ilen = 0;
+            return;
+        }
+    }
 
     for (int i=0, j=0; i+3<len; i+=4, j+=6) {
         a->indices[j+0] = vind(i+0);
@@ -617,12 +796,35 @@ renderlist_t* append_calllist(renderlist_t *list, renderlist_t *a)
                 a->shared_calls = (int*)malloc(sizeof(int));
                 *a->shared_calls = 0;
             }
+            renderlist_mem_meta_t *meta_a = rl_meta_find(a);
+            int a_trimmed = (meta_a && (meta_a->cpu_arrays_trimmed || meta_a->cpu_indices_trimmed));
+            if (a_trimmed && !meta_a->shared_vbos) {
+                meta_a->shared_vbos = (int*)malloc(sizeof(int));
+                if (meta_a->shared_vbos)
+                    *meta_a->shared_vbos = 0;
+            }
             // batch copy first
             memcpy(new, a, sizeof(renderlist_t));
-            new->vbo_array = 0;
-            new->vbo_indices = 0;
-            new->use_vbo_array = 0;
-            new->use_vbo_indices = 0;
+            if (a_trimmed && meta_a->shared_vbos) {
+                renderlist_mem_meta_t *meta_new = rl_meta_get_or_create(new);
+                if (meta_new) {
+                    meta_new->shared_vbos = meta_a->shared_vbos;
+                    meta_new->vbo_arrays_mask = meta_a->vbo_arrays_mask;
+                    meta_new->cpu_arrays_trimmed = meta_a->cpu_arrays_trimmed;
+                    meta_new->cpu_indices_trimmed = meta_a->cpu_indices_trimmed;
+                    ++(*meta_new->shared_vbos);
+                } else {
+                    new->vbo_array = 0;
+                    new->vbo_indices = 0;
+                    new->use_vbo_array = 0;
+                    new->use_vbo_indices = 0;
+                }
+            } else {
+                new->vbo_array = 0;
+                new->vbo_indices = 0;
+                new->use_vbo_array = 0;
+                new->use_vbo_indices = 0;
+            }
             list->next = new;
             new->prev = list;
             // ok, now on new list
@@ -710,8 +912,12 @@ void free_renderlist(renderlist_t *list) {
                 if (list->indices)
                     free(list->indices);
             }
-        } else
+        } else if (glstate) {
             glstate->merger_used = 0;
+            gl4es_mem_sync_merger_bytes();
+            if (merger_current_bytes() > gl4es_mem_merger_cap())
+                free_merger_buffers();
+        }
 
         if (list->material) {
             rendermaterial_t *m;
@@ -764,66 +970,239 @@ void free_renderlist(renderlist_t *list) {
             free(list->ind_lines);
         if(list->final_colors)
             free(list->final_colors);
-        if(list->vbo_array)
-            deleteSingleBuffer(list->vbo_array);
-        if(list->vbo_indices)
-            deleteSingleBuffer(list->vbo_indices);
+        {
+            renderlist_mem_meta_t *meta = rl_meta_find(list);
+            int drop_vbos = (!meta || !meta->shared_vbos || ((*meta->shared_vbos)--)==0);
+            if (drop_vbos) {
+                if (meta && meta->shared_vbos) {
+                    free(meta->shared_vbos);
+                    meta->shared_vbos = NULL;
+                }
+                if(list->vbo_array)
+                    deleteSingleBuffer(list->vbo_array);
+                if(list->vbo_indices)
+                    deleteSingleBuffer(list->vbo_indices);
+            }
+            rl_meta_remove(list);
+        }
 
         next = list->next;
         free(list);
     } while ((list = next));
 }
 
+int gl4es_merger_alloc_opt_buffer(renderlist_t *list, GLfloat **slot) {
+    if (!glstate || !list || !list->use_glstate || !slot || glstate->merger_cap <= 0)
+        return 0;
+    if (*slot)
+        return 1;
+
+    size_t cap_bytes = gl4es_mem_merger_cap();
+    size_t cur_bytes = merger_current_bytes();
+    size_t add_bytes = sizeof(GLfloat) * 4u * (size_t)glstate->merger_cap;
+    if (cur_bytes <= cap_bytes && add_bytes <= cap_bytes - cur_bytes) {
+        GLfloat *p = (GLfloat *)malloc(add_bytes);
+        if (!p)
+            return 0;
+        *slot = p;
+        gl4es_mem_sync_merger_bytes();
+        return 1;
+    }
+
+    if (!list->secondary && glstate->merger_secondary && slot != &glstate->merger_secondary) {
+        free(glstate->merger_secondary);
+        glstate->merger_secondary = NULL;
+    }
+    for (int a = 2; a < MAX_TEX; ++a) {
+        if (!list->tex[a] && glstate->merger_tex[a - 2] && slot != &glstate->merger_tex[a - 2]) {
+            free(glstate->merger_tex[a - 2]);
+            glstate->merger_tex[a - 2] = NULL;
+        }
+    }
+    gl4es_mem_sync_merger_bytes();
+
+    cur_bytes = merger_current_bytes();
+    if (cur_bytes <= cap_bytes && add_bytes <= cap_bytes - cur_bytes) {
+        GLfloat *p = (GLfloat *)malloc(add_bytes);
+        if (!p)
+            return 0;
+        *slot = p;
+        gl4es_mem_sync_merger_bytes();
+        return 1;
+    }
+
+    size_t new_per_vert = 20u * sizeof(GLfloat) + 4u * sizeof(GLfloat);
+    if (glstate->merger_secondary) new_per_vert += 4u * sizeof(GLfloat);
+    for (int a = 2; a < MAX_TEX; ++a) {
+        if (glstate->merger_tex[a - 2]) new_per_vert += 4u * sizeof(GLfloat);
+    }
+    size_t idx_bytes = glstate->merger_indices ? (size_t)glstate->merger_indice_cap * sizeof(GLushort) : 0;
+    size_t avail = (cap_bytes > idx_bytes) ? (cap_bytes - idx_bytes) : 0;
+    int fit_verts = (int)(avail / new_per_vert);
+    if (fit_verts <= 0 || (unsigned long)fit_verts < list->len)
+        return 0;
+
+    if (fit_verts < glstate->merger_cap) {
+        if (!safe_realloc_merger_sublist(&glstate->merger_master, 4 * 5, fit_verts))
+            return 0;
+        glstate->merger_cap = fit_verts;
+        if (list->vert) list->vert = glstate->merger_master;
+        if (list->normal) list->normal = glstate->merger_master + 4 + 4 + 2 * 4;
+        if (list->color) list->color = glstate->merger_master + 4;
+        if (list->tex[0]) list->tex[0] = glstate->merger_master + 4 + 4;
+        if (list->tex[1]) list->tex[1] = glstate->merger_master + 4 + 4 + 4;
+        if (list->fogcoord) list->fogcoord = glstate->merger_master + 4 + 4 + 2 * 4 + 3;
+        if (!safe_realloc_opt_sublist(&glstate->merger_secondary, 4, fit_verts)) {
+            gl4es_mem_sync_merger_bytes();
+            return 0;
+        }
+        if (list->secondary) list->secondary = glstate->merger_secondary;
+        for (int a = 2; a < MAX_TEX; ++a) {
+            if (!safe_realloc_opt_sublist(&glstate->merger_tex[a - 2], 4, fit_verts)) {
+                gl4es_mem_sync_merger_bytes();
+                return 0;
+            }
+            if (list->tex[a]) list->tex[a] = glstate->merger_tex[a - 2];
+        }
+        gl4es_mem_sync_merger_bytes();
+    }
+
+    GLfloat *p = (GLfloat *)malloc(sizeof(GLfloat) * 4u * (size_t)glstate->merger_cap);
+    if (!p)
+        return 0;
+    *slot = p;
+    gl4es_mem_sync_merger_bytes();
+    return 1;
+}
+
 void resize_renderlist(renderlist_t *list) {
     if (list->use_glstate) {
-        if (list->len >= glstate->merger_cap) {
-            glstate->merger_cap += DEFAULT_RENDER_LIST_CAPACITY*8;
-            realloc_merger_sublist(glstate->merger_master, 4*5, glstate->merger_cap);
-            realloc_sublist(glstate->merger_secondary, 4, glstate->merger_cap);
-            for (int a=2; a<list->maxtex; a++)
-                realloc_sublist(glstate->merger_tex[a-2], 4, glstate->merger_cap);
-            if(list->vert) list->vert = glstate->merger_master;
-            if(list->normal) list->normal = glstate->merger_master+4+4+2*4;
-            if(list->color) list->color = glstate->merger_master+4;
-            if(list->tex[0]) list->tex[0] = glstate->merger_master+4+4;
-            if(list->tex[1]) list->tex[1] = glstate->merger_master+4+4+4;
-            if(list->fogcoord) list->fogcoord = glstate->merger_master+4+4+2*4+3;
-            if(list->secondary) list->secondary = glstate->merger_secondary;
-            for (int a=2; a<list->maxtex; a++)
-                if(list->tex[a]) list->tex[a] = glstate->merger_tex[a-2];
+        if (list->len >= (unsigned long)glstate->merger_cap) {
+            if (!list->secondary && glstate->merger_secondary) {
+                free(glstate->merger_secondary);
+                glstate->merger_secondary = NULL;
+            }
+            for (int a = 2; a < MAX_TEX; ++a) {
+                if (!list->tex[a] && glstate->merger_tex[a - 2]) {
+                    free(glstate->merger_tex[a - 2]);
+                    glstate->merger_tex[a - 2] = NULL;
+                }
+            }
+            gl4es_mem_sync_merger_bytes();
+
+            size_t cap_bytes = gl4es_mem_merger_cap();
+            size_t per_vert = 20u * sizeof(GLfloat);
+            if (glstate->merger_secondary) per_vert += 4u * sizeof(GLfloat);
+            for (int a = 2; a < MAX_TEX; ++a) {
+                if (glstate->merger_tex[a - 2]) per_vert += 4u * sizeof(GLfloat);
+            }
+            size_t idx_bytes = glstate->merger_indices ? (size_t)glstate->merger_indice_cap * sizeof(GLushort) : 0;
+            size_t avail = (cap_bytes > idx_bytes) ? (cap_bytes - idx_bytes) : 0;
+            int max_verts = (int)(avail / per_vert);
+            if (glstate->merger_cap >= max_verts)
+                return;
+            int new_cap = glstate->merger_cap + DEFAULT_RENDER_LIST_CAPACITY * 8;
+            if (new_cap > max_verts)
+                new_cap = max_verts;
+            if (new_cap <= glstate->merger_cap)
+                return;
+            if (!safe_realloc_merger_sublist(&glstate->merger_master, 4 * 5, new_cap))
+                return;
+            if (list->vert) list->vert = glstate->merger_master;
+            if (list->normal) list->normal = glstate->merger_master + 4 + 4 + 2 * 4;
+            if (list->color) list->color = glstate->merger_master + 4;
+            if (list->tex[0]) list->tex[0] = glstate->merger_master + 4 + 4;
+            if (list->tex[1]) list->tex[1] = glstate->merger_master + 4 + 4 + 4;
+            if (list->fogcoord) list->fogcoord = glstate->merger_master + 4 + 4 + 2 * 4 + 3;
+            if (!safe_realloc_opt_sublist(&glstate->merger_secondary, 4, new_cap)) {
+                gl4es_mem_sync_merger_bytes();
+                return;
+            }
+            if (list->secondary) list->secondary = glstate->merger_secondary;
+            for (int a = 2; a < MAX_TEX; a++) {
+                if (!safe_realloc_opt_sublist(&glstate->merger_tex[a - 2], 4, new_cap)) {
+                    gl4es_mem_sync_merger_bytes();
+                    return;
+                }
+                if (list->tex[a]) list->tex[a] = glstate->merger_tex[a - 2];
+            }
+            glstate->merger_cap = new_cap;
+            gl4es_mem_sync_merger_bytes();
         }
     } else {
         if (list->len >= list->cap) {
-            list->cap += DEFAULT_RENDER_LIST_CAPACITY*8;
-            realloc_sublist(list->vert, 4, list->cap);
-            realloc_sublist(list->normal, 3, list->cap);
-            realloc_sublist(list->color, 4, list->cap);
-            realloc_sublist(list->secondary, 4, list->cap);
-            realloc_sublist(list->fogcoord, 1, list->cap);
+            int new_cap = list->cap + DEFAULT_RENDER_LIST_CAPACITY*8;
+            if (!safe_realloc_opt_sublist(&list->vert, 4, new_cap)) return;
+            if (!safe_realloc_opt_sublist(&list->normal, 3, new_cap)) return;
+            if (!safe_realloc_opt_sublist(&list->color, 4, new_cap)) return;
+            if (!safe_realloc_opt_sublist(&list->secondary, 4, new_cap)) return;
+            if (!safe_realloc_opt_sublist(&list->fogcoord, 1, new_cap)) return;
             for (int a=0; a<list->maxtex; a++)
-            realloc_sublist(list->tex[a], 4, list->cap);
+                if (!safe_realloc_opt_sublist(&list->tex[a], 4, new_cap)) return;
+            list->cap = new_cap;
         }
     }
 }
 
 void resize_merger_indices(int cap) {
-    if(cap<glstate->merger_indice_cap)
+    if (cap <= 0)
         return;
-    glstate->merger_indice_cap = ((glstate->merger_indice_cap+cap+512)>>9)<<9;
-    glstate->merger_indices = (GLushort*)realloc(glstate->merger_indices, glstate->merger_indice_cap*sizeof(GLushort));
+    if (cap <= glstate->merger_indice_cap && glstate->merger_indices)
+        return;
+    int new_cap = ((cap + 511) >> 9) << 9;
+    if (new_cap < cap) new_cap = cap;
+    size_t cap_bytes = gl4es_mem_merger_cap();
+    size_t non_idx = merger_current_bytes();
+    if (glstate->merger_indices) {
+        size_t cur_idx = (size_t)glstate->merger_indice_cap * sizeof(GLushort);
+        non_idx = (non_idx >= cur_idx) ? (non_idx - cur_idx) : 0;
+    }
+    size_t avail_bytes = (cap_bytes > non_idx) ? (cap_bytes - non_idx) : 0;
+    int max_idx = (int)(avail_bytes / sizeof(GLushort));
+    if (max_idx < cap) {
+        /* Keep within merger_cap if possible; allow exact small cap only if needed by existing single batch */
+        if (max_idx <= glstate->merger_indice_cap && glstate->merger_indices)
+            return;
+        if (max_idx < 512)
+            return;
+        new_cap = max_idx;
+    } else if (new_cap > max_idx) {
+        new_cap = max_idx;
+    }
+    if ((size_t)new_cap > SIZE_MAX / sizeof(GLushort))
+        return;
+    GLushort *p = (GLushort*)realloc(glstate->merger_indices, (size_t)new_cap * sizeof(GLushort));
+    if (!p)
+        return;
+    glstate->merger_indices = p;
+    glstate->merger_indice_cap = new_cap;
+    gl4es_mem_sync_merger_bytes();
 }
 
 void resize_indices_renderlist(renderlist_t *list, int n) {
-    if (!list->indices || list->shared_indices)
+    if (!list->indices || list->shared_indices || n <= 0)
         return;
     if (list->use_glstate) {
-        resize_merger_indices(list->ilen+n);
+        if ((unsigned long)n > (unsigned long)INT_MAX - list->ilen)
+            return;
+        resize_merger_indices((int)(list->ilen + (unsigned long)n));
         list->indices = glstate->merger_indices;
     } else {
-        if(list->ilen+n<list->indice_cap)
+        if ((unsigned long)n > (unsigned long)INT_MAX - list->ilen)
             return;
-        list->indice_cap = ((list->indice_cap+n+511)>>9)<<9;
-        list->indices = (GLushort*)realloc(list->indices, list->indice_cap*sizeof(GLushort));
+        unsigned int needed = (unsigned int)(list->ilen + (unsigned long)n);
+        if (needed < list->indice_cap)
+            return;
+        unsigned int new_cap = ((needed + 511u) >> 9) << 9;
+        if (new_cap < needed) new_cap = needed;
+        if ((size_t)new_cap > SIZE_MAX / sizeof(GLushort))
+            return;
+        GLushort *p = (GLushort*)realloc(list->indices, (size_t)new_cap * sizeof(GLushort));
+        if (!p)
+            return;
+        list->indices = p;
+        list->indice_cap = new_cap;
+        gl4es_list_sync_cpu_bytes(list);
     }
 }
 
@@ -905,64 +1284,87 @@ renderlist_t* recycle_renderlist(renderlist_t *list, GLenum mode) {
     }
     // check if list needs to be converted to triangles / lines...
     GLushort *indices = NULL;
+    int expand_ok = 1;
 #define pre_expand   \
-            if(list->use_glstate) {\
-                resize_merger_indices(renderlist_getindicesize(list)); indices = glstate->merger_indices;\
-            } else {\
-                list->indice_cap = renderlist_getindicesize(list);\
-                indices = (GLushort*)malloc(sizeof(GLushort)*list->indice_cap);\
-            }
+            do { \
+                int req_cap = renderlist_getindicesize(list); \
+                if(list->use_glstate) {\
+                    resize_merger_indices(req_cap); \
+                    if (!glstate->merger_indices || glstate->merger_indice_cap < req_cap) { expand_ok = 0; break; } \
+                    indices = glstate->merger_indices;\
+                } else {\
+                    list->indice_cap = req_cap;\
+                    indices = (GLushort*)malloc(sizeof(GLushort)*(size_t)list->indice_cap);\
+                    if (!indices) { list->indice_cap = 0; expand_ok = 0; break; } \
+                } \
+            } while(0)
 #define post_expand  \
-            list->ilen = renderlist_getindicesize(list);\
-            list->indices = indices
+            if (expand_ok) { \
+                list->ilen = renderlist_getindicesize(list);\
+                list->indices = indices; \
+            }
 
     list->merger_mode = mode;
     switch(list->mode) {
         case GL_LINES:
             if(mode!=GL_LINES && !list->indices) {
                 pre_expand;
-                renderlist_createindices(list->len, indices, 0);
-                post_expand;
+                if (expand_ok) {
+                    renderlist_createindices(list->len, indices, 0);
+                    post_expand;
+                }
             }
             break;
         case GL_LINE_LOOP:
             pre_expand;
-            renderlist_lineloop_lines(list->indices, list->indices?list->ilen:list->len, indices, 0);
-            post_expand;
-            list->mode=GL_LINES;
+            if (expand_ok) {
+                renderlist_lineloop_lines(list->indices, list->indices?list->ilen:list->len, indices, 0);
+                post_expand;
+                list->mode=GL_LINES;
+            }
             break;
         case GL_LINE_STRIP:
             pre_expand;
-            renderlist_linestrip_lines(list->indices, list->indices?list->ilen:list->len, indices, 0);
-            post_expand;
-            list->mode=GL_LINES;
+            if (expand_ok) {
+                renderlist_linestrip_lines(list->indices, list->indices?list->ilen:list->len, indices, 0);
+                post_expand;
+                list->mode=GL_LINES;
+            }
             break;
         case GL_TRIANGLES:
             if(mode!=GL_TRIANGLES && !list->indices) {
                 pre_expand;
-                renderlist_createindices(list->len, indices, 0);
-                post_expand;
+                if (expand_ok) {
+                    renderlist_createindices(list->len, indices, 0);
+                    post_expand;
+                }
             }
             break;
         case GL_POLYGON:
         case GL_TRIANGLE_FAN:
             pre_expand;
-            renderlist_trianglefan_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
-            post_expand;
-            list->mode=GL_TRIANGLES;
+            if (expand_ok) {
+                renderlist_trianglefan_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
+                post_expand;
+                list->mode=GL_TRIANGLES;
+            }
             break;
         case GL_QUAD_STRIP:
         case GL_TRIANGLE_STRIP:
             pre_expand;
-            renderlist_trianglestrip_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
-            post_expand;
-            list->mode=GL_TRIANGLES;
+            if (expand_ok) {
+                renderlist_trianglestrip_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
+                post_expand;
+                list->mode=GL_TRIANGLES;
+            }
             break;
         case GL_QUADS:
             pre_expand;
-            renderlist_quads_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
-            post_expand;
-            list->mode=GL_TRIANGLES;
+            if (expand_ok) {
+                renderlist_quads_triangles(list->indices, list->indices?list->ilen:list->len, indices, 0);
+                post_expand;
+                list->mode=GL_TRIANGLES;
+            }
             break;
     }
 #undef pre_expand
@@ -972,4 +1374,145 @@ renderlist_t* recycle_renderlist(renderlist_t *list, GLenum mode) {
     list->stage=STAGE_DRAW;
 
     return list;
+}
+
+void gl4es_list_set_vbo_mask(struct _renderlist_t *list, uint32_t mask) {
+    renderlist_mem_meta_t *meta = rl_meta_get_or_create(list);
+    if (meta)
+        meta->vbo_arrays_mask = mask;
+}
+
+uint32_t gl4es_list_get_vbo_mask(const struct _renderlist_t *list) {
+    renderlist_mem_meta_t *meta = rl_meta_find(list);
+    return meta ? meta->vbo_arrays_mask : 0u;
+}
+
+int gl4es_list_is_arrays_trimmed(const struct _renderlist_t *list) {
+    renderlist_mem_meta_t *meta = rl_meta_find(list);
+    return meta ? (int)meta->cpu_arrays_trimmed : 0;
+}
+
+int gl4es_list_is_indices_trimmed(const struct _renderlist_t *list) {
+    renderlist_mem_meta_t *meta = rl_meta_find(list);
+    return meta ? (int)meta->cpu_indices_trimmed : 0;
+}
+
+static size_t compute_renderlist_cpu_bytes(const renderlist_t *list, const renderlist_mem_meta_t *meta) {
+    if (!list || list->use_glstate || list->name == 0)
+        return 0;
+    size_t total = 0;
+    if ((!meta || !meta->cpu_arrays_trimmed) && !list->shared_arrays) {
+        size_t cap = list->cap ? (size_t)list->cap : (size_t)list->len;
+        size_t floats = 0;
+        if (list->vert) floats += 4;
+        if (list->normal) floats += 3;
+        if (list->color) floats += 4;
+        if (list->secondary) floats += 4;
+        if (list->fogcoord) floats += 1;
+        for (int a = 0; a < list->maxtex; ++a) {
+            if (list->tex[a]) floats += 4;
+        }
+        total += cap * floats * sizeof(GLfloat);
+    }
+    if ((!meta || !meta->cpu_indices_trimmed) && list->indices && !list->shared_indices) {
+        size_t icap = list->indice_cap ? (size_t)list->indice_cap : (size_t)list->ilen;
+        total += icap * sizeof(GLushort);
+    }
+    return total;
+}
+
+void gl4es_list_sync_cpu_bytes(struct _renderlist_t *list) {
+    if (!list) return;
+    renderlist_mem_meta_t *meta = rl_meta_find(list);
+    size_t new_bytes = compute_renderlist_cpu_bytes(list, meta);
+    if (!meta && new_bytes == 0)
+        return;
+    if (!meta)
+        meta = rl_meta_get_or_create(list);
+    if (!meta)
+        return;
+    if (meta->cpu_mem_bytes != new_bytes) {
+        gl4es_mem_track_displaylist(meta->cpu_mem_bytes, new_bytes);
+        meta->cpu_mem_bytes = new_bytes;
+    }
+}
+
+void gl4es_list_sync_chain_cpu_bytes(struct _renderlist_t *list) {
+    if (!list) return;
+    while (list->prev)
+        list = list->prev;
+    for (renderlist_t *node = list; node; node = node->next)
+        gl4es_list_sync_cpu_bytes(node);
+}
+
+void gl4es_mem_trim_merger(int urgency) {
+    if (!glstate || glstate->merger_used)
+        return;
+    gl4es_mem_sync_merger_bytes();
+    if (urgency >= 1 || merger_current_bytes() > gl4es_mem_merger_cap())
+        free_merger_buffers();
+}
+
+void gl4es_mem_trim_displaylists(int urgency) {
+    if (!glstate || !glstate->headlists)
+        return;
+    if ((glstate->render_mode != 0 && glstate->render_mode != GL_RENDER) || glstate->polygon_mode != 0)
+        return;
+    if (urgency <= 0 &&
+        gl4es_mem_profile() != GL4ES_MEM_PROFILE_LOW &&
+        gl4es_mem_displaylist_cpu_bytes() <= gl4es_mem_budget_bytes() / 4)
+        return;
+
+    renderlist_t *head = NULL;
+    kh_foreach_value(glstate->headlists, head,
+        if (!head)
+            continue;
+        while (head->prev)
+            head = head->prev;
+        for (renderlist_t *node = head; node; node = node->next) {
+            if (node == glstate->list.active || node->open || node->use_glstate)
+                continue;
+            if (node->use_vbo_array != 2 || node->vbo_array == 0)
+                continue;
+            if (node->mode == GL_LINES || node->mode == GL_LINE_STRIP || node->mode == GL_LINE_LOOP)
+                continue;
+            if (node->shared_arrays)
+                continue;
+            if (hardext.esversion == 1 && node->color && node->secondary)
+                continue;
+            if (node->indices && (node->use_vbo_indices != 2 || node->vbo_indices == 0 || node->shared_indices))
+                continue;
+
+            renderlist_mem_meta_t *meta = rl_meta_get_or_create(node);
+            if (!meta || (meta->cpu_arrays_trimmed && (!node->indices || meta->cpu_indices_trimmed)))
+                continue;
+
+            if (!meta->cpu_arrays_trimmed) {
+                if (node->vert) { free(node->vert); node->vert = NULL; }
+                if (node->normal) { free(node->normal); node->normal = NULL; }
+                if (node->color) { free(node->color); node->color = NULL; }
+                if (node->secondary) { free(node->secondary); node->secondary = NULL; }
+                if (node->fogcoord) { free(node->fogcoord); node->fogcoord = NULL; }
+                for (int a = 0; a < node->maxtex; ++a) {
+                    if (node->tex[a]) { free(node->tex[a]); node->tex[a] = NULL; }
+                }
+                meta->cpu_arrays_trimmed = 1;
+            }
+            if (node->indices && node->use_vbo_indices == 2 && node->vbo_indices != 0 && !node->shared_indices &&
+                !(node->mode_init >= GL_TRIANGLES && !node->ind_lines)) {
+                free(node->indices);
+                node->indices = NULL;
+                node->indice_cap = 0;
+                meta->cpu_indices_trimmed = 1;
+            }
+            gl4es_list_sync_cpu_bytes(node);
+        }
+    )
+}
+
+void gl4es_mem_list_shutdown(void) {
+    if (s_rl_meta_map && kh_size(s_rl_meta_map) == 0) {
+        kh_destroy(rlmeta, s_rl_meta_map);
+        s_rl_meta_map = NULL;
+    }
 }

@@ -103,6 +103,15 @@ jobs:
           "$JAVA_HOME/bin/java" -version
           "$JAVA_HOME/bin/javac" -version
 
+      - name: Run gl4es_116 host verification & invariant suites
+        env:
+          GL4ES_TEST_BUILD_DIR: ${{ runner.temp }}/gl4es116_e2e_build
+        run: |
+          bash tests/run_gl4es116_c_tests.sh
+          python3 tests/empirical_m1_gl4es_stress.py
+          python3 tests/empirical_jit_stress.py
+          rm -rf "${GL4ES_TEST_BUILD_DIR}" "${GL4ES_TEST_BUILD_DIR}_noleak"
+
       - name: Build for ${{ matrix.platform_name }}
         run: |
           export PATH=/opt/homebrew/bin:$PATH

@@ -115,6 +115,7 @@ typedef struct glstate_s {
     int                 merger_indice_cap;
     GLushort*           merger_indices;
     int                 merger_used;
+    size_t              merger_tracked_bytes;
     // scratch VBO
     GLuint              scratch_vertex;
     GLsizei             scratch_vertex_size;
@@ -123,6 +124,10 @@ typedef struct glstate_s {
     GLushort*           quad_idx;
     GLuint              quad_ibo;
     int                 quad_ibo_state;
+    GLushort*           quad_indices_scratch;
+    int                 quad_indices_verts;
+    int                 quad_indices_first;
+    size_t              quad_indices_bytes;
     void*               color_scratch[4];
     size_t              color_scratch_cap[4];
     void*               texture_scratch;

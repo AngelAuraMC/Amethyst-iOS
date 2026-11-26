@@ -15,6 +15,7 @@
 #include "loader.h"
 #include "logs.h"
 #include "fpe_cache.h"
+#include "gl4es_mem.h"
 #include "init.h"
 #include "envvars.h"
 #if defined(__EMSCRIPTEN__)
@@ -117,6 +118,8 @@ void initialize_gl4es() {
 		SHUT_LOGD("Initialising gl4es\n");
 
     if(!globals4es.nobanner) print_build_infos();
+
+    gl4es_mem_init();
 
     #define env(name, global, message)                    \
         if(IsEnvVarTrue(#name)) {\
@@ -693,10 +696,12 @@ void initialize_gl4es() {
             psa_base = custom_psa ? custom_psa : GetEnvVar("AME_HOME");
             if(!psa_base)
                 psa_base = GetEnvVar("HOME");
+#elif defined(_WIN32)
+            psa_base = custom_psa;
 #endif
             if(psa_base && psa_base[0]) {
                 size_t base_len = strlen(psa_base);
-                const char* separator = (psa_base[base_len-1]=='/' || psa_base[base_len-1]==':') ? "" : "/";
+                const char* separator = (psa_base[base_len-1]=='/' || psa_base[base_len-1]=='\\' || psa_base[base_len-1]==':') ? "" : "/";
                 int path_len = snprintf(cwd, sizeof(cwd), "%s%s.gl4es_116.psa", psa_base, separator);
                 if(path_len < 0 || (size_t)path_len >= sizeof(cwd))
                     cwd[0] = '\0';
@@ -713,6 +718,7 @@ void initialize_gl4es() {
     if(GetEnvVarFloat("LIBGL_FB_TEX_SCALE",&globals4es.fbtexscale,0.0f)) {
       SHUT_LOGD("Framebuffer Textures will be scaled by %.2f\n", globals4es.fbtexscale);
 		}
+    gl4es_mem_mark_initialized();
 }
 
 
@@ -733,14 +739,19 @@ void close_gl4es() {
 		#ifdef GL4ES_COMPILE_FOR_USE_IN_SHARED_LIB
 	    SHUT_LOGD("Shutdown requested\n");
     	if(--inited) return;
+    #else
+      if(!inited) return;
+      inited = 0;
     #endif
     SHUT_LOGD("Shutting down\n");
+    gl4es_mem_pre_shutdown();
     #ifndef NOX11
     FreeFBVisual();
     #endif
     gl_close();
     fpe_writePSA();
     fpe_FreePSA();
+    gl4es_mem_shutdown();
 		#if defined(GL4ES_COMPILE_FOR_USE_IN_SHARED_LIB) && defined(AMIGAOS4)
 	    os4CloseLib();
 	  #endif

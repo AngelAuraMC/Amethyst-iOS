@@ -26,6 +26,9 @@
 #import "ctxbridges/gl_bridge.h"
 
 #include <dlfcn.h>
+#include <os/proc.h>
+
+extern void* get_gl4es_116_handle(void);
 
 int memorystatus_control(uint32_t command, int32_t pid, uint32_t flags, void *buffer, size_t buffersize);
 #define MEMORYSTATUS_CMD_SET_JETSAM_TASK_LIMIT        6
@@ -87,6 +90,26 @@ static BOOL isRuntimeMenuControl(ControlButton *button) {
     [self.diagnosticsHUDTimer invalidate];
     self.diagnosticsHUDTimer = nil;
     amethyst_set_hud_active(0);
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+
+    void *handle = get_gl4es_116_handle();
+    if (!handle) {
+        return;
+    }
+
+    typedef void (*gl4es_trim_memory_fn_t)(int);
+    gl4es_trim_memory_fn_t trim_fn = (gl4es_trim_memory_fn_t)dlsym(handle, "gl4es_trim_memory");
+    if (!trim_fn) {
+        return;
+    }
+
+    size_t availableBytes = os_proc_available_memory();
+    int urgency = (availableBytes > 0 && availableBytes < (128u * 1024u * 1024u)) ? 2 : 1;
+    NSLog(@"[Amethyst] didReceiveMemoryWarning: triggering gl4es_trim_memory(%d) (available=%zu bytes)", urgency, availableBytes);
+    trim_fn(urgency);
 }
 
 - (void)viewDidLoad

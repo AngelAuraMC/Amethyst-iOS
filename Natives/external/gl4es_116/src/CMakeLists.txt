@@ -29,6 +29,7 @@ SET(GL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl_lookup.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/getter.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl4es.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl4es_mem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/glstate.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/hint.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/init.c
@@ -100,6 +101,7 @@ SET(GL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl_lookup.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gles.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl4es.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl/gl4es_mem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/glstate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/hint.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/init.h

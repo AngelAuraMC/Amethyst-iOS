@@ -5,6 +5,9 @@
 #include "../config.h"
 #include "gles.h"
 
+#define GL4ES_BUFF_NEEDS_SHADOW   (1u << 0)
+#define GL4ES_BUFF_SHADOW_TRIMMED (1u << 1)
+
 // VBO *****************
 typedef struct {
     GLuint      buffer;
@@ -19,6 +22,7 @@ typedef struct {
     GLsizeiptr  length;
     GLvoid     *data;
     GLsizeiptr  cap;
+    uint32_t    flags;
 } glbuffer_t;
 
 KHASH_MAP_DECLARE_INT(buff, glbuffer_t *);
