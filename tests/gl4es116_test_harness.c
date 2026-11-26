@@ -1454,12 +1454,19 @@ static void suite_tier3_pairwise(void) {
           "tier3_p11: secondary GLState + BGRA draw + DeleteGLState", NULL);
 
     /* Pair 12: glBufferData shrink/grow + glBufferSubData + glGetBufferParameteriv */
+    uint8_t p12_buf[256];
+    memset(p12_buf, 0x42, sizeof(p12_buf));
     gl4es_glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    gl4es_glBufferData(GL_ARRAY_BUFFER, 256, verts, GL_STREAM_DRAW);
+    gl4es_glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)sizeof(p12_buf), p12_buf, GL_STREAM_DRAW);
     gl4es_glBufferSubData(GL_ARRAY_BUFFER, 0, 64, verts);
     GLint gsz = 0;
     gl4es_glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &gsz);
-    check(gsz == 256, "tier3_p12: shrink glBufferData + glBufferSubData + glGetBufferParameteriv", NULL);
+    gl4es_glBufferData(GL_ARRAY_BUFFER, 128, p12_buf, GL_STREAM_DRAW);
+    gl4es_glBufferSubData(GL_ARRAY_BUFFER, 0, 64, verts);
+    GLint gsz_shrink = 0;
+    gl4es_glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &gsz_shrink);
+    check(gsz == 256 && gsz_shrink == 128,
+          "tier3_p12: grow/shrink glBufferData + glBufferSubData + glGetBufferParameteriv", NULL);
 
     gl4es_glBindBuffer(GL_ARRAY_BUFFER, 0);
     gl4es_glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
