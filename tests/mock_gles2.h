@@ -51,6 +51,8 @@ typedef struct mock_gles2_state_s {
     unsigned long enable_vertex_attrib_calls;
     unsigned long disable_vertex_attrib_calls;
     unsigned long vertex_attrib_pointer_calls;
+    unsigned long uniform_fv_calls;
+    unsigned long uniform_matrix_calls;
 
     GLenum last_draw_mode;
     GLsizei last_draw_count;

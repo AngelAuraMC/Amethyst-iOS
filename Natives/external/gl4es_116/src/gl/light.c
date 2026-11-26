@@ -20,6 +20,7 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
         case GL_LIGHT_MODEL_TWO_SIDE:
             errorGL();
             glstate->light.two_side = param;
+            glstate->light_seq++;
             if(glstate->fpe_state) {
                 glstate->fpe_state->twosided = param;
                 fpe_state_dirty();
@@ -36,6 +37,7 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
                     return;
                 }
                 glstate->light.separate_specular=value;
+                glstate->light_seq++;
                 if(glstate->fpe_state) {
                     glstate->fpe_state->light_separate=value;
                     fpe_state_dirty();
@@ -50,6 +52,7 @@ void APIENTRY_GL4ES gl4es_glLightModelf(GLenum pname, GLfloat param) {
                     return;
                 }
                 glstate->light.local_viewer=value;
+                glstate->light_seq++;
                 if(glstate->fpe_state) {
                     glstate->fpe_state->light_localviewer=value;
                     fpe_state_dirty();
@@ -90,6 +93,7 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
             }
             errorGL();
             memcpy(glstate->light.ambient, params, 4*sizeof(GLfloat));
+            glstate->light_seq++;
             break;
         case GL_LIGHT_MODEL_TWO_SIDE:
             if(glstate->light.two_side == params[0]) {
@@ -98,6 +102,7 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
             }
             errorGL();
             glstate->light.two_side = params[0];
+            glstate->light_seq++;
             if(glstate->fpe_state) {
                 glstate->fpe_state->twosided = params[0];
                 fpe_state_dirty();
@@ -114,6 +119,7 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
                     return;
                 }
                 glstate->light.separate_specular=value;
+                glstate->light_seq++;
                 if(glstate->fpe_state) {
                     glstate->fpe_state->light_separate=value;
                     fpe_state_dirty();
@@ -128,6 +134,7 @@ void APIENTRY_GL4ES gl4es_glLightModelfv(GLenum pname, const GLfloat* params) {
                     return;
                 }
                 glstate->light.local_viewer=value;
+                glstate->light_seq++;
                 if(glstate->fpe_state) {
                     glstate->fpe_state->light_localviewer=value;
                     fpe_state_dirty();
@@ -252,6 +259,7 @@ void APIENTRY_GL4ES gl4es_glLightfv(GLenum light, GLenum pname, const GLfloat* p
             glstate->light.lights[nl].quadraticAttenuation = params[0];
             break;
     }
+    glstate->light_seq++;
     LOAD_GLES_FPE(glLightfv);
     gles_glLightfv(light, pname, params);
     errorGL();
@@ -285,39 +293,68 @@ void APIENTRY_GL4ES gl4es_glMaterialfv(GLenum face, GLenum pname, const GLfloat 
         errorShim(GL_INVALID_ENUM);
         return;
     }
+    int mat_changed = 0;
     switch(pname) {
         case GL_AMBIENT:
-            if(face==GL_FRONT_AND_BACK || face==GL_FRONT)
+            if((face==GL_FRONT_AND_BACK || face==GL_FRONT) && memcmp(glstate->material.front.ambient, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.front.ambient, params, 4*sizeof(GLfloat));
-            if(face==GL_FRONT_AND_BACK || face==GL_BACK)
+                mat_changed = 1;
+            }
+            if((face==GL_FRONT_AND_BACK || face==GL_BACK) && memcmp(glstate->material.back.ambient, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.back.ambient, params, 4*sizeof(GLfloat));
+                mat_changed = 1;
+            }
             break;
         case GL_DIFFUSE:
-            if(face==GL_FRONT_AND_BACK || face==GL_FRONT)
+            if((face==GL_FRONT_AND_BACK || face==GL_FRONT) && memcmp(glstate->material.front.diffuse, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.front.diffuse, params, 4*sizeof(GLfloat));
-            if(face==GL_FRONT_AND_BACK || face==GL_BACK)
+                mat_changed = 1;
+            }
+            if((face==GL_FRONT_AND_BACK || face==GL_BACK) && memcmp(glstate->material.back.diffuse, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.back.diffuse, params, 4*sizeof(GLfloat));
+                mat_changed = 1;
+            }
             break;
         case GL_SPECULAR:
-            if(face==GL_FRONT_AND_BACK || face==GL_FRONT)
+            if((face==GL_FRONT_AND_BACK || face==GL_FRONT) && memcmp(glstate->material.front.specular, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.front.specular, params, 4*sizeof(GLfloat));
-            if(face==GL_FRONT_AND_BACK || face==GL_BACK)
+                mat_changed = 1;
+            }
+            if((face==GL_FRONT_AND_BACK || face==GL_BACK) && memcmp(glstate->material.back.specular, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.back.specular, params, 4*sizeof(GLfloat));
+                mat_changed = 1;
+            }
             break;
         case GL_EMISSION:
-            if(face==GL_FRONT_AND_BACK || face==GL_FRONT)
+            if((face==GL_FRONT_AND_BACK || face==GL_FRONT) && memcmp(glstate->material.front.emission, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.front.emission, params, 4*sizeof(GLfloat));
-            if(face==GL_FRONT_AND_BACK || face==GL_BACK)
+                mat_changed = 1;
+            }
+            if((face==GL_FRONT_AND_BACK || face==GL_BACK) && memcmp(glstate->material.back.emission, params, 4*sizeof(GLfloat))!=0) {
                 memcpy(glstate->material.back.emission, params, 4*sizeof(GLfloat));
+                mat_changed = 1;
+            }
             break;
         case GL_AMBIENT_AND_DIFFUSE:
             if(face==GL_FRONT_AND_BACK || face==GL_FRONT) {
-                memcpy(glstate->material.front.ambient, params, 4*sizeof(GLfloat));
-                memcpy(glstate->material.front.diffuse, params, 4*sizeof(GLfloat));
+                if(memcmp(glstate->material.front.ambient, params, 4*sizeof(GLfloat))!=0) {
+                    memcpy(glstate->material.front.ambient, params, 4*sizeof(GLfloat));
+                    mat_changed = 1;
+                }
+                if(memcmp(glstate->material.front.diffuse, params, 4*sizeof(GLfloat))!=0) {
+                    memcpy(glstate->material.front.diffuse, params, 4*sizeof(GLfloat));
+                    mat_changed = 1;
+                }
             }
             if(face==GL_FRONT_AND_BACK || face==GL_BACK) {
-                memcpy(glstate->material.back.ambient, params, 4*sizeof(GLfloat));
-                memcpy(glstate->material.back.diffuse, params, 4*sizeof(GLfloat));
+                if(memcmp(glstate->material.back.ambient, params, 4*sizeof(GLfloat))!=0) {
+                    memcpy(glstate->material.back.ambient, params, 4*sizeof(GLfloat));
+                    mat_changed = 1;
+                }
+                if(memcmp(glstate->material.back.diffuse, params, 4*sizeof(GLfloat))!=0) {
+                    memcpy(glstate->material.back.diffuse, params, 4*sizeof(GLfloat));
+                    mat_changed = 1;
+                }
             }
             break;
         case GL_SHININESS:
@@ -326,17 +363,29 @@ void APIENTRY_GL4ES gl4es_glMaterialfv(GLenum face, GLenum pname, const GLfloat 
                 return;
             }
             if(face==GL_FRONT_AND_BACK || face==GL_FRONT) {
-                glstate->material.front.shininess = *params;
+                if(glstate->material.front.shininess != *params) {
+                    glstate->material.front.shininess = *params;
+                    mat_changed = 1;
+                }
                 if(glstate->fpe_state) {
-                    glstate->fpe_state->cm_front_nullexp=(*params<=0.0)?0:1;
-                    fpe_state_dirty();
+                    int v = (*params<=0.0)?0:1;
+                    if(glstate->fpe_state->cm_front_nullexp != v) {
+                        glstate->fpe_state->cm_front_nullexp = v;
+                        fpe_state_dirty();
+                    }
                 }
             }
             if(face==GL_FRONT_AND_BACK || face==GL_BACK) {
-                glstate->material.back.shininess = *params;
+                if(glstate->material.back.shininess != *params) {
+                    glstate->material.back.shininess = *params;
+                    mat_changed = 1;
+                }
                 if(glstate->fpe_state) {
-                    glstate->fpe_state->cm_back_nullexp=(*params<=0.0)?0:1;
-                    fpe_state_dirty();
+                    int v = (*params<=0.0)?0:1;
+                    if(glstate->fpe_state->cm_back_nullexp != v) {
+                        glstate->fpe_state->cm_back_nullexp = v;
+                        fpe_state_dirty();
+                    }
                 }
             }
             break;
@@ -351,10 +400,17 @@ void APIENTRY_GL4ES gl4es_glMaterialfv(GLenum face, GLenum pname, const GLfloat 
                 glstate->material.back.indexes[1] = params[1];
                 glstate->material.back.indexes[2] = params[2];
             }
+            mat_changed = 1;
             break;
     }
+    if(mat_changed)
+        glstate->light_seq++;
 
     if(face==GL_BACK && hardext.esversion==1) { // lets ignore GL_BACK in GLES 1.1
+        noerrorShim();
+        return;
+    }
+    if(!mat_changed && hardext.esversion>1) {
         noerrorShim();
         return;
     }
@@ -388,16 +444,24 @@ void APIENTRY_GL4ES gl4es_glMaterialf(GLenum face, GLenum pname, GLfloat param) 
         errorShim(GL_INVALID_VALUE);
         return;
     }
+    int changed = 0;
     if(face==GL_FRONT_AND_BACK || face==GL_FRONT) {
-        if(glstate->material.front.shininess == param)
-            return;
-        glstate->material.front.shininess = param;
+        if(glstate->material.front.shininess != param) {
+            glstate->material.front.shininess = param;
+            changed = 1;
+        }
     }
     if(face==GL_FRONT_AND_BACK || face==GL_BACK) {
-        if(glstate->material.back.shininess == param)
-            return;
-        glstate->material.back.shininess = param;
+        if(glstate->material.back.shininess != param) {
+            glstate->material.back.shininess = param;
+            changed = 1;
+        }
     }
+    if(!changed) {
+        noerrorShim();
+        return;
+    }
+    glstate->light_seq++;
 
     if(face==GL_BACK && hardext.esversion==1) { // lets ignore GL_BACK in GLES 1.1
         noerrorShim();

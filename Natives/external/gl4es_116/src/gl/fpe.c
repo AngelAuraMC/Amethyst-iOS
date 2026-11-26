@@ -1273,16 +1273,14 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         }
     }
     program_t *glprogram = glstate->gleshard->glprogram;
-    // Texture Unit managements
-    int need_hackfbo = 0;
-    int tu_idx = 0;
-    while(tu_idx<MAX_TEX && glprogram->texunits[tu_idx].type) {
-        // grab the uniform value
-        glprogram->texunits[tu_idx].req_tu = GetUniformi(glprogram, glprogram->texunits[tu_idx].id);
-        glprogram->texunits[tu_idx].act_tu = glprogram->texunits[tu_idx].req_tu;
-        ++tu_idx;
-    }
+    // Texture Unit managements (only needed when fbounbind FBO hazard check is active)
     if(globals4es.fbounbind && glstate->fbo.current_fb && glstate->fbo.current_fb->id) {
+        int tu_idx = 0;
+        while(tu_idx<MAX_TEX && glprogram->texunits[tu_idx].type) {
+            glprogram->texunits[tu_idx].req_tu = GetUniformi(glprogram, glprogram->texunits[tu_idx].id);
+            glprogram->texunits[tu_idx].act_tu = glprogram->texunits[tu_idx].req_tu;
+            ++tu_idx;
+        }
         // check if need to unbind/bind fbo because texture is both attached and used
         tu_idx = 0;
         int need = 0;
@@ -1367,17 +1365,19 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
             }
         }
         //Texture matrices
-        for (int i=0; i<MAX_TEX; i++) {
-            if(glprogram->builtin_matrix[MAT_T0+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_I+i*4]!=-1
-                || glprogram->builtin_matrix[MAT_T0_T+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_IT+i*4]!=-1)
-            {
-                GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0+i*4], 1, GL_FALSE, getTexMat(i));
-                GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_T+i*4], 1, GL_TRUE, getTexMat(i));
-                if(glprogram->builtin_matrix[MAT_T0_I+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_IT+i*4]!=-1) {
-                    GLfloat invmat[16];
-                    matrix_inverse(getTexMat(i), invmat);
-                    GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_I+i*4], 1, GL_FALSE, invmat);
-                    GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_IT+i*4], 1, GL_TRUE, invmat);
+        if(glprogram->has_builtin_texmat) {
+            for (int i=0; i<MAX_TEX; i++) {
+                if(glprogram->builtin_matrix[MAT_T0+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_I+i*4]!=-1
+                    || glprogram->builtin_matrix[MAT_T0_T+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_IT+i*4]!=-1)
+                {
+                    GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0+i*4], 1, GL_FALSE, getTexMat(i));
+                    GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_T+i*4], 1, GL_TRUE, getTexMat(i));
+                    if(glprogram->builtin_matrix[MAT_T0_I+i*4]!=-1 || glprogram->builtin_matrix[MAT_T0_IT+i*4]!=-1) {
+                        GLfloat invmat[16];
+                        matrix_inverse(getTexMat(i), invmat);
+                        GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_I+i*4], 1, GL_FALSE, invmat);
+                        GoUniformMatrix4fv(glprogram, glprogram->builtin_matrix[MAT_T0_IT+i*4], 1, GL_TRUE, invmat);
+                    }
                 }
             }
         }
@@ -1385,7 +1385,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         }
     }
     // set light and material if needed
-    if(glprogram->has_builtin_light)
+    if(glprogram->has_builtin_light && glprogram->applied_light_seq != glstate->light_seq)
     {
         for (int i=0; i<MAX_LIGHT; i++) {
             if(glprogram->builtin_lights[i].has) {
@@ -1406,7 +1406,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
                GoUniformfv(glprogram, glprogram->builtin_lights[i].spotDirection, 3, 1, glstate->light.lights[i].spotDirection);
                GoUniformfv(glprogram, glprogram->builtin_lights[i].spotExponent, 1, 1, &glstate->light.lights[i].spotExponent);
                GoUniformfv(glprogram, glprogram->builtin_lights[i].spotCutoff, 1, 1, &glstate->light.lights[i].spotCutoff);
-               if(!memcmp(&glprogram->builtin_lights[i].oldspotCutoff, &glstate->light.lights[i].spotCutoff, sizeof(GLfloat)))
+               if(memcmp(&glprogram->builtin_lights[i].oldspotCutoff, &glstate->light.lights[i].spotCutoff, sizeof(GLfloat)) != 0)
                {
                     memcpy(&glprogram->builtin_lights[i].oldspotCutoff, &glstate->light.lights[i].spotCutoff, sizeof(GLfloat));
                     glprogram->builtin_lights[i].oldspotCosCutoff = cosf(glstate->light.lights[i].spotCutoff*3.1415926535f/180.0f);
@@ -1466,6 +1466,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
             vector4_add(tmp, glstate->material.back.emission, tmp);
             GoUniformfv(glprogram, glprogram->builtin_lightmodelprod[1].sceneColor, 4, 1, tmp);
         }
+        glprogram->applied_light_seq = glstate->light_seq;
     }
     // Instance ID
     if(glprogram->builtin_instanceID!=-1)
@@ -1473,7 +1474,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         GoUniformiv(glprogram, glprogram->builtin_instanceID, 1, 1, &glstate->instanceID);
     }
     // fog parameters
-    if(glprogram->builtin_fog.has)
+    if(glprogram->builtin_fog.has && glprogram->applied_fog_seq != glstate->fog_seq)
     {
         GoUniformfv(glprogram, glprogram->builtin_fog.color, 4, 1, glstate->fog.color);
         GoUniformfv(glprogram, glprogram->builtin_fog.density, 1, 1, &glstate->fog.density);
@@ -1483,6 +1484,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
             GLfloat tmp = 1.f/(glstate->fog.end - glstate->fog.start);
             GoUniformfv(glprogram, glprogram->builtin_fog.scale, 1, 1, &tmp);
         }
+        glprogram->applied_fog_seq = glstate->fog_seq;
     }
     // clip planes
     if(glprogram->has_builtin_clipplanes)
@@ -1503,7 +1505,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         GoUniformfv(glprogram, glprogram->builtin_pointsprite.distanceQuadraticAttenuation, 1, 1, glstate->pointsprite.distance+2);
     }
     // texenv
-    if(glprogram->has_builtin_texenv)
+    if(glprogram->has_builtin_texenv && glprogram->applied_texenv_seq != glstate->texenv_seq)
     {
         for (int i=0; i<hardext.maxtex; i++) {
             GoUniformfv(glprogram, glprogram->builtin_texenvcolor[i], 4, 1, glstate->texenv[i].env.color);
@@ -1511,6 +1513,7 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
             GoUniformfv(glprogram, glprogram->builtin_texenvrgbscale[i], 1, 1, &glstate->texenv[i].env.rgb_scale);
             GoUniformfv(glprogram, glprogram->builtin_texenvalphascale[i], 1, 1, &glstate->texenv[i].env.alpha_scale);
         }
+        glprogram->applied_texenv_seq = glstate->texenv_seq;
     }
     // texgen
     if(glprogram->has_builtin_texgen)
@@ -1527,10 +1530,11 @@ void realize_glenv(int ispoint, int first, int count, GLenum type, const void* i
         }
     }
     // fpe
-    if(glprogram->fpe_alpharef!=-1)
+    if(glprogram->fpe_alpharef!=-1 && glprogram->applied_alpharef_seq != glstate->alpharef_seq)
     {
         float alpharef = glstate->alpharef;
         GoUniformfv(glprogram, glprogram->fpe_alpharef, 1, 1, &alpharef);
+        glprogram->applied_alpharef_seq = glstate->alpharef_seq;
     }
     if(glprogram->has_builtin_texsampler && !glprogram->builtin_texsampler_initialized)
     {
@@ -1774,6 +1778,7 @@ void realize_blitenv(int alpha) {
 
 void builtin_Init(program_t *glprogram) {
     // initialise emulated builtin matrix uniform to -1
+    glprogram->has_builtin_texmat = 0;
     for (int i=0; i<MAT_MAX; i++)
         glprogram->builtin_matrix[i] = -1;
     for (int i=0; i<MAX_LIGHT; i++) {
@@ -1786,6 +1791,7 @@ void builtin_Init(program_t *glprogram) {
         glprogram->builtin_lights[i].spotExponent = -1;
         glprogram->builtin_lights[i].spotCutoff = -1;
         glprogram->builtin_lights[i].spotCosCutoff = -1;
+        glprogram->builtin_lights[i].oldspotCutoff = -1.0f;
         glprogram->builtin_lights[i].constantAttenuation = -1;
         glprogram->builtin_lights[i].linearAttenuation = -1;
         glprogram->builtin_lights[i].quadraticAttenuation = -1;
@@ -1913,6 +1919,8 @@ int builtin_CheckUniform(program_t *glprogram, char* name, GLint id, int size) {
     if(builtin!=-1) {
         glprogram->builtin_matrix[builtin] = id;
         glprogram->has_builtin_matrix = 1;
+        if(builtin >= MAT_T0 && builtin < MAT_N)
+            glprogram->has_builtin_texmat = 1;
         return 1;
     }
     // lightsource

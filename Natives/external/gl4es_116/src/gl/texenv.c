@@ -560,6 +560,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     }
                     FLUSH_BEGINEND;
                     t->rgb_scale = param;
+                    glstate->texenv_seq++;
                     if(glstate->fpe_state) { fpe_state_dirty();
                         if(param==1.0f)
                             glstate->fpe_state->texenv[tmu].texrgbscale = 0;
@@ -576,6 +577,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvf(GLenum target, GLenum pname, GLfloat param) 
                     }
                     FLUSH_BEGINEND;
                     t->alpha_scale = param;
+                    glstate->texenv_seq++;
                     if(glstate->fpe_state) { fpe_state_dirty();
                         if(param==1.0f)
                             glstate->fpe_state->texenv[tmu].texalphascale = 0;
@@ -624,6 +626,7 @@ void APIENTRY_GL4ES gl4es_glTexEnvfv(GLenum target, GLenum pname, const GLfloat 
         }
         FLUSH_BEGINEND;
         memcpy(t->color, param, 4*sizeof(GLfloat));
+        glstate->texenv_seq++;
         errorGL();
         if(hardext.esversion==1) {
             LOAD_GLES2(glTexEnvfv);

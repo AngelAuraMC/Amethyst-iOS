@@ -725,7 +725,7 @@ void draw_renderlist(renderlist_t *list) {
                     TEXTURE(a);
                     fpe_glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                     gles_glTexCoordPointer(4, GL_FLOAT, list->tex_stride[a], RL_PTR(list->tex[a], list->vbo_tex[a]));
-                } else {
+                } else if (glstate->vao->vertexattrib[ATT_MULTITEXCOORD0+a].enabled) {
                     TEXTURE(a);
                     fpe_glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                 }

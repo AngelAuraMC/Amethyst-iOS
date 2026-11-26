@@ -8,6 +8,11 @@
 #include "init.h"
 #include "loader.h"
 
+#if defined(__ARM_NEON) || defined(__ARM_NEON__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
+#include <arm_neon.h>
+#define GL4ES_MATRIX_NEON 1
+#endif
+
 //#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
@@ -42,14 +47,14 @@ static GLfloat* update_current_mat() {
 static int update_current_identity(int I) {
 	switch(glstate->matrix_mode) {
 		case GL_MODELVIEW:
-			return glstate->modelview_matrix->identity = (I)?1:is_identity(TOP(modelview_matrix));
+			return glstate->modelview_matrix->identity = (I)?1:((hardext.esversion>1)?0:is_identity(TOP(modelview_matrix)));
 		case GL_PROJECTION:
-			return glstate->projection_matrix->identity = (I)?1:is_identity(TOP(projection_matrix));
+			return glstate->projection_matrix->identity = (I)?1:((hardext.esversion>1)?0:is_identity(TOP(projection_matrix)));
 		case GL_TEXTURE:
 			return glstate->texture_matrix[glstate->texture.active]->identity = (I)?1:is_identity(TOP(texture_matrix[glstate->texture.active]));
 		default:
 			if(glstate->matrix_mode>=GL_MATRIX0_ARB && glstate->matrix_mode<GL_MATRIX0_ARB+MAX_ARB_MATRIX)
-				return glstate->arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB]->identity = (I)?1:is_identity(TOP(arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB]));
+				return glstate->arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB]->identity = (I)?1:((hardext.esversion>1)?0:is_identity(TOP(arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB])));
 		return 0;
 	}
 }
@@ -192,33 +197,33 @@ DBG(printf("glPopMatrix(), list=%p\n", glstate->list.active);)
 	// go...
 	noerrorShim();
 	switch(matrix_mode) {
-		#define P(A) if(glstate->A->top) { \
+		#define P(A, CHECK_ID) if(glstate->A->top) { \
 			--glstate->A->top; \
-			glstate->A->identity = is_identity(update_current_mat()); \
+			glstate->A->identity = (CHECK_ID) ? is_identity(update_current_mat()) : 0; \
 			glstate->matrix_seq++; \
 			if (send_to_hardware()) {LOAD_GLES(glLoadMatrixf); gles_glLoadMatrixf(update_current_mat()); } \
 		} else errorShim(GL_STACK_UNDERFLOW)
 		case GL_PROJECTION:
-			P(projection_matrix);
+			P(projection_matrix, hardext.esversion==1);
 			glstate->mvp_matrix_dirty = 1;
 			glstate->inv_mvp_matrix_dirty = 1;
 			glstate->inv_p_matrix_dirty = 1;
 			break;
 		case GL_MODELVIEW:
-			P(modelview_matrix);
+			P(modelview_matrix, hardext.esversion==1);
 			glstate->mvp_matrix_dirty = 1;
 			glstate->inv_mvp_matrix_dirty = 1;
 			glstate->inv_mv_matrix_dirty = 1;
 			glstate->normal_matrix_dirty = 1;
 			break;
 		case GL_TEXTURE:
-			P(texture_matrix[glstate->texture.active]);
+			P(texture_matrix[glstate->texture.active], 1);
 			if(glstate->fpe_state)
 				set_fpe_textureidentity();
 			break;
 		default:
 			if(glstate->matrix_mode>=GL_MATRIX0_ARB && glstate->matrix_mode<GL_MATRIX0_ARB+MAX_ARB_MATRIX) {
-				P(arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB]);
+				P(arb_matrix[glstate->matrix_mode-GL_MATRIX0_ARB], hardext.esversion==1);
 			} else {
 				//Warning?
 				errorShim(GL_INVALID_OPERATION);
@@ -330,36 +335,160 @@ DBG(printf("glLoadIdentity(), list=%p\n", glstate->list.active);)
 	}
 }
 
+static inline void finish_matrix_mut(GLfloat *current_mat) {
+	glstate->matrix_seq++;
+	const int id = update_current_identity(0);
+	if(glstate->matrix_mode==GL_MODELVIEW) {
+		glstate->normal_matrix_dirty = glstate->inv_mv_matrix_dirty = 1;
+		glstate->mvp_matrix_dirty = 1;
+		glstate->inv_mvp_matrix_dirty = 1;
+	} else if(glstate->matrix_mode==GL_PROJECTION) {
+		glstate->mvp_matrix_dirty = 1;
+		glstate->inv_mvp_matrix_dirty = 1;
+		glstate->inv_p_matrix_dirty = 1;
+	} else if((glstate->matrix_mode==GL_TEXTURE) && glstate->fpe_state)
+		set_fpe_textureidentity();
+	if(send_to_hardware()) {
+		LOAD_GLES(glLoadMatrixf);
+		LOAD_GLES(glLoadIdentity);
+		if(id) gles_glLoadIdentity();
+		else gles_glLoadMatrixf(current_mat);
+	}
+}
+
 void APIENTRY_GL4ES gl4es_glTranslatef(GLfloat x, GLfloat y, GLfloat z) {
 DBG(printf("glTranslatef(%f, %f, %f), list=%p\n", x, y, z, glstate->list.active);)
-	// create a translation matrix than multiply it...
-	GLfloat tmp[16];
-	set_identity(tmp);
-	tmp[12+0] = x;
-	tmp[12+1] = y;
-	tmp[12+2] = z;
-	gl4es_glMultMatrixf(tmp);
+	if (x == 0.0f && y == 0.0f && z == 0.0f)
+		return;
+	if (glstate->list.active) {
+		if (glstate->list.pending) gl4es_flush();
+		else {
+			GLfloat tmp[16];
+			set_identity(tmp);
+			tmp[12+0] = x;
+			tmp[12+1] = y;
+			tmp[12+2] = z;
+			gl4es_glMultMatrixf(tmp);
+			return;
+		}
+	}
+	GLfloat *m = update_current_mat();
+	if (!m) return;
+#ifdef GL4ES_MATRIX_NEON
+	float32x4_t c0 = vld1q_f32(m);
+	float32x4_t c1 = vld1q_f32(m + 4);
+	float32x4_t c2 = vld1q_f32(m + 8);
+	float32x4_t c3 = vld1q_f32(m + 12);
+	c3 = vmlaq_n_f32(c3, c0, x);
+	c3 = vmlaq_n_f32(c3, c1, y);
+	c3 = vmlaq_n_f32(c3, c2, z);
+	vst1q_f32(m + 12, c3);
+#else
+	m[12] += m[0]*x + m[4]*y + m[8]*z;
+	m[13] += m[1]*x + m[5]*y + m[9]*z;
+	m[14] += m[2]*x + m[6]*y + m[10]*z;
+	m[15] += m[3]*x + m[7]*y + m[11]*z;
+#endif
+	finish_matrix_mut(m);
 }
 
 void APIENTRY_GL4ES gl4es_glScalef(GLfloat x, GLfloat y, GLfloat z) {
 DBG(printf("glScalef(%f, %f, %f), list=%p\n", x, y, z, glstate->list.active);)
-	// create a scale matrix than multiply it...
-	GLfloat tmp[16];
-	memset(tmp, 0, 16*sizeof(GLfloat));
-	tmp[0+0] = x;
-	tmp[1+4] = y;
-	tmp[2+8] = z;
-	tmp[3+12] = 1.0f;
-	gl4es_glMultMatrixf(tmp);
+	if (x == 1.0f && y == 1.0f && z == 1.0f)
+		return;
+	if (glstate->list.active) {
+		if (glstate->list.pending) gl4es_flush();
+		else {
+			GLfloat tmp[16];
+			memset(tmp, 0, 16*sizeof(GLfloat));
+			tmp[0+0] = x;
+			tmp[1+4] = y;
+			tmp[2+8] = z;
+			tmp[3+12] = 1.0f;
+			gl4es_glMultMatrixf(tmp);
+			return;
+		}
+	}
+	GLfloat *m = update_current_mat();
+	if (!m) return;
+#ifdef GL4ES_MATRIX_NEON
+	vst1q_f32(m,     vmulq_n_f32(vld1q_f32(m),     x));
+	vst1q_f32(m + 4, vmulq_n_f32(vld1q_f32(m + 4), y));
+	vst1q_f32(m + 8, vmulq_n_f32(vld1q_f32(m + 8), z));
+#else
+	m[0] *= x; m[1] *= x; m[2] *= x; m[3] *= x;
+	m[4] *= y; m[5] *= y; m[6] *= y; m[7] *= y;
+	m[8] *= z; m[9] *= z; m[10] *= z; m[11] *= z;
+#endif
+	finish_matrix_mut(m);
 }
 
 void APIENTRY_GL4ES gl4es_glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
 DBG(printf("glRotatef(%f, %f, %f, %f), list=%p\n", angle, x, y, z, glstate->list.active);)
-	// create a rotation matrix than multiply it...
-	GLfloat tmp[16];
-	memset(tmp, 0, 16*sizeof(GLfloat));
 	if((x==0 && y==0 && z==0) || angle==0)
 		return;	// nothing to do
+	// Fast in-place cardinal-axis rotation for entity limb transforms (avoids sqrtf + full 4x4 multiply)
+	if (!glstate->list.active || glstate->list.pending) {
+		int is_x = (y == 0.0f && z == 0.0f);
+		int is_y = (x == 0.0f && z == 0.0f);
+		int is_z = (x == 0.0f && y == 0.0f);
+		if (is_x || is_y || is_z) {
+			if (glstate->list.active) gl4es_flush();
+			GLfloat *m = update_current_mat();
+			if (!m) return;
+			const GLfloat rad = angle * (3.1415926535f / 180.f);
+			GLfloat s = sinf(rad);
+			const GLfloat c = cosf(rad);
+			if (is_x) {
+				if (x < 0.0f) s = -s;
+#ifdef GL4ES_MATRIX_NEON
+				float32x4_t c1 = vld1q_f32(m + 4);
+				float32x4_t c2 = vld1q_f32(m + 8);
+				vst1q_f32(m + 4, vmlaq_n_f32(vmulq_n_f32(c1, c), c2, s));
+				vst1q_f32(m + 8, vmlaq_n_f32(vmulq_n_f32(c2, c), c1, -s));
+#else
+				for (int i = 0; i < 4; i++) {
+					GLfloat a1 = m[4 + i], a2 = m[8 + i];
+					m[4 + i] = a1 * c + a2 * s;
+					m[8 + i] = a2 * c - a1 * s;
+				}
+#endif
+			} else if (is_y) {
+				if (y < 0.0f) s = -s;
+#ifdef GL4ES_MATRIX_NEON
+				float32x4_t c0 = vld1q_f32(m);
+				float32x4_t c2 = vld1q_f32(m + 8);
+				vst1q_f32(m,     vmlaq_n_f32(vmulq_n_f32(c0, c), c2, -s));
+				vst1q_f32(m + 8, vmlaq_n_f32(vmulq_n_f32(c2, c), c0, s));
+#else
+				for (int i = 0; i < 4; i++) {
+					GLfloat a0 = m[i], a2 = m[8 + i];
+					m[i]     = a0 * c - a2 * s;
+					m[8 + i] = a2 * c + a0 * s;
+				}
+#endif
+			} else {
+				if (z < 0.0f) s = -s;
+#ifdef GL4ES_MATRIX_NEON
+				float32x4_t c0 = vld1q_f32(m);
+				float32x4_t c1 = vld1q_f32(m + 4);
+				vst1q_f32(m,     vmlaq_n_f32(vmulq_n_f32(c0, c), c1, s));
+				vst1q_f32(m + 4, vmlaq_n_f32(vmulq_n_f32(c1, c), c0, -s));
+#else
+				for (int i = 0; i < 4; i++) {
+					GLfloat a0 = m[i], a1 = m[4 + i];
+					m[i]     = a0 * c + a1 * s;
+					m[4 + i] = a1 * c - a0 * s;
+				}
+#endif
+			}
+			finish_matrix_mut(m);
+			return;
+		}
+	}
+	// create a rotation matrix then multiply it...
+	GLfloat tmp[16];
+	memset(tmp, 0, 16*sizeof(GLfloat));
 	// normalize x y z
 	GLfloat l = 1.0f/sqrtf(x*x+y*y+z*z);
 	x=x*l; y=y*l; z=z*l;

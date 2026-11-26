@@ -385,6 +385,10 @@ void* NewGLState(void* shared_glstate, int es2only) {
     // Alpha Func
     glstate->alphafunc = GL_ALWAYS;
     glstate->alpharef = 0.0f;
+    glstate->light_seq = 1;
+    glstate->fog_seq = 1;
+    glstate->texenv_seq = 1;
+    glstate->alpharef_seq = 1;
     // Blend
     glstate->blendsfactorrgb = GL_ONE;
     glstate->blenddfactorrgb = GL_ZERO;

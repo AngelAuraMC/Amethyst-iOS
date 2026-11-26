@@ -1119,7 +1119,10 @@ void APIENTRY_GL4ES gl4es_glAlphaFunc(GLenum func, GLclampf ref) {
             return;
     }
     glstate->alphafunc = func;
-    glstate->alpharef = ref;
+    if(glstate->alpharef != ref) {
+        glstate->alpharef = ref;
+        glstate->alpharef_seq++;
+    }
     LOAD_GLES_FPE(glAlphaFunc);
     if(gles_glAlphaFunc) {
         errorGL();

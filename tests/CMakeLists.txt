@@ -114,6 +114,7 @@ else()
         tier4_village_low
         tier4_village_high
         tier4_multicontext
+        tier4_entity_hotpath
     )
 endif()
 

@@ -29,6 +29,7 @@ FULL_SUITES = [
     "tier4_village_low",
     "tier4_village_high",
     "tier4_multicontext",
+    "tier4_entity_hotpath",
 ]
 
 SMOKE_SUITES = [
@@ -112,6 +113,17 @@ def build_with_zig(repo_root: Path, build_dir: Path, pre_m1_smoke: bool) -> Path
         f"-I{repo_root / 'tests'}",
     ]
     win_shim_h = repo_root / "tests/win_alloc_shim.h"
+    header_dirs = [
+        repo_root / "Natives/external/gl4es_116/include",
+        repo_root / "Natives/external/gl4es_116/src/gl",
+        repo_root / "Natives/external/gl4es_116/src/glx",
+        repo_root / "Natives/external/gl4es_116/src/util",
+        repo_root / "tests",
+    ]
+    newest_header_mtime = max(
+        (h.stat().st_mtime for d in header_dirs if d.exists() for h in d.rglob("*.h")),
+        default=0.0,
+    )
     if os.name == "nt":
         cflags.append("-DWIN_ALLOC_SHIM_WRAP=1")
     if pre_m1_smoke:
@@ -121,9 +133,7 @@ def build_with_zig(repo_root: Path, build_dir: Path, pre_m1_smoke: bool) -> Path
         rel = src.relative_to(repo_root)
         suffix = ".smoke.o" if (pre_m1_smoke and src.name == "gl4es116_test_harness.c") else ".o"
         obj = obj_dir / (str(rel).replace("\\", "_").replace("/", "_") + suffix)
-        newest_dep = src.stat().st_mtime
-        if os.name == "nt" and win_shim_h.exists():
-            newest_dep = max(newest_dep, win_shim_h.stat().st_mtime)
+        newest_dep = max(src.stat().st_mtime, newest_header_mtime)
         need_build = not obj.exists() or obj.stat().st_mtime < newest_dep
         if src in harness_srcs:
             need_build = True

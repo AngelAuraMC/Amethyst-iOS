@@ -527,6 +527,10 @@ static void clear_program(program_t *glprogram)
     }
     glprogram->cache.size = 0;  // reset cache buffer
     glprogram->applied_matrix_seq = 0;
+    glprogram->applied_light_seq = 0;
+    glprogram->applied_fog_seq = 0;
+    glprogram->applied_texenv_seq = 0;
+    glprogram->applied_alpharef_seq = 0;
     if(glprogram->default_need) {
         free(glprogram->default_need);
         glprogram->default_need = NULL;

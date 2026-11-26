@@ -43,6 +43,10 @@ typedef struct glstate_s {
     matrixstack_t       **arb_matrix;
     int                 matrix_mode;
     uint32_t            matrix_seq;
+    uint64_t            light_seq;
+    uint64_t            fog_seq;
+    uint64_t            texenv_seq;
+    uint64_t            alpharef_seq;
     selectbuf_t         selectbuf;
     khash_t(glvao)      *vaos;
     khash_t(buff)       *buffers;       //shared

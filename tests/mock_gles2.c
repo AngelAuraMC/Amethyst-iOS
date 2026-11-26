@@ -128,7 +128,7 @@ typedef struct mock_program_s {
     GLuint shaders[8];
     int shader_count;
     uint32_t attr_mask; /* bit 0: _gl4es_Vertex, bit 1: _gl4es_Color, bit 2: _gl4es_Normal, bit 3: _gl4es_MultiTexCoord0 */
-    int has_mvp;
+    uint32_t uniform_mask; /* bit 0: MVP, bit 1: LightSource_0.diffuse, bit 2: Fog.color, bit 3: AlphaRef, bit 4: TextureEnvColor_0 */
 } mock_program_t;
 
 typedef struct mock_attrib_state_s {
@@ -579,7 +579,7 @@ static void APIENTRY_GLES m_glLinkProgram(GLuint program) {
     if (!p) return;
     p->linked = 1;
     p->attr_mask = 0;
-    p->has_mvp = 0;
+    p->uniform_mask = 0;
     for (int i = 0; i < p->shader_count; ++i) {
         mock_shader_t *s = find_shader(p->shaders[i]);
         if (s && s->source) {
@@ -587,7 +587,11 @@ static void APIENTRY_GLES m_glLinkProgram(GLuint program) {
             if (strstr(s->source, "_gl4es_Color")) p->attr_mask |= 2u;
             if (strstr(s->source, "_gl4es_Normal")) p->attr_mask |= 4u;
             if (strstr(s->source, "_gl4es_MultiTexCoord0")) p->attr_mask |= 8u;
-            if (strstr(s->source, "_gl4es_ModelViewProjectionMatrix")) p->has_mvp = 1;
+            if (strstr(s->source, "_gl4es_ModelViewProjectionMatrix")) p->uniform_mask |= 1u;
+            if (strstr(s->source, "_gl4es_LightSource_0")) p->uniform_mask |= 2u;
+            if (strstr(s->source, "_gl4es_Fog")) p->uniform_mask |= 4u;
+            if (strstr(s->source, "_gl4es_AlphaRef")) p->uniform_mask |= 8u;
+            if (strstr(s->source, "_gl4es_TextureEnvColor_0")) p->uniform_mask |= 16u;
         }
     }
 }
@@ -626,8 +630,8 @@ static void APIENTRY_GLES m_glGetProgramiv(GLuint program, GLenum pname, GLint *
         case GL_DELETE_STATUS: params[0] = GL_FALSE; break;
         case GL_INFO_LOG_LENGTH: params[0] = 1; break;
         case GL_ATTACHED_SHADERS: params[0] = p ? p->shader_count : 0; break;
-        case GL_ACTIVE_UNIFORMS: params[0] = (p && p->has_mvp) ? 1 : 0; break;
-        case GL_ACTIVE_UNIFORM_MAX_LENGTH: params[0] = (p && p->has_mvp) ? 40 : 1; break;
+        case GL_ACTIVE_UNIFORMS: params[0] = p ? count_bits(p->uniform_mask) : 0; break;
+        case GL_ACTIVE_UNIFORM_MAX_LENGTH: params[0] = (p && p->uniform_mask) ? 40 : 1; break;
         case GL_ACTIVE_ATTRIBUTES: params[0] = p ? count_bits(p->attr_mask) : 0; break;
         case GL_ACTIVE_ATTRIBUTE_MAX_LENGTH: params[0] = 32; break;
         case GL_PROGRAM_BINARY_LENGTH_OES: params[0] = 32; break;
@@ -653,9 +657,30 @@ static void APIENTRY_GLES m_glGetAttachedShaders(GLuint program, GLsizei maxCoun
 
 static void APIENTRY_GLES m_glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name) {
     mock_program_t *p = find_program(program);
-    const char *uname = (p && p->has_mvp && index == 0) ? "_gl4es_ModelViewProjectionMatrix" : "u_mock";
+    static const struct { uint32_t bit; const char *name; GLenum type; } umap[] = {
+        {1u,  "_gl4es_ModelViewProjectionMatrix", GL_FLOAT_MAT4},
+        {2u,  "_gl4es_LightSource_0.diffuse",     GL_FLOAT_VEC4},
+        {4u,  "_gl4es_Fog.color",                 GL_FLOAT_VEC4},
+        {8u,  "_gl4es_AlphaRef",                  GL_FLOAT},
+        {16u, "_gl4es_TextureEnvColor_0",         GL_FLOAT_VEC4},
+    };
+    const char *uname = "u_mock";
+    GLenum utype = GL_FLOAT_VEC4;
+    if (p) {
+        GLuint seen = 0;
+        for (size_t i = 0; i < sizeof(umap)/sizeof(umap[0]); ++i) {
+            if (p->uniform_mask & umap[i].bit) {
+                if (seen == index) {
+                    uname = umap[i].name;
+                    utype = umap[i].type;
+                    break;
+                }
+                seen++;
+            }
+        }
+    }
     if (size) *size = 1;
-    if (type) *type = (p && p->has_mvp && index == 0) ? GL_FLOAT_MAT4 : GL_FLOAT_VEC4;
+    if (type) *type = utype;
     if (name && bufSize > 0) {
         size_t l = strlen(uname);
         size_t cp = (l < (size_t)bufSize - 1) ? l : (size_t)(bufSize - 1);
@@ -671,6 +696,10 @@ static GLint APIENTRY_GLES m_glGetUniformLocation(GLuint program, const GLchar *
     (void)program;
     if (!name) return -1;
     if (strcmp(name, "_gl4es_ModelViewProjectionMatrix") == 0) return 0;
+    if (strcmp(name, "_gl4es_LightSource_0.diffuse") == 0) return 1;
+    if (strcmp(name, "_gl4es_Fog.color") == 0) return 2;
+    if (strcmp(name, "_gl4es_AlphaRef") == 0) return 3;
+    if (strcmp(name, "_gl4es_TextureEnvColor_0") == 0) return 4;
     return -1;
 }
 
@@ -725,7 +754,9 @@ static void APIENTRY_GLES m_glGetProgramBinaryOES(GLuint program, GLsizei bufSiz
         uint8_t *dst = (uint8_t *)binary;
         memset(dst, 0xA5, (size_t)out_len);
         uint32_t mask = p ? p->attr_mask : 3u;
+        uint32_t umask = p ? p->uniform_mask : 1u;
         if (out_len >= 4) memcpy(dst, &mask, 4);
+        if (out_len >= 8) memcpy(dst + 4, &umask, 4);
     }
 }
 
@@ -738,7 +769,9 @@ static void APIENTRY_GLES m_glProgramBinaryOES(GLuint program, GLenum binaryForm
     }
     p->linked = 1;
     p->attr_mask = 3u; /* _gl4es_Vertex + _gl4es_Color */
+    p->uniform_mask = 1u;
     if (length >= 4) memcpy(&p->attr_mask, binary, 4);
+    if (length >= 8) memcpy(&p->uniform_mask, (const uint8_t *)binary + 4, 4);
     g_state.program_binary_loads++;
 }
 
@@ -1146,25 +1179,25 @@ static void APIENTRY_GLES m_glFlush(void) {}
 static void APIENTRY_GLES m_glReleaseShaderCompiler(void) {}
 static void APIENTRY_GLES m_glShaderBinary(GLsizei n, const GLuint *s, GLenum bf, const GLvoid *b, GLsizei l) { (void)n; (void)s; (void)bf; (void)b; (void)l; }
 
-static void APIENTRY_GLES m_glUniform1f(GLint l, GLfloat v0) { (void)l; (void)v0; }
-static void APIENTRY_GLES m_glUniform1fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; }
+static void APIENTRY_GLES m_glUniform1f(GLint l, GLfloat v0) { (void)l; (void)v0; g_state.uniform_fv_calls++; }
+static void APIENTRY_GLES m_glUniform1fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; g_state.uniform_fv_calls++; }
 static void APIENTRY_GLES m_glUniform1i(GLint l, GLint v0) { (void)l; (void)v0; }
 static void APIENTRY_GLES m_glUniform1iv(GLint l, GLsizei c, const GLint *v) { (void)l; (void)c; (void)v; }
-static void APIENTRY_GLES m_glUniform2f(GLint l, GLfloat v0, GLfloat v1) { (void)l; (void)v0; (void)v1; }
-static void APIENTRY_GLES m_glUniform2fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; }
+static void APIENTRY_GLES m_glUniform2f(GLint l, GLfloat v0, GLfloat v1) { (void)l; (void)v0; (void)v1; g_state.uniform_fv_calls++; }
+static void APIENTRY_GLES m_glUniform2fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; g_state.uniform_fv_calls++; }
 static void APIENTRY_GLES m_glUniform2i(GLint l, GLint v0, GLint v1) { (void)l; (void)v0; (void)v1; }
 static void APIENTRY_GLES m_glUniform2iv(GLint l, GLsizei c, const GLint *v) { (void)l; (void)c; (void)v; }
-static void APIENTRY_GLES m_glUniform3f(GLint l, GLfloat v0, GLfloat v1, GLfloat v2) { (void)l; (void)v0; (void)v1; (void)v2; }
-static void APIENTRY_GLES m_glUniform3fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; }
+static void APIENTRY_GLES m_glUniform3f(GLint l, GLfloat v0, GLfloat v1, GLfloat v2) { (void)l; (void)v0; (void)v1; (void)v2; g_state.uniform_fv_calls++; }
+static void APIENTRY_GLES m_glUniform3fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; g_state.uniform_fv_calls++; }
 static void APIENTRY_GLES m_glUniform3i(GLint l, GLint v0, GLint v1, GLint v2) { (void)l; (void)v0; (void)v1; (void)v2; }
 static void APIENTRY_GLES m_glUniform3iv(GLint l, GLsizei c, const GLint *v) { (void)l; (void)c; (void)v; }
-static void APIENTRY_GLES m_glUniform4f(GLint l, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) { (void)l; (void)v0; (void)v1; (void)v2; (void)v3; }
-static void APIENTRY_GLES m_glUniform4fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; }
+static void APIENTRY_GLES m_glUniform4f(GLint l, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) { (void)l; (void)v0; (void)v1; (void)v2; (void)v3; g_state.uniform_fv_calls++; }
+static void APIENTRY_GLES m_glUniform4fv(GLint l, GLsizei c, const GLfloat *v) { (void)l; (void)c; (void)v; g_state.uniform_fv_calls++; }
 static void APIENTRY_GLES m_glUniform4i(GLint l, GLint v0, GLint v1, GLint v2, GLint v3) { (void)l; (void)v0; (void)v1; (void)v2; (void)v3; }
 static void APIENTRY_GLES m_glUniform4iv(GLint l, GLsizei c, const GLint *v) { (void)l; (void)c; (void)v; }
-static void APIENTRY_GLES m_glUniformMatrix2fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; }
-static void APIENTRY_GLES m_glUniformMatrix3fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; }
-static void APIENTRY_GLES m_glUniformMatrix4fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; }
+static void APIENTRY_GLES m_glUniformMatrix2fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; g_state.uniform_matrix_calls++; }
+static void APIENTRY_GLES m_glUniformMatrix3fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; g_state.uniform_matrix_calls++; }
+static void APIENTRY_GLES m_glUniformMatrix4fv(GLint l, GLsizei c, GLboolean t, const GLfloat *v) { (void)l; (void)c; (void)t; (void)v; g_state.uniform_matrix_calls++; }
 static void APIENTRY_GLES m_glGetUniformfv(GLuint p, GLint l, GLfloat *params) { (void)p; (void)l; if (params) params[0] = 0.0f; }
 static void APIENTRY_GLES m_glGetUniformiv(GLuint p, GLint l, GLint *params) { (void)p; (void)l; if (params) params[0] = 0; }
 

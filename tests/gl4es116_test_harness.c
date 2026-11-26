@@ -1775,6 +1775,200 @@ static void suite_tier4_multicontext(void) {
     check(gl_objects_clean,
           "multicontext: 0 live GLES2 buffers/textures/FBOs/RBOs/shaders/programs after close_gl4es()", NULL);
 }
+
+static int mat_approx_eq(const GLfloat *a, const GLfloat *b, float eps) {
+    for (int i = 0; i < 16; ++i) {
+        if (fabsf(a[i] - b[i]) > eps) return 0;
+    }
+    return 1;
+}
+
+static void suite_tier4_entity_hotpath(void) {
+    set_env_var("LIBGL_MEM_PROFILE", "high");
+    init_with_mock();
+
+    /* 1. Fast matrix ops equivalence vs glMultMatrixf */
+    const GLfloat base[16] = {
+        0.8f, 0.2f, -0.3f, 0.0f,
+        -0.1f, 0.9f, 0.4f, 0.0f,
+        0.5f, -0.2f, 0.7f, 0.0f,
+        1.5f, -2.5f, 3.5f, 1.0f
+    };
+    GLfloat got[16], ref[16], op[16];
+
+    gl4es_glMatrixMode(GL_MODELVIEW);
+    gl4es_glLoadMatrixf(base);
+    uint32_t seq_before = glstate->matrix_seq;
+    gl4es_glTranslatef(0.0f, 0.0f, 0.0f);
+    gl4es_glScalef(1.0f, 1.0f, 1.0f);
+    gl4es_glRotatef(0.0f, 1.0f, 0.0f, 0.0f);
+    check(glstate->matrix_seq == seq_before,
+          "entity_hotpath: zero-op translate/scale/rotate does not bump matrix_seq", NULL);
+
+    /* Translate */
+    gl4es_glLoadMatrixf(base);
+    gl4es_glTranslatef(2.5f, -1.25f, 4.0f);
+    memcpy(got, getMVMat(), sizeof(got));
+    memset(op, 0, sizeof(op));
+    op[0] = op[5] = op[10] = op[15] = 1.0f;
+    op[12] = 2.5f; op[13] = -1.25f; op[14] = 4.0f;
+    gl4es_glLoadMatrixf(base);
+    gl4es_glMultMatrixf(op);
+    memcpy(ref, getMVMat(), sizeof(ref));
+    check(mat_approx_eq(got, ref, 1e-5f),
+          "entity_hotpath: fast glTranslatef matches glMultMatrixf", NULL);
+
+    /* Scale */
+    gl4es_glLoadMatrixf(base);
+    gl4es_glScalef(0.5f, 2.0f, -1.5f);
+    memcpy(got, getMVMat(), sizeof(got));
+    memset(op, 0, sizeof(op));
+    op[0] = 0.5f; op[5] = 2.0f; op[10] = -1.5f; op[15] = 1.0f;
+    gl4es_glLoadMatrixf(base);
+    gl4es_glMultMatrixf(op);
+    memcpy(ref, getMVMat(), sizeof(ref));
+    check(mat_approx_eq(got, ref, 1e-5f),
+          "entity_hotpath: fast glScalef matches glMultMatrixf", NULL);
+
+    /* Cardinal rotations: +X, -X, +Y, -Y, +Z, -Z */
+    const GLfloat axes[6][3] = {
+        {1, 0, 0}, {-2, 0, 0}, {0, 1, 0}, {0, -3, 0}, {0, 0, 1}, {0, 0, -4}
+    };
+    int rot_ok = 1;
+    for (int a = 0; a < 6; ++a) {
+        const float deg = 37.5f + a * 19.0f;
+        const float rad = deg * (3.1415926535f / 180.0f);
+        float ax = axes[a][0], ay = axes[a][1], az = axes[a][2];
+        float inv = 1.0f / sqrtf(ax * ax + ay * ay + az * az);
+        ax *= inv; ay *= inv; az *= inv;
+        float s = sinf(rad), c = cosf(rad), c1 = 1.0f - c;
+        memset(op, 0, sizeof(op));
+        op[0] = ax * ax * c1 + c;      op[4] = ax * ay * c1 - az * s; op[8]  = ax * az * c1 + ay * s;
+        op[1] = ay * ax * c1 + az * s; op[5] = ay * ay * c1 + c;      op[9]  = ay * az * c1 - ax * s;
+        op[2] = ax * az * c1 - ay * s; op[6] = ay * az * c1 + ax * s; op[10] = az * az * c1 + c;
+        op[15] = 1.0f;
+        gl4es_glLoadMatrixf(base);
+        gl4es_glRotatef(deg, axes[a][0], axes[a][1], axes[a][2]);
+        memcpy(got, getMVMat(), sizeof(got));
+        gl4es_glLoadMatrixf(base);
+        gl4es_glMultMatrixf(op);
+        memcpy(ref, getMVMat(), sizeof(ref));
+        if (!mat_approx_eq(got, ref, 1e-4f)) rot_ok = 0;
+    }
+    check(rot_ok, "entity_hotpath: cardinal +/-X/+/-Y/+/-Z glRotatef matches glMultMatrixf", NULL);
+
+    /* Texture matrix identity tracking still intact */
+    gl4es_glMatrixMode(GL_TEXTURE);
+    gl4es_glPushMatrix();
+    gl4es_glScalef(2.0f, 2.0f, 1.0f);
+    int texmat_non_id = (glstate->texture_matrix[0]->identity == 0 && glstate->fpe_state->texture[0].texmat == 1);
+    gl4es_glPopMatrix();
+    int texmat_restored = (glstate->texture_matrix[0]->identity == 1 && glstate->fpe_state->texture[0].texmat == 0);
+    gl4es_glMatrixMode(GL_MODELVIEW);
+    check(texmat_non_id && texmat_restored,
+          "entity_hotpath: GL_TEXTURE scale/pop preserves texture_matrix->identity & fpe texmat", NULL);
+
+    /* 2. Dirty-sequence counters bump on change & skip no-ops */
+    GLfloat diff_c[4] = {0.6f, 0.7f, 0.8f, 1.0f};
+    uint64_t lseq0 = glstate->light_seq;
+    gl4es_glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_c);
+    uint64_t lseq1 = glstate->light_seq;
+    gl4es_glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff_c);
+    uint64_t lseq2 = glstate->light_seq;
+    check(lseq1 == lseq0 + 1 && lseq2 == lseq1,
+          "entity_hotpath: light_seq bumps on material change and skips redundant glMaterialfv", NULL);
+
+    GLfloat fog_c[4] = {0.2f, 0.3f, 0.4f, 1.0f};
+    uint64_t fseq0 = glstate->fog_seq;
+    gl4es_glFogfv(GL_FOG_COLOR, fog_c);
+    uint64_t fseq1 = glstate->fog_seq;
+    gl4es_glFogfv(GL_FOG_COLOR, fog_c);
+    uint64_t fseq2 = glstate->fog_seq;
+    check(fseq1 == fseq0 + 1 && fseq2 == fseq1,
+          "entity_hotpath: fog_seq bumps on change and skips redundant glFogfv", NULL);
+
+    GLfloat te_c[4] = {0.1f, 0.2f, 0.3f, 0.4f};
+    uint64_t tseq0 = glstate->texenv_seq;
+    gl4es_glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, te_c);
+    uint64_t tseq1 = glstate->texenv_seq;
+    gl4es_glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, te_c);
+    uint64_t tseq2 = glstate->texenv_seq;
+    check(tseq1 == tseq0 + 1 && tseq2 == tseq1,
+          "entity_hotpath: texenv_seq bumps on change and skips redundant glTexEnvfv", NULL);
+
+    uint64_t aseq0 = glstate->alpharef_seq;
+    gl4es_glAlphaFunc(GL_GREATER, 0.5f);
+    uint64_t aseq1 = glstate->alpharef_seq;
+    gl4es_glAlphaFunc(GL_GREATER, 0.5f);
+    uint64_t aseq2 = glstate->alpharef_seq;
+    check(aseq1 == aseq0 + 1 && aseq2 == aseq1,
+          "entity_hotpath: alpharef_seq bumps on change and skips redundant glAlphaFunc", NULL);
+
+    /* 3. 500-limb lit entity display-list burst */
+    GLuint tex = 0;
+    uint8_t px[16 * 16 * 4];
+    memset(px, 0xFF, sizeof(px));
+    gl4es_glGenTextures(1, &tex);
+    gl4es_glEnable(GL_TEXTURE_2D);
+    gl4es_glBindTexture(GL_TEXTURE_2D, tex);
+    gl4es_glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, px);
+
+    gl4es_glEnable(GL_LIGHTING);
+    gl4es_glEnable(GL_LIGHT0);
+    gl4es_glEnable(GL_FOG);
+    gl4es_glEnable(GL_ALPHA_TEST);
+
+    GLuint limb = gl4es_glGenLists(1);
+    gl4es_glNewList(limb, GL_COMPILE);
+    gl4es_glBegin(GL_QUADS);
+    gl4es_glNormal3f(0.0f, 1.0f, 0.0f);
+    gl4es_glTexCoord2f(0.0f, 0.0f); gl4es_glVertex3f(0.0f, 0.0f, 0.0f);
+    gl4es_glTexCoord2f(1.0f, 0.0f); gl4es_glVertex3f(1.0f, 0.0f, 0.0f);
+    gl4es_glTexCoord2f(1.0f, 1.0f); gl4es_glVertex3f(1.0f, 1.0f, 0.0f);
+    gl4es_glTexCoord2f(0.0f, 1.0f); gl4es_glVertex3f(0.0f, 1.0f, 0.0f);
+    gl4es_glEnd();
+    gl4es_glEndList();
+
+    const mock_gles2_state_t *ms = mock_gles2_get_state();
+    unsigned long draws_before = ms->draw_arrays_calls + ms->draw_elements_calls;
+    unsigned long ufv_after_first = 0;
+    for (int i = 0; i < 500; ++i) {
+        gl4es_glPushMatrix();
+        gl4es_glTranslatef((float)(i % 20), 0.0f, (float)(i / 20));
+        gl4es_glRotatef((float)(i % 360), 0.0f, 1.0f, 0.0f);
+        gl4es_glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
+        gl4es_glScalef(0.0625f, 0.0625f, 0.0625f);
+        gl4es_glCallList(limb);
+        gl4es_glPopMatrix();
+        if (i == 0) ufv_after_first = ms->uniform_fv_calls;
+    }
+    unsigned long draws_after = ms->draw_arrays_calls + ms->draw_elements_calls;
+    unsigned long ufv_after_500 = ms->uniform_fv_calls;
+    program_t *active_prog = glstate->gleshard ? glstate->gleshard->glprogram : NULL;
+    char hot_msg[192];
+    snprintf(hot_msg, sizeof(hot_msg),
+             "draws=%lu ufv1=%lu ufv500=%lu l=%llu/%llu f=%llu/%llu a=%llu/%llu",
+             draws_after - draws_before, ufv_after_first, ufv_after_500,
+             active_prog ? (unsigned long long)active_prog->applied_light_seq : 0ULL,
+             (unsigned long long)glstate->light_seq,
+             active_prog ? (unsigned long long)active_prog->applied_fog_seq : 0ULL,
+             (unsigned long long)glstate->fog_seq,
+             active_prog ? (unsigned long long)active_prog->applied_alpharef_seq : 0ULL,
+             (unsigned long long)glstate->alpharef_seq);
+    check((draws_after - draws_before) >= 500
+          && active_prog != NULL
+          && active_prog->applied_light_seq == glstate->light_seq
+          && active_prog->applied_fog_seq == glstate->fog_seq
+          && active_prog->applied_alpharef_seq == glstate->alpharef_seq
+          && ufv_after_500 == ufv_after_first
+          && gl4es_glGetError() == GL_NO_ERROR,
+          "entity_hotpath: 500 lit entity limbs render cleanly with applied seqs synced & 0 redundant uniform uploads",
+          hot_msg);
+
+    gl4es_glDeleteLists(limb, 1);
+    gl4es_glDeleteTextures(1, &tex);
+    close_gl4es();
+}
 #endif /* GL4ES_PRE_M1_SMOKE */
 
 int main(int argc, char **argv) {
@@ -1808,6 +2002,7 @@ int main(int argc, char **argv) {
     else if (strcmp(suite, "tier4_village_low") == 0) run_village_stress("low");
     else if (strcmp(suite, "tier4_village_high") == 0) run_village_stress("high");
     else if (strcmp(suite, "tier4_multicontext") == 0) suite_tier4_multicontext();
+    else if (strcmp(suite, "tier4_entity_hotpath") == 0) suite_tier4_entity_hotpath();
 #endif
     else {
         fprintf(stderr, "Unknown or disabled suite: %s\n", suite);

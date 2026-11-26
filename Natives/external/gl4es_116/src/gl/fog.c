@@ -67,6 +67,7 @@ void APIENTRY_GL4ES gl4es_glFogfv(GLenum pname, const GLfloat* params) {
     }
     #undef GO
     #undef GOI
+    glstate->fog_seq++;
     LOAD_GLES_FPE(glFogfv);
     gles_glFogfv(pname, params);
     errorGL();
