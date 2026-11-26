@@ -217,6 +217,7 @@ void init_loadCustomJvmFlags(int* argc, const char** argv) {
 
 int launchJVM(NSString *username, id launchTarget, int width, int height, int minVersion) {
     NSLog(@"[JavaLauncher] Beginning JVM launch");
+    amethyst_uninstall_boot_signal_handlers();
 
     init_loadDefaultEnv();
     init_probeMemoryEnv();

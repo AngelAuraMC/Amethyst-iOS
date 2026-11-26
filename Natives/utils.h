@@ -89,6 +89,8 @@ BOOL PLPatchMachOPlatformForFile(const char *path);
 UIViewController* currentVC();
 void openLink(UIViewController* sender, NSURL* link);
 void handle_fatal_exit(int code);
+void amethyst_boot_trace(const char *step);
+void amethyst_uninstall_boot_signal_handlers(void);
 
 NSString* localize(NSString* key, NSString* comment);
 NSMutableDictionary* parseJSONFromFile(NSString *path);

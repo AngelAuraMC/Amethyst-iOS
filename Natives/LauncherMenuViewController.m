@@ -52,6 +52,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    amethyst_boot_trace("menu_viewDidLoad_start");
     
     self.isInitialVc = YES;
     
@@ -146,12 +147,16 @@
                 [self displayProgress:localize(@"login.jit.enabled", nil)];
             }
             [self displayProgress:nil];
+            amethyst_boot_trace("menu_jit_enabled");
         } else if (@available(iOS 17.0, *)) {
             // enabling JIT for 17.0+ is done when we actually launch the game
+            amethyst_boot_trace("menu_jit_deferred_ios17");
         } else {
+            amethyst_boot_trace("menu_jit_altkit");
             [self enableJITWithAltKit];
         }
     } else if (!NSProcessInfo.processInfo.macCatalystApp && !getenv("SIMULATOR_DEVICE_NAME")) {
+        amethyst_boot_trace("menu_jit_unsupported");
         [self displayProgress:localize(@"login.jit.fail", nil)];
         [self displayProgress:nil];
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:localize(@"login.jit.fail.title", nil)

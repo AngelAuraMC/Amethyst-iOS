@@ -212,12 +212,20 @@ def check_jit_guards(repo_root: Path) -> None:
     mm = read_c_code(repo_root, "Natives/main.m")
     record("[F10][T1] main.m: synchronous uncaughtExceptionHandler crash log flush",
            "AME_HOME" in mm and "latestlog.txt" in mm and "synchronizeFile" in mm and "handle_fatal_exit(SIGABRT)" in mm)
-    record("[F10][T1] main.m: csops CS_OPS_STATUS & PT_TRACE_ME / PT_DETACH paths preserved",
+    record("[F10][T1] main.m: csops CS_OPS_STATUS, PT_TRACE_ME empty-arg guard, sysctl size init & realpath guard",
            "csops(getpid(), CS_OPS_STATUS, &flags, sizeof(flags))" in mm
-           and "argc == 2 && !isJITEnabled(true)" in mm
+           and "argc == 2 && argv[1] != NULL && argv[1][0] == '\\0' && !isJITEnabled(true)" in mm
+           and "size_t size = 0;" in mm
+           and "if (st != 0 || size == 0)" in mm
+           and "resolvedHome ? resolvedHome : homeDir.UTF8String" in mm
            and "ptrace(PT_TRACE_ME" in mm
            and 'com.apple.private.security.no-sandbox' in mm
            and "ptrace(PT_DETACH" in mm)
+    jl_src = read_c_code(repo_root, "Natives/JavaLauncher.m")
+    record("[F10][T1] main.m + JavaLauncher.m: sync boot trace & clean signal uninstall before JVM launch",
+           "amethyst_init_boot_trace" in mm
+           and "amethyst_uninstall_boot_signal_handlers" in mm
+           and "amethyst_uninstall_boot_signal_handlers();" in jl_src)
 
     mh = read_c_code(repo_root, "Natives/main_hook.m")
     pos_home_tmp = mh.find("((home && strstr(fullpath, home)) || (tmp && strstr(fullpath, tmp)))")

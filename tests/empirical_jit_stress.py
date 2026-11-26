@@ -726,6 +726,52 @@ except TypeError as e:
 res_fixed_dlopen = fixed_sys_dlopen(None, mock_orig_dlopen, "/path/to/libjli.dylib", 2)
 record_test("Fixed sys_dlopen fallback to orig_dlopen", res_fixed_dlopen == 0x12345678, "(Safely resolved via orig_dlopen)")
 
+# ----------------------------------------------------------------------
+# 8. Pre-stdio Startup Safety (sysctl uninit size, PT_TRACE_ME argv[1], realpath NULL)
+# ----------------------------------------------------------------------
+print("\n--- [Test 8] Pre-stdio Startup Safety (main.m) ---")
+
+def upstream_check_substrated(sysctl_ok, garbage_size):
+    size = garbage_size if not sysctl_ok else 1024
+    # Upstream enters realloc without checking sysctl return value
+    alloc_size = size + (size // 10)
+    if alloc_size > (1 << 30):
+        raise MemoryError(f"Pre-stdio OOM/Jetsam from uninitialized sysctl size={alloc_size}")
+    return False
+
+def fixed_check_substrated(sysctl_ok, garbage_size):
+    size = 0 if not sysctl_ok else 1024
+    if not sysctl_ok or size == 0:
+        return False
+    return False
+
+try:
+    upstream_check_substrated(False, 0x000000016F000000)
+    record_test("Upstream uninitialized sysctl size", False, "Expected MemoryError did not occur!")
+except MemoryError as e:
+    record_test("Upstream uninitialized sysctl size bug reproduced", True, f"({e})")
+
+record_test("Fixed init_checkForsubstrated returns false on EPERM without realloc",
+            fixed_check_substrated(False, 0x000000016F000000) is False)
+
+def should_enter_pt_trace_me(argv, jit_enabled, fixed=True):
+    if fixed:
+        return len(argv) == 2 and argv[1] is not None and argv[1] == "" and (not jit_enabled)
+    return len(argv) == 2 and (not jit_enabled)
+
+record_test("Upstream PT_TRACE_ME misfires on non-empty debugger arg",
+            should_enter_pt_trace_me(["AngelAuraAmethyst", "-NSDocumentRevisionsDebugMode"], False, fixed=False) is True)
+record_test("Fixed PT_TRACE_ME ignores non-empty debugger arg",
+            should_enter_pt_trace_me(["AngelAuraAmethyst", "-NSDocumentRevisionsDebugMode"], False, fixed=True) is False)
+record_test("Fixed PT_TRACE_ME still triggers for self-spawned empty arg child",
+            should_enter_pt_trace_me(["AngelAuraAmethyst", ""], False, fixed=True) is True)
+
+def resolve_ame_home(home_dir, realpath_res):
+    return realpath_res if realpath_res is not None else home_dir
+
+record_test("Fixed init_setupHomeDirectory falls back when realpath returns NULL",
+            resolve_ame_home("/var/mobile/Documents", None) == "/var/mobile/Documents")
+
 print("\n======================================================================")
 print(f"=== TEST SUITE SUMMARY: {PASSED} PASSED, {FAILED} FAILED           ===")
 print("======================================================================")

@@ -14,12 +14,16 @@
 #import "UIKit+hook.h"
 #import "config.h"
 
+#include <execinfo.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 #include "utils.h"
 #include "codesign.h"
 
@@ -30,11 +34,132 @@ int ptrace(int, pid_t, caddr_t, int);
 #define fm NSFileManager.defaultManager
 extern char** environ;
 
+static char s_bootTracePath[PATH_MAX];
+static const int s_bootSignals[] = { SIGSEGV, SIGBUS, SIGILL, SIGABRT, SIGFPE, SIGSYS, SIGTRAP };
+
+static void trace_append_str(char *buf, size_t *pos, size_t cap, const char *s) {
+    if (!s) s = "(null)";
+    while (*s && *pos + 1 < cap) {
+        buf[(*pos)++] = *s++;
+    }
+}
+
+static void trace_append_u64(char *buf, size_t *pos, size_t cap, uint64_t val, int base) {
+    static const char digits[] = "0123456789abcdef";
+    char tmp[32];
+    int n = 0;
+    if (val == 0) {
+        tmp[n++] = '0';
+    } else {
+        while (val > 0 && n < (int)sizeof(tmp)) {
+            tmp[n++] = digits[val % (uint64_t)base];
+            val /= (uint64_t)base;
+        }
+    }
+    while (n > 0 && *pos + 1 < cap) {
+        buf[(*pos)++] = tmp[--n];
+    }
+}
+
+static void trace_write_raw(const char *data, size_t len, int flags) {
+    if (!s_bootTracePath[0] || !data || len == 0) return;
+    int fd = open(s_bootTracePath, flags, 0644);
+    if (fd < 0) return;
+    size_t written = 0;
+    while (written < len) {
+        ssize_t w = write(fd, data + written, len - written);
+        if (w <= 0) break;
+        written += (size_t)w;
+    }
+    fsync(fd);
+    close(fd);
+}
+
+void amethyst_boot_trace(const char *step) {
+    char buf[256];
+    size_t pos = 0;
+    trace_append_str(buf, &pos, sizeof(buf), "[STEP] ");
+    trace_append_str(buf, &pos, sizeof(buf), step);
+    trace_append_str(buf, &pos, sizeof(buf), "\n");
+    trace_write_raw(buf, pos, O_WRONLY | O_CREAT | O_APPEND);
+}
+
+static void amethyst_boot_signal_handler(int sig, siginfo_t *info, void *ucontext) {
+    (void)ucontext;
+    if (s_bootTracePath[0]) {
+        int fd = open(s_bootTracePath, O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (fd >= 0) {
+            char buf[256];
+            size_t pos = 0;
+            trace_append_str(buf, &pos, sizeof(buf), "[CRASH] sig=");
+            trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)(sig > 0 ? sig : 0), 10);
+            trace_append_str(buf, &pos, sizeof(buf), " code=");
+            trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)(info ? (uint32_t)info->si_code : 0), 10);
+            trace_append_str(buf, &pos, sizeof(buf), " addr=0x");
+            trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)(uintptr_t)(info ? info->si_addr : NULL), 16);
+            trace_append_str(buf, &pos, sizeof(buf), "\n");
+            (void)write(fd, buf, pos);
+            void *bt[32];
+            int frames = backtrace(bt, 32);
+            if (frames > 0) {
+                backtrace_symbols_fd(bt, frames, fd);
+            }
+            fsync(fd);
+            close(fd);
+        }
+    }
+    raise(sig);
+}
+
+void amethyst_uninstall_boot_signal_handlers(void) {
+    for (size_t i = 0; i < sizeof(s_bootSignals) / sizeof(s_bootSignals[0]); i++) {
+        signal(s_bootSignals[i], SIG_DFL);
+    }
+}
+
+static void amethyst_init_boot_trace(int argc, char *argv[]) {
+    const char *home = getenv("AME_HOME");
+    if (!home || !home[0]) return;
+    snprintf(s_bootTracePath, sizeof(s_bootTracePath), "%s/jit_boot_trace.txt", home);
+
+    uint32_t csFlags = 0;
+    csops(getpid(), CS_OPS_STATUS, &csFlags, sizeof(csFlags));
+
+    char buf[384];
+    size_t pos = 0;
+    trace_append_str(buf, &pos, sizeof(buf), "[BOOT] argc=");
+    trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)(argc > 0 ? argc : 0), 10);
+    trace_append_str(buf, &pos, sizeof(buf), " pid=");
+    trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)getpid(), 10);
+    trace_append_str(buf, &pos, sizeof(buf), " ppid=");
+    trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)getppid(), 10);
+    trace_append_str(buf, &pos, sizeof(buf), " cs_flags=0x");
+    trace_append_u64(buf, &pos, sizeof(buf), (uint64_t)csFlags, 16);
+    trace_append_str(buf, &pos, sizeof(buf), " jb=");
+    trace_append_u64(buf, &pos, sizeof(buf), isJailbroken ? 1 : 0, 10);
+    if (argc > 1 && argv[1]) {
+        trace_append_str(buf, &pos, sizeof(buf), " arg1=");
+        trace_append_str(buf, &pos, sizeof(buf), argv[1]);
+    }
+    trace_append_str(buf, &pos, sizeof(buf), "\n");
+    trace_write_raw(buf, pos, O_WRONLY | O_CREAT | O_TRUNC);
+
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_sigaction = amethyst_boot_signal_handler;
+    sa.sa_flags = SA_SIGINFO | SA_RESETHAND;
+    sigemptyset(&sa.sa_mask);
+    for (size_t i = 0; i < sizeof(s_bootSignals) / sizeof(s_bootSignals[0]); i++) {
+        sigaction(s_bootSignals[i], &sa, NULL);
+    }
+}
+
 void printEntitlementAvailability(NSString *key) {
     NSLog(@"* %@: %@", key, getEntitlementValue(key) ? @"YES" : @"NO");
 }
 
 void uncaughtExceptionHandler(NSException *exception) {
+    amethyst_boot_trace("uncaught_ns_exception");
     NSLog(@"Uncaught exception: %@", exception.description);
     NSLog(@"Call stack: %@", exception.callStackSymbols);
 
@@ -61,35 +186,43 @@ bool init_checkForsubstrated() {
     // Please kindly tell pwn20wnd that he sucks
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
     size_t miblen = 4;
-    size_t size;
+    size_t size = 0;
     int st = sysctl(mib, miblen, NULL, &size, NULL, 0);
+    if (st != 0 || size == 0) {
+        return false;
+    }
     struct kinfo_proc * process = NULL;
     struct kinfo_proc * newprocess = NULL;
     do {
+        if (size > SIZE_MAX - (size / 10)) {
+            free(process);
+            return false;
+        }
         size += size / 10;
         newprocess = realloc(process, size);
         if (!newprocess){
-            if (process){
-                free(process);
-            }
-            return nil;
+            free(process);
+            return false;
         }
         process = newprocess;
         st = sysctl(mib, miblen, process, &size, NULL, 0);
     } while (st == -1 && errno == ENOMEM);
+    bool found = false;
     if (st == 0){
         if (size % sizeof(struct kinfo_proc) == 0){
-            int nprocess = size / sizeof(struct kinfo_proc);
+            int nprocess = (int)(size / sizeof(struct kinfo_proc));
             if (nprocess){
                 for (int i = nprocess - 1; i >= 0; i--){
                     if(strcmp(process[i].kp_proc.p_comm,"substrated") == 0) {
-                        return true;
+                        found = true;
+                        break;
                     }
                 }
             }
         }
     }
-    return false;
+    free(process);
+    return found;
 }
 
 bool init_checkForJailbreak() {
@@ -284,7 +417,9 @@ void init_setupHomeDirectory() {
         [fm createDirectoryAtPath:homeDir withIntermediateDirectories:YES attributes:nil error:&homeError];
     }
     
-    setenv("AME_HOME", realpath(homeDir.UTF8String, NULL), 1);
+    char *resolvedHome = realpath(homeDir.UTF8String, NULL);
+    setenv("AME_HOME", resolvedHome ? resolvedHome : homeDir.UTF8String, 1);
+    free(resolvedHome);
 }
 
 int main(int argc, char *argv[]) {
@@ -300,7 +435,7 @@ int main(int argc, char *argv[]) {
                    JNI_TRUE, JNI_FALSE, JNI_TRUE);
     }
 
-    if (argc == 2 && !isJITEnabled(true)) {
+    if (argc == 2 && argv[1] != NULL && argv[1][0] == '\0' && !isJITEnabled(true)) {
         NSLog(@"calling ptrace(PT_TRACE_ME)");
         // Child process can call to PT_TRACE_ME
         // then both parent and child processes get CS_DEBUGGED
@@ -311,12 +446,17 @@ int main(int argc, char *argv[]) {
     setenv("BUNDLE_PATH", dirname(argv[0]), 1);
     isJailbroken = init_checkForJailbreak();
     init_setupHomeDirectory();
+    amethyst_init_boot_trace(argc, argv);
     init_redirectStdio();
+    amethyst_boot_trace("init_redirectStdio_ok");
     init_logDeviceAndVer(argv[0]);
 
     loadPreferences(NO);
+    amethyst_boot_trace("loadPreferences_ok");
     init_hookFunctions();
+    amethyst_boot_trace("init_hookFunctions_ok");
     init_hookUIKitConstructor();
+    amethyst_boot_trace("init_hookUIKit_ok");
 
     debugLogEnabled = getPrefBool(@"general.debug_logging");
     NSLog(@"[Debugging] Debug log enabled: %@", debugLogEnabled ? @"YES" : @"NO");
@@ -350,6 +490,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    amethyst_boot_trace("enter_UIApplicationMain");
     @autoreleasepool {
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
     }
