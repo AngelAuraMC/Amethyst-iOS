@@ -11,12 +11,24 @@ BINARY_EXTENSIONS = {
     ".png", ".jpg", ".jpeg", ".gif", ".icns", ".ico", ".nib", ".car",
     ".dylib", ".a", ".so", ".dll", ".exe", ".ttf", ".otf", ".woff",
     ".zip", ".jar", ".class", ".o", ".obj", ".bin", ".psa", ".storyboardc",
-    ".pyc", ".pyo",
+    ".pyc", ".pyo", ".cer", ".der", ".p12", ".crt", ".mobileprovision", ".spv",
 }
 
 SKIP_DIR_PARTS = {"__pycache__", ".git"}
 
 TEXT_ROOTS = ("Natives", "tests", ".github", "Makefile")
+
+
+def load_submodule_prefixes(root: Path) -> tuple[str, ...]:
+    gm = root / ".gitmodules"
+    if not gm.exists():
+        return ()
+    prefixes: list[str] = []
+    for line in gm.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = re.match(r"^\s*path\s*=\s*(.+?)\s*$", line)
+        if m:
+            prefixes.append(m.group(1).strip().strip("/").replace("\\", "/") + "/")
+    return tuple(prefixes)
 
 PASSED = 0
 FAILED = 0
@@ -73,6 +85,7 @@ def scan_unix_lf_tree(root: Path, entries: tuple[str, ...]) -> tuple[int, list[s
     checked = 0
     crlf_files: list[str] = []
     missing: list[str] = []
+    submodule_prefixes = load_submodule_prefixes(root)
     for entry in entries:
         p = root / entry
         if not p.exists():
@@ -81,6 +94,8 @@ def scan_unix_lf_tree(root: Path, entries: tuple[str, ...]) -> tuple[int, list[s
         files = [p] if p.is_file() else sorted(x for x in p.rglob("*") if x.is_file())
         for f in files:
             if any(part in SKIP_DIR_PARTS for part in f.parts):
+                continue
+            if submodule_prefixes and f.relative_to(root).as_posix().startswith(submodule_prefixes):
                 continue
             data = f.read_bytes()
             if is_binary_blob(f, data):
