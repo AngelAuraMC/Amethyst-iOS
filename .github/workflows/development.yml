@@ -9,6 +9,20 @@ on:
     branches-ignore:
       - 'l10n_main'
   workflow_dispatch:
+    inputs:
+      runner:
+        description: 'GitHub Actions macOS runner label'
+        required: false
+        default: 'macos-15'
+        type: choice
+        options:
+          - macos-15
+          - macos-26
+          - macos-15-intel
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -19,7 +33,7 @@ jobs:
           - platform: 2
             platform_name: ios
 
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
 
     steps:
       - name: Remove work folders
@@ -95,7 +109,6 @@ jobs:
         with:
           distribution: zulu
           java-version: '8'
-          architecture: aarch64
 
       - name: Verify JDK 8
         run: |
@@ -114,7 +127,7 @@ jobs:
 
       - name: Build for ${{ matrix.platform_name }}
         run: |
-          export PATH=/opt/homebrew/bin:$PATH
+          export PATH="$(brew --prefix)/bin:$PATH"
           export SLIMMED=1
 
           # Force the Makefile to use the JDK 8 installed by setup-java.
