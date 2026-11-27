@@ -13,12 +13,11 @@ on:
       runner:
         description: 'GitHub Actions macOS runner label'
         required: false
-        default: 'macos-15-intel'
+        default: 'macos-26'
         type: choice
         options:
-          - macos-15-intel
-          - macos-15
           - macos-26
+          - macos-15
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,7 +32,7 @@ jobs:
           - platform: 2
             platform_name: ios
 
-    runs-on: ${{ inputs.runner || 'macos-15-intel' }}
+    runs-on: ${{ inputs.runner || 'macos-26' }}
 
     steps:
       - name: Remove work folders
